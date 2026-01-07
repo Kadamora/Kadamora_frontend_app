@@ -42,7 +42,7 @@ export default function Gallery() {
             {/* Main Media */}
             <div className={`relative mb-4 flex items-center justify-center`}>
                 {/* Main media with animation */}
-                <div className={`w-full h-[240px] md:h-90 ${mainAnim} transition-all duration-500`}>
+                <div className={`w-full h-60 md:h-90 ${mainAnim} transition-all duration-500`}>
                     {currentMedia.mediaType === 'video' && !showVideo ? (
                         <div className="relative w-full h-full">
                             <img
@@ -144,7 +144,7 @@ export default function Gallery() {
                 )}
             </div>
             {/* Thumbnails (all media) - horizontal scrollable row */}
-            <div ref={thumbsContainerRef} className="flex gap-2 overflow-x-auto pb-2 pt-2 h-[115px]">
+            <div ref={thumbsContainerRef} className="flex gap-2 overflow-x-auto pb-2 pt-2 h-28.75">
                 {galleryMedia.map((m, idx) => (
                     <button
                         key={m.id}
@@ -160,7 +160,7 @@ export default function Gallery() {
                             setCurrentIndex(idx);
                             setShowVideo(false);
                         }}
-                        className={`cursor-pointer relative flex-shrink-0 w-28 h-20 rounded-lg overflow-hidden group transition-all duration-300 ${idx === currentIndex ? 'ring-2 ring-primary scale-105 opacity-100 z-10' : 'opacity-70 hover:opacity-100'}`}
+                        className={`cursor-pointer relative shrink-0 w-28 h-20 rounded-lg overflow-hidden group transition-all duration-300 ${idx === currentIndex ? 'ring-2 ring-primary scale-105 opacity-100 z-10' : 'opacity-70 hover:opacity-100'}`}
                         aria-label={m.mediaType === 'video' ? `Play ${m.title || 'video'}` : `View image`}
                         title={m.mediaType === 'video' ? m.title || 'Video' : 'Image'}
                         style={{ zIndex: idx === currentIndex ? 2 : 1 }}
