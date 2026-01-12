@@ -1,0 +1,1 @@
+import{j as e}from"./index-Dx1p62GQ.js";function t(){return e.jsxs("div",{className:"p-6",children:[e.jsx("h1",{className:"text-2xl font-semibold",children:"Admin Chat"}),e.jsx("p",{className:"text-gray-600 mt-2",children:"Welcome, admin."})]})}export{t as default};

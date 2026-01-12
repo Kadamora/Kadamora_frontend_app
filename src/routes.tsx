@@ -7,6 +7,9 @@ import RedirectIfAuthenticated from '@components/guards/RedirectIfAuthenticated'
 // load layouts
 import AuthLayout from './components/container/Auth/AuthLayout'
 import DashboardLayout from './components/container/DashboardLayout'
+import AdminAuthLayout from './components/container/Auth/AdminAuthLayout'
+import AdminDashboardLayout from '@components/container/AdminDashboardLayout';
+
 
 // lazy load all pages
 const Home = lazy(() => import('@pages/LandingPage/Home/Home'))
@@ -24,6 +27,11 @@ const SignupVerified = lazy(() => import('@pages/Auth/SignupVerified'))
 const ForgotPassword = lazy(() => import('@pages/Auth/ForgotPassword'))
 const ResetPassword = lazy(() => import('@pages/Auth/ResetPassword'))
 
+// admin auth
+const AdminLogin = lazy(() => import('@pages/Auth/AdminLogin'))
+const AdminResetPassword = lazy(() => import('@pages/Auth/AdminResetPassword'));
+const AdminForgotPassword = lazy(() => import('@pages/Auth/AdminForgotPassword'))
+
 // dashboard
 const Dashboard = lazy(() => import('@pages/Dashboard/Home/Dashboard'))
 const PropertyListing = lazy(() => import('@pages/Dashboard/PropertyListing/Home/PropertyManagementPage'))
@@ -34,6 +42,11 @@ const NotFound = lazy(() => import('@pages/Misc/NotFound'));
 const MySaved = lazy(() => import('@pages/Dashboard/PropertyListing/SavedProperty/MyListing'));
 
 
+// admin dashboard
+const AdminDashboard = lazy(() => import('@pages/Admin/Dashboard'));
+const AdminAgentRealtor = lazy(() => import('@pages/Admin/AgentRealtors'))
+const NewAgentDetailsPage = lazy(() => import('@pages/Admin/AgentRealtor/component/NewAgentDetailsPage'))
+const AdminChat = lazy(() => import('@pages/Admin/Chat'))
 
 // loading fallback
 function PageLoader() {
@@ -75,6 +88,19 @@ export default function AppRoutes(){
                         <Route path="forgot-password" element={<ForgotPassword />} />
                         <Route path="reset-password/:code" element={<ResetPassword />} />
                     </Route>
+                     <Route
+                        path="admin/auth"
+                        element={
+                            <RedirectIfAuthenticated>
+                                <AdminAuthLayout />
+                            </RedirectIfAuthenticated>
+                        }
+                    >
+                        <Route index element={<AdminLogin />} />
+                        <Route path="login" element={<AdminLogin />} />
+                        <Route path="forgot-password" element={<AdminForgotPassword />} />
+                        <Route path="reset-password/:code" element={<AdminResetPassword />} />
+                    </Route>
                     <Route
                         path="dashboard"
                         element={
@@ -90,6 +116,20 @@ export default function AppRoutes(){
                         <Route path="my-listing" element={<MyListing />} />
                         <Route path="property-view/:id" element={<PropertyView />} />
                         <Route path="saved" element={<MySaved />} />
+                    </Route>
+                     <Route
+                        path="admin"
+                        element={
+                            // <RequireAuth requiredRole="admin">
+                                <AdminDashboardLayout />
+                            // </RequireAuth>
+                        }
+                    >
+                        <Route index element={<AdminDashboard />} />
+                        <Route path="home" element={<AdminDashboard />} />
+                        <Route path="chat" element={<AdminChat />} />
+                        <Route path="agents" element={<AdminAgentRealtor />} />
+                        <Route path="agents/:id" element={<NewAgentDetailsPage />} />
                     </Route>
                     <Route path="*" element={<NotFound />} />
                 </Routes>

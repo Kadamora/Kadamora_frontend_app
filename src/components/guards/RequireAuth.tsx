@@ -7,9 +7,10 @@ import GuardLoader from './GuardLoader';
 
 interface RequireAuthProps {
     children: React.ReactElement;
+    requiredRole?: 'admin' | 'user';
 }
 
-export default function RequireAuth({ children }: RequireAuthProps) {
+export default function RequireAuth({ children, requiredRole }: RequireAuthProps) {
     const location = useLocation();
     const dispatch = useAppDispatch();
     const token = useAppSelector((s) => s.auth.accessToken);
@@ -25,20 +26,26 @@ export default function RequireAuth({ children }: RequireAuthProps) {
     }
 
     if (!token) {
-        return <Navigate to="/auth/login" replace state={{ from: redirectTo }} />;
+        const loginPath = requiredRole === 'admin' ? '/admin/auth/login' : '/auth/login';
+        return <Navigate to={loginPath} replace state={{ from: redirectTo }} />;
     }
 
     if (isError) {
         const status = (error as any)?.status;
         if (status === 401) {
             dispatch(logout());
-            return <Navigate to="/auth/login" replace state={{ from: redirectTo }} />;
+            return <Navigate to={requiredRole === 'admin' ? '/admin/auth/login' : '/auth/login'} replace state={{ from: redirectTo }} />;
         }
         return children;
     }
 
     if (!data?.data) {
-        return <Navigate to="/auth/login" replace state={{ from: redirectTo }} />;
+        return <Navigate to={requiredRole === 'admin' ? '/admin/auth/login' : '/auth/login'} replace state={{ from: redirectTo }} />;
+    }
+
+     if (requiredRole && data.data.role !== requiredRole) {
+        const fallback = requiredRole === 'admin' ? '/dashboard' : '/admin';
+        return <Navigate to={fallback} replace />;
     }
 
     return children;
