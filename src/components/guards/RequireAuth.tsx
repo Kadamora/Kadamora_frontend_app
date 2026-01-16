@@ -44,7 +44,7 @@ export default function RequireAuth({ children, requiredRole }: RequireAuthProps
     }
 
      if (requiredRole && data.data.role !== requiredRole) {
-        const fallback = requiredRole === 'admin' ? '/dashboard' : '/admin';
+        const fallback = requiredRole === 'admin' ? '/dashboard/property-listing' : '/admin';
         return <Navigate to={fallback} replace />;
     }
 

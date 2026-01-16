@@ -56,8 +56,8 @@ export default function Login() {
             );
             // navigate(redirectTo, { replace: true });
             const role = data.user?.role;
-            const from = (location.state as { from?: string } | null)?.from || '/dashboard';
-            const defaultDest = role === 'admin' ? '/admin' : '/dashboard';
+            const from = (location.state as { from?: string } | null)?.from || '/dashboard/property-listing';
+            const defaultDest = role === 'admin' ? '/admin' : '/dashboard/property-listing';
             navigate(from || defaultDest, { replace: true });
         } catch (err: any) {
           const message =
