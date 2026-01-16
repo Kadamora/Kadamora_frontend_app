@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
+import logo from '/assets/images/logo.png';
 
-export default function ForgotPasswordVerify() {
+
+export default function AdminForgotPasswordVerify() {
     const navigate = useNavigate();
     const [code, setCode] = useState<string[]>(['', '', '', '']);
     const [seconds, setSeconds] = useState(60);
@@ -47,8 +49,16 @@ export default function ForgotPasswordVerify() {
     const ss = String(seconds % 60).padStart(2, '0');
 
     return (
-        <div className="w-full max-w-md">
-            <h1 className="text-[30px] sm:text-3xl lg:text-[50px] font-semibold text-secondary">Forget Password</h1>
+        <div className="min-h-screen w-full bg-gradient-to-br from-[#041b2d] via-[#052c46] to-[#042f23] flex items-center justify-center px-4">
+            <a href="/">
+                <img
+                    src={logo}
+                    alt="Kadamora logo"
+                    className="absolute top-[24px] left-[24px] w-[200px] h-auto z-20"
+                />
+            </a>
+            <div className='w-full max-w-lg bg-white rounded-2xl shadow-xl px-10 py-16'>
+            <h1 className="text-3xl font-semibold text-secondary">Forget Password</h1>
             <p className="text-gray-600 mt-2">
                 Enter the four digit pin we sent to your email to proceed with setting a new password.
             </p>
@@ -87,7 +97,7 @@ export default function ForgotPasswordVerify() {
 
                 <button
                     type="submit"
-                    className={`w-full py-3 rounded-lg transition-colors ${
+                    className={`w-full py-3 mt-10 rounded-lg transition-colors ${
                         canContinue
                             ? 'bg-secondary text-white hover:opacity-95'
                             : 'bg-gray-300 text-white cursor-not-allowed'
@@ -97,6 +107,7 @@ export default function ForgotPasswordVerify() {
                     Continue
                 </button>
             </form>
+        </div>
         </div>
     );
 }

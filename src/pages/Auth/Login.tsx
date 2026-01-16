@@ -15,7 +15,7 @@ export default function Login() {
     const navigate = useNavigate();
     const location = useLocation();
     const dispatch = useAppDispatch()
-    const redirectTo = (location.state as { from?: string } | null)?.from || '/dashboard';
+    // const redirectTo = (location.state as { from?: string } | null)?.from || '/dashboard';
     const [triggerLogin] = useLoginMutation();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -54,7 +54,11 @@ export default function Login() {
                     refreshToken: data.refreshToken,
                 }),
             );
-            navigate(redirectTo, { replace: true });
+            // navigate(redirectTo, { replace: true });
+            const role = data.user?.role;
+            const from = (location.state as { from?: string } | null)?.from || '/dashboard/property-listing';
+            const defaultDest = role === 'admin' ? '/admin' : '/dashboard/property-listing';
+            navigate(from || defaultDest, { replace: true });
         } catch (err: any) {
           const message =
             err?.data?.message ||
