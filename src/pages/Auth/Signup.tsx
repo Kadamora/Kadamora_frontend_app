@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { isAxiosError } from 'axios';
+
 import { SignupSEO } from '@components/SEO/SEO';
 import { IoEye } from 'react-icons/io5';
 import { IoIosEyeOff } from 'react-icons/io';
@@ -45,13 +45,27 @@ export default function Signup() {
         try {
             await triggerSignup(payload).unwrap();
             navigate('/auth/signup/verify', { state: { email: payload.email } });
-        } catch (err) {
-            if (isAxiosError(err)) {
-                const apiMessage = (err.response?.data as { message?: string })?.message;
-                setErrorMessage(apiMessage || 'Unable to create your account. Please try again.');
-            } else {
-                setErrorMessage('Something went wrong. Please try again later.');
+        } catch (err: any) {
+            let msg = 'Something went wrong. Please try again later.';
+            const errorResponse = err?.data || err;
+
+            if (errorResponse) {
+                if (errorResponse.errors) {
+                    const errorKeys = Object.keys(errorResponse.errors);
+                    if (errorKeys.length > 0) {
+                        const firstKey = errorKeys[0];
+                        const firstError = errorResponse.errors[firstKey];
+                        if (Array.isArray(firstError) && firstError.length > 0) {
+                            msg = firstError[0];
+                        } else if (typeof firstError === 'string') {
+                            msg = firstError;
+                        }
+                    }
+                } else if (errorResponse.message) {
+                    msg = errorResponse.message;
+                }
             }
+            setErrorMessage(msg);
         } finally {
             setIsSubmitting(false);
         }

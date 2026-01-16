@@ -40,7 +40,7 @@ export default function ForgotPasswordVerify() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         // TODO: verify and navigate to reset page
-        navigate('/auth/forgot-password/reset');
+        navigate('/admin/auth/forgot-password/reset');
     };
 
     const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
