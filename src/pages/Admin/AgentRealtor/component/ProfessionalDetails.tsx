@@ -9,7 +9,8 @@ interface AgentDetails {
     areaOfOperation: string;
     registrationLicenseNumber: string;
     yearsOfExperience: number;
-    linkedinUrl: number;
+    linkedinProfile
+: number;
     website: string;
     bio: string;
     email: string;
@@ -122,7 +123,8 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({
                                 <div className="text-[13px] leading-[1.55] tracking-[0.2px] text-[#3F3F46] mb-2">
                                     <span>Linkedin URL</span>
                                 </div>
-                                <p className=" font-semibold text-secondary">{agent.linkedinUrl || "N/A"}</p>
+                                <p className=" font-semibold text-secondary">{agent.linkedinProfile
+ || "N/A"}</p>
                             </div>
                         </div>
                     </div>

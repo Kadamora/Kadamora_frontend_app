@@ -1,1 +1,0 @@
-import{j as s}from"./index-Dx1p62GQ.js";function e(){return s.jsxs("div",{className:"p-6",children:[s.jsx("h1",{className:"text-2xl font-semibold",children:"Admin Dashboard"}),s.jsx("p",{className:"text-gray-600 mt-2",children:"Welcome, admin."})]})}export{e as default};

@@ -57,7 +57,7 @@ export const adminAgentApi = baseApi.injectEndpoints({
             }),
             providesTags: ["AdminAgent"],
         }),
-        getAdminAgentById: builder.query<any, void>({
+        getAdminAgentById: builder.query<any, any>({
             query: (agentId) => ({
                 url: `/api/v1/admin/admin-agents/${agentId}`,
                 method: "GET",
@@ -66,16 +66,17 @@ export const adminAgentApi = baseApi.injectEndpoints({
         }),
         approveAgent: builder.mutation<void, string>({
             query: (agentId) => ({
-                url: `/admin/${agentId}/approve`,
+                url: `/api/v1/admin/admin-agents/${agentId}/approve`,
                 method: "POST",
             }),
             invalidatesTags: ["AdminAgent"],
         }),
 
-        rejectAgent: builder.mutation<void, string>({
-            query: (agentId) => ({
-                url: `/admin/${agentId}/reject`,
+        rejectAgent: builder.mutation<void, { agentId: string; rejectionReason: string }>({
+            query: ({ agentId, rejectionReason }) => ({
+                url: `/api/v1/admin/admin-agents/${agentId}/reject`,
                 method: "POST",
+                body: { rejectionReason },
             }),
             invalidatesTags: ["AdminAgent"],
         }),
