@@ -8,32 +8,6 @@ import { useGetAdminAgentByIdQuery } from '@store/api/admin.api';
 import ProfessionalDetailsSkeleton from './ProfessionalDetailsSkeleton';
 import DeclineReasonPrompt from './DeclineReasonPrompt';
 
-// interface Documents {
-//   id: string;
-//   governmentId: string[];
-//   businessCertificate: string[];
-//   proofOfAddress: string[];
-//   status: 'uploaded' | 'verified' | 'rejected';
-//   rejectionReason: string | null;
-//   reviewedAt: string | null;
-//   uploadedAt: string;
-// }
-
-// interface AgentDetails {
-//   id: string;
-//   companyName: string;
-//   position: string;
-//   location: string;
-//   registrationNumber: string;
-//   yearsOfExperience: number;
-//   website: string;
-//   bio: string;
-//   email: string;
-//   phone: string;
-//   registrationDate: string;
-//   status: 'pending' | 'verified' | 'rejected';
-//   documents: Documents | null;
-// }
 
 const NewAgentDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -98,32 +72,32 @@ const NewAgentDetailsPage: React.FC = () => {
     setShowDeclinePrompt(true);
   }, []);
 
-  // const handleConfirmDecline = useCallback(async (rejectionReason: string) => {
-  //   if(!id) return
+  const handleConfirmDecline = useCallback(async (rejectionReason: string) => {
+    if(!id) return
 
-  //   try{
-  //     await rejectAgent({ agentId: id, rejectionReason }).unwrap()
-  //     refetch()
-  //     setShowDeclinePrompt(false)
-  //     navigate('/admin/agents')
-  //   }catch(err: any){
-  //     console.log("Error rejecting agent", err)
-  //   }
-  // }, [navigate, id, rejectAgent, refetch]);
+    try{
+      await rejectAgent({ agentId: id, rejectionReason }).unwrap()
+      refetch()
+      setShowDeclinePrompt(false)
+      navigate('/admin/agents')
+    }catch(err: any){
+      console.log("Error rejecting agent", err)
+    }
+  }, [navigate, id, rejectAgent, refetch]);
 
-  const handleConfirmDecline = async (reason: string) => {
-  if (!id || typeof id !== "string") return;
+//   const handleConfirmDecline = async (reason: string) => {
+//   if (!id || typeof id !== "string") return;
 
-  console.log({
-  agentId: id,
-  rejectionReason: reason,
-  agentIdType: typeof id,
-});
-  await rejectAgent({
-    agentId: id,
-    rejectionReason: reason,
-  }).unwrap();
-};
+//   console.log({
+//   agentId: id,
+//   rejectionReason: reason,
+//   agentIdType: typeof id,
+// });
+//   await rejectAgent({
+//     agentId: id,
+//     rejectionReason: reason,
+//   }).unwrap();
+// };
 
   const handleSuccessDone = useCallback(() => {
     setShowSuccess(false)
@@ -134,6 +108,10 @@ const NewAgentDetailsPage: React.FC = () => {
     }
   }, [step, navigate])
 
+  const handleCloseModal = useCallback(() => {
+    setShowSuccess(false)
+    setShowDeclinePrompt(false)
+  }, [])
 
   if (isLoading) {
   return (
@@ -184,16 +162,16 @@ const NewAgentDetailsPage: React.FC = () => {
       case 1:
         return <ProfessionalDetails {...commonProps} agent={agent?.data} current={1} onNext={handleNext} />;
       case 2:
-        return  agent?.data?.documents ? (
+        return  (
         <LegalDocs
-          documents={agent?.data?.documents}
+          documents={agent?.data?.documents || null}
           current={2}
           onPrev={handlePrev}
           onClose={handleClose}
           onApprove={handleApprove}
           onDecline={handleDecline}
         />
-      ) : null;
+      ) ;
       default:
         return null;
     }
@@ -214,7 +192,7 @@ const NewAgentDetailsPage: React.FC = () => {
         <StepNode />
       </div>
       {/* {showSuccess && ( */}
-          <SuccessPrompt done={handleSuccessDone} open={showSuccess} onClose={handleClose} />
+          <SuccessPrompt done={handleSuccessDone} open={showSuccess} onClose={handleCloseModal} />
       {/* )} */}
       <DeclineReasonPrompt 
         open={showDeclinePrompt} 

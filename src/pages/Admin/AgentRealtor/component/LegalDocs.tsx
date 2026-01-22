@@ -38,6 +38,92 @@ const openPreview = (url: string, title: string) => {
   setPreviewTitle(title);
   setPreviewOpen(true);
 };
+  // Check if documents are empty or null
+  const hasDocuments = documents ;
+   console.log('Documents:', documents);
+  console.log('Has documents:', hasDocuments);
+
+  if (!hasDocuments) {
+    return (
+      <div className="w-full overflow-hidden flex flex-col md:flex-row">
+        {/* Sidebar */}
+        <div className="hidden md:block p-8">
+          <StepProgress current={current} />
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col bg-white border border-[#EDF1F5] rounded-md">
+          {/* Header */}
+          <div className="h-16 flex items-center justify-between px-8 border-b border-[#EDF1F5]">
+            <h3 className="font-semibold text-secondary">Verification And Legal Documents</h3>
+            <CloseButton onClick={onClose} />
+          </div>
+
+          {/* Mobile Header */}
+          <div className="md:hidden p-6 border-b border-gray-100">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-secondary">Verification And Legal Documents</h3>
+              <span className="text-sm text-[#64748B] font-medium">{current}/2</span>
+            </div>
+          </div>
+
+          {/* Empty State Content */}
+          <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
+            <div className="w-24 h-24 mb-6 flex items-center justify-center rounded-full bg-gray-50">
+              <svg 
+                className="w-12 h-12 text-gray-400" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24" 
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={1.5} 
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" 
+                />
+              </svg>
+            </div>
+            
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              No Documents Uploaded
+            </h3>
+            
+            <p className="text-gray-500 max-w-md mb-8">
+              This agent has not uploaded any verification or legal documents yet. 
+              They need to upload required documents for verification.
+            </p>
+
+            {/* Requirements List */}
+            <div className="w-full max-w-md bg-gray-50 rounded-lg p-6 mb-8 text-left">
+              <h4 className="font-medium text-gray-700 mb-3">Required Documents:</h4>
+              <ul className="space-y-2">
+                <li className="flex items-start">
+                  <svg className="w-5 h-5 text-gray-400 mt-0.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-sm text-gray-600">Government Issued ID</span>
+                </li>
+                <li className="flex items-start">
+                  <svg className="w-5 h-5 text-gray-400 mt-0.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-sm text-gray-600">Business Certificate</span>
+                </li>
+                <li className="flex items-start">
+                  <svg className="w-5 h-5 text-gray-400 mt-0.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-sm text-gray-600">Proof of Address/Utility Bill</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="w-full overflow-hidden flex flex-col md:flex-row">
             {/* Sidebar */}

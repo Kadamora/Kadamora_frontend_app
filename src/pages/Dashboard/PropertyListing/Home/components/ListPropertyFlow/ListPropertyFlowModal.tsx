@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { isAxiosError } from 'axios';
 import { useNavigate } from 'react-router';
 
 import StepsSidebar from './components/StepsSidebar';
@@ -16,15 +15,10 @@ import MediaStep from './components/MediaStep';
 import ListingTypeSelection, { type ListingTypeInfo } from './components/ListingTypeSelection';
 import ListingSuccessPrompt from './components/ListingSuccessPrompt.tsx';
 
-import {
-    createPropertyListing,
-    type CreatePropertyListingPayload,
-    type PropertyFacilitiesPayload,
-    type PropertyMediaPayload,
-} from '@utils/api/propertyListings';
 import CloseButton from '../OnboardingAgent/components/CloseButton.tsx';
-import { uploadFileToStorage } from '../../../../../../utils/firebaseStorage.ts';
 import { PropertyListingFormProvider, usePropertyListingForm, type FacilitySelection, type PropertyListingFormState } from './formContext.tsx';
+import { type CreatePropertyListingPayload, type PropertyFacilitiesPayload, type PropertyMediaPayload, useCreatePropertyListingMutation } from '@store/api/propertyListings.api.ts';
+import { useUploadFilesMutation } from '@store/api/upload.api';
 
 // Listing types
 const LISTING_TYPES: ListingTypeInfo[] = [
@@ -247,6 +241,8 @@ const ListingFormContent: React.FC<ListingFormContentProps> = ({
     const { state, resetForm } = usePropertyListingForm();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const [createPropertyListing] = useCreatePropertyListingMutation();
+    const [uploadFiles] = useUploadFilesMutation();
 
     const activeStep = steps[currentIdx];
     const isLast = currentIdx === steps.length - 1;
@@ -274,11 +270,19 @@ const ListingFormContent: React.FC<ListingFormContentProps> = ({
         setIsSubmitting(true);
         setSubmitError(null);
         try {
-            const payload = await buildCreatePropertyPayload(listingType, state);
+            const uploadFile = async (file: File) => {
+                const formData = new FormData();
+                formData.append('files', file);
+                const res = await uploadFiles(formData).unwrap();
+                return res.data.urls[0];
+            };
+
+            const payload = await buildCreatePropertyPayload(listingType, state, uploadFile);
             // console.log('payload', payload);
-            const response = await createPropertyListing(payload);
+            const response = await createPropertyListing(payload).unwrap();
             resetForm();
-            const successMessage = response?.message || response?.response?.message;
+            console.log("response", response)
+            const successMessage = response?.message || 'Property listed successfully';
             onSuccess(successMessage);
         } catch (error) {
             setSubmitError(resolveCreateError(error));
@@ -365,15 +369,16 @@ function validateListingForm(listingType: ListingType, state: PropertyListingFor
 async function buildCreatePropertyPayload(
     listingType: ListingType,
     state: PropertyListingFormState,
+    uploadFile: (file: File) => Promise<string>,
 ): Promise<CreatePropertyListingPayload> {
     const facilities = mapFacilities(state.facilities);
-    const media = await prepareMediaPayload(listingType, state);
+    const media = await prepareMediaPayload(listingType, state, uploadFile);
     const payload: CreatePropertyListingPayload = {
         title: state.title.trim(),
         description: state.description.trim(),
         location: state.location.trim(),
-        // countryId: state.countryId || undefined,
-        // stateId: state.stateId || undefined,
+        countryId: state.countryId || undefined,
+        stateId: state.stateId || undefined,
         propertyType: listingType,
         propertyCategory: state.propertyCategory,
         categoryType: state.categoryType || 'land_listing',
@@ -386,6 +391,7 @@ async function buildCreatePropertyPayload(
         amenities: state.amenities,
         media,
     };
+    console.log(payload)
 
     if (state.paymentTerm) payload.paymentTerm = state.paymentTerm;
     if (state.serviceCharge) payload.serviceCharge = toNumber(state.serviceCharge);
@@ -440,14 +446,11 @@ function mapFacilities(facilities: FacilitySelection[]): PropertyFacilitiesPaylo
 async function prepareMediaPayload(
     listingType: ListingType,
     state: PropertyListingFormState,
+    uploadFile: (file: File) => Promise<string>,
 ): Promise<PropertyMediaPayload[]> {
-    const timestamp = Date.now();
-    const baseKey = `properties/${listingType}/${timestamp}`;
-
     const photoUploads = await Promise.all(
         state.photos.map((photo, index) => {
-            const path = `${baseKey}/images/${photo.id}-${photo.file.name}`;
-            return uploadFileToStorage(photo.file, path).then<PropertyMediaPayload>((url) => ({
+            return uploadFile(photo.file).then<PropertyMediaPayload>((url) => ({
                 url,
                 altText: photo.file.name || `${state.title || 'property'}-${index + 1}`,
                 mediaType: 'image',
@@ -456,11 +459,11 @@ async function prepareMediaPayload(
         }),
     );
 
+    console.log(listingType)
     const media: PropertyMediaPayload[] = [...photoUploads];
 
     if (state.video) {
-        const videoPath = `${baseKey}/video/${state.video.id}-${state.video.file.name}`;
-        const videoUrl = await uploadFileToStorage(state.video.file, videoPath);
+        const videoUrl = await uploadFile(state.video.file);
         media.push({
             url: videoUrl,
             altText: state.video.file.name || `${state.title || 'property'}-video`,
@@ -483,12 +486,17 @@ function toNumber(value: string | number | undefined, defaultValue = 0): number 
     return Number.isNaN(parsed) ? defaultValue : parsed;
 }
 
-function resolveCreateError(error: unknown): string {
-    if (isAxiosError(error)) {
-        const data = error.response?.data as { message?: string; response?: { message?: string } } | undefined;
-        return data?.message || data?.response?.message || 'Unable to submit property. Please try again.';
+function resolveCreateError(error: any): string {
+    if (error?.data?.message) {
+        return error.data.message;
+    }
+    if (error?.data?.response?.message) {
+        return error.data.response.message;
     }
     if (error instanceof Error && error.message) {
+        return error.message;
+    }
+    if (error?.message) {
         return error.message;
     }
     return 'Unable to submit property. Please try again.';

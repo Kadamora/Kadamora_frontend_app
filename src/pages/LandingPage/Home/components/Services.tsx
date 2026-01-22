@@ -12,15 +12,17 @@ export default function Services() {
         const amount = Math.max(200, Math.round(el.clientWidth * 0.8));
         el.scrollBy({ left: delta * amount, behavior: 'smooth' });
     };
+    console.log(scrollBy)
 
     return (
-        <section className="py-16 bg-[#f7f8fa]">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="mb-12">
-                    <h2 className="text-3xl md:text-[40px] font-bold text-secondary mb-4">Our Services</h2>
-                    <p className="text-gray-600 max-w-2xl">
-                        Lorem ipsum dolor sit amet consectetur. Rutrum risus consequat interdum tempus sapien sed amet
-                        dignissim aliquam. Consequat adipiscing et venenatis ultricies ut vestibulum.
+        <section className="pt-16 bg-[#f7f8fa]">
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="grid lg:grid-cols-2 gap-12 items-center">
+                    <div className="mb-12">
+                           <h2 className="text-3xl md:text-[40px] font-bold text-secondary mb-4">Our Service</h2>
+                        <p className="text-gray-600 max-w-2xl">
+                            Lorem ipsum dolor sit amet consectetur. Rutrum risus consequat interdum tempus sapien sed amet
+                            dignissim aliquam. Consequat adipiscing et venenatis ultricies ut vestibulum.
                     </p>
                 </div>
 
@@ -34,8 +36,9 @@ export default function Services() {
                             ))}
                         </div>
                     </div>
+                </div>
                     {/* Navigation Buttons */}
-                    <div className="flex justify-end items-center mt-6.25">
+                    {/* <div className="flex justify-end items-center mt-6.25">
                         <div className="mr-3.75">
                             <button
                                 onClick={() => scrollBy(-1)}
@@ -79,7 +82,7 @@ export default function Services() {
                                 </svg>
                             </button>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </section>
