@@ -26,8 +26,7 @@ const SuccessPrompt: React.FC<SuccessPromptProps> = ({
 
   const handleDone = useCallback(() => {
     done();
-    onClose();
-  }, [done, onClose]);
+  }, [done]);
 
   if (!open) return null;
 

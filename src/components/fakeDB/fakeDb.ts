@@ -1,29 +1,29 @@
 export const fakeDb = {
   services: [
-    {
-      id: 1,
-      title: "Facility Management",
-      description: "Involves the effective coordination of people, processes, and physical spaces to ensure that buildings and infrastructure operate efficiently.",
-      image: "/assets/images/service_data_1.png"
-    },
-    {
-      id: 2,
-      title: "Project Management and Construction Management",
-      description: "This ensure successful planning and execution of projects, particularly in the construction and infrastructure sectors.",
-      image: "/assets/images/service_data_2.png"
-    },
+    // {
+    //   id: 1,
+    //   title: "Facility Management",
+    //   description: "Involves the effective coordination of people, processes, and physical spaces to ensure that buildings and infrastructure operate efficiently.",
+    //   image: "/assets/images/service_data_1.png"
+    // },
+    // {
+    //   id: 2,
+    //   title: "Project Management and Construction Management",
+    //   description: "This ensure successful planning and execution of projects, particularly in the construction and infrastructure sectors.",
+    //   image: "/assets/images/service_data_2.png"
+    // },
     {
       id: 3,
       title: "Property Management and Property Listing",
       description: "This allows agents, developers, and property owners to showcase residential, commercial, or short-let properties to a wide audience with ease.",
       image: "/assets/images/service_data_3.png"
     },
-    {
-      id: 4,
-      title: "Facility Management",
-      description: "Involves the effective coordination of people, processes, and physical spaces to ensure that buildings and infrastructure operate efficiently.",
-      image: "/assets/images/service_data_1.png"
-    },
+    // {
+    //   id: 4,
+    //   title: "Facility Management",
+    //   description: "Involves the effective coordination of people, processes, and physical spaces to ensure that buildings and infrastructure operate efficiently.",
+    //   image: "/assets/images/service_data_1.png"
+    // },
   ],
   listings: [
     {

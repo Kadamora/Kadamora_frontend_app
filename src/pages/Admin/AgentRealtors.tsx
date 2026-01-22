@@ -3,6 +3,7 @@ import { useCallback, useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router';
 import { Eye, Search, MoreHorizontal, Edit, Bell } from 'lucide-react';
 import { useGetAdminAgentQuery } from '@store/api/admin.api';
+import Checkbox from '@components/forms/Checkbox';
 
 type TabType = 'new' | 'verified';
 
@@ -45,7 +46,7 @@ function AgentsTableContent({ activeTab }: AgentsTableContentProps) {
         </tr>
     );
     return (
-        <div className="bg-white rounded-2xl border border-[#E4E7EC] mt-8">
+        <div className="bg-white rounded-2xl border border-[#E4E7EC] mt-8 px-3">
             <div className="flex items-center justify-between px-6 py-4 ">
                 <h3 className="text-sm font-Medium">AGENTS / REALTORS</h3>
                 <div className='relative flex items-center gap-2'>
@@ -105,9 +106,9 @@ function AgentsTableContent({ activeTab }: AgentsTableContentProps) {
                                 <tr
                                     key={agent.id}
                                     className={`text-[#667085]
-                    hover:bg-emerald-50/40 transition-colors
-                    ${idx % 2 === 0 ? 'bg-gray-100' : 'bg-white'}
-                  `}
+                                        hover:bg-emerald-50/40 transition-colors
+                                        ${idx % 2 === 0 ? 'bg-gray-100' : 'bg-white'}
+                                    `}
                                 >
                                     <td className="pl-6 pr-2 py-4 font-medium ">
                                         {agent.agencyCompanyName}
@@ -149,6 +150,26 @@ function VerifiedAgentsTableContent({ activeTab }: AgentsTableContentProps) {
 
     const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const [selectedAgents, setSelectedAgents] = useState<Set<string>>(new Set());
+
+    const toggleAgent = (agentId: string) => {
+  setSelectedAgents((prev) => {
+    const next = new Set(prev);
+    next.has(agentId) ? next.delete(agentId) : next.add(agentId);
+    return next;
+  });
+};
+const allSelected =
+  filteredAgents.length > 0 &&
+  filteredAgents.every((a: any) => selectedAgents.has(a.id));
+
+const toggleAll = () => {
+  setSelectedAgents(
+    allSelected
+      ? new Set()
+      : new Set(filteredAgents.map((a: any) => a.id))
+  );
+};
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -184,7 +205,7 @@ function VerifiedAgentsTableContent({ activeTab }: AgentsTableContentProps) {
     );
 
     return (
-        <div className="bg-white rounded-2xl border border-[#E4E7EC] mt-8">
+        <div className="bg-white rounded-2xl border border-[#E4E7EC] mt-8 px-3">
             <div className="flex items-center justify-between px-6 py-4 ">
                 <h3 className="text-sm font-Medium">AGENTS / REALTORS</h3>
                 <div className='relative flex items-center gap-2'>
@@ -232,11 +253,16 @@ function VerifiedAgentsTableContent({ activeTab }: AgentsTableContentProps) {
                         </p>
                     </div>
                 ) : (
-                    <table className="w-full text-sm">
+                    <table className="w-full text-sm ">
                         <thead className="text-left text-[#667085] sticky top-0">
                             <tr>
                                 <th className="pl-6 pr-2 py-4 w-10">
-                                    <input type="checkbox" className="rounded border-gray-300 text-secondary focus:ring-secondary" />
+                                     <Checkbox
+                                        checked={allSelected}
+                                        onChange={toggleAll}
+                                        containerClassName="justify-center"
+                                        aria-label="Select all agents"
+                                    />
                                 </th>
                                 <th className="px-2 py-4 uppercase font-medium">COMPANY NAME</th>
                                 <th className="px-2 py-4 uppercase font-medium">POSITION</th>
@@ -254,12 +280,17 @@ function VerifiedAgentsTableContent({ activeTab }: AgentsTableContentProps) {
                                     <tr
                                         key={agent.id}
                                         className={`text-[#667085]
-                        hover:bg-emerald-50/40 transition-colors
-                        ${idx % 2 === 0 ? 'bg-gray-100' : 'bg-white'}
-                      `}
+                                        hover:bg-emerald-50/40 transition-colors
+                                        ${idx % 2 === 0 ? 'bg-gray-100' : 'bg-white'}
+                                    `}
                                     >
                                         <td className="pl-6 pr-2 py-4">
-                                            <input type="checkbox" className="rounded border-gray-300 text-secondary focus:ring-secondary" />
+                                          <Checkbox
+                                            checked={selectedAgents.has(agent.id)}
+                                            onChange={() => toggleAgent(agent.id)}
+                                            containerClassName="justify-center"
+                                            aria-label={`Select agent ${agent.agencyCompanyName}`}
+                                        />
                                         </td>
                                         <td className="px-2 py-4 font-medium ">
                                             {agent.agencyCompanyName}
@@ -271,56 +302,65 @@ function VerifiedAgentsTableContent({ activeTab }: AgentsTableContentProps) {
                                             {agent.yearsOfExperience.toString().padStart(2, '0')}
                                         </td>
                                         <td className="px-2 py-4">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                                                 isActive 
-                                                ? 'bg-green-100 text-green-800 border border-green-200' 
-                                                : 'bg-red-100 text-red-800 border border-red-200'
+                                                ? 'bg-green-50 text-green-500 border border-green-400' 
+                                                : 'bg-red-50 text-red-500 border border-red-400'
                                             }`}>
                                                 {isActive ? 'Active' : 'In-active'}
                                             </span>
                                         </td>
-                                        <td className="text-center pl-2 pr-6 relative">
+                                        <td className="pl-6 relative">
                                             <button
                                                 onClick={(e) => toggleDropdown(agent.id, e)}
-                                                className="inline-flex items-center justify-center h-8 w-8 rounded-full hover:bg-gray-200 transition-colors text-gray-500"
+                                                className="inline-flex items-center justify-center  h-6 w-6 rounded-full hover:bg-gray-200 transition-colors text-gray-500 border border-gray-300"
                                             >
-                                                <MoreHorizontal className="h-5 w-5" />
+                                                <MoreHorizontal className="h-4 w-4" />
                                             </button>
                                             
                                             {openDropdownId === agent.id && (
                                                 <div 
                                                     ref={dropdownRef}
-                                                    className="absolute right-8 top-8 w-32 bg-white rounded-lg shadow-lg border border-gray-100 z-10 py-1 overflow-hidden"
+                                                    className="absolute right-1 top-14 w-28 bg-white rounded-lg shadow-lg border border-gray-100 z-10 py-1 overflow-hidden "
+                                                    
                                                 >
+                                                    
                                                     <button 
-                                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                                        className="w-full flex items-center justify-start text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 gap-2"
                                                         onClick={() => {
                                                             // Handle Edit
                                                             setOpenDropdownId(null);
                                                         }}
                                                     >
-                                                        <Eye className="w-4 h-4" />
-                                                        View
+                                                        {/* <Eye className="w-4 h-4 " /> */}
+                                                        <div className='flex items-center gap-2 w-full'>
+                                                            <Eye className="w-4 h-4 text-gray-500" />
+                                                            <span >View</span>
+                                                        </div>
                                                     </button>
                                                     <button 
-                                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                                        className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                                                         onClick={() => {
                                                             // Handle Edit
                                                             setOpenDropdownId(null);
                                                         }}
                                                     >
+                                                       <div className='flex items-center gap-2 w-full'>
                                                         <Edit className="w-4 h-4" />
-                                                        Suspend
+                                                        <span>Suspend</span>
+                                                       </div>
                                                     </button>
                                                     <button 
-                                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                                        className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                                                         onClick={() => {
                                                             // Handle Notify
                                                             setOpenDropdownId(null);
                                                         }}
                                                     >
+                                                       <div className='flex items-center gap-2 w-full'>
                                                         <Bell className="w-4 h-4" />
-                                                        Notify
+                                                        <span>Notify</span>
+                                                       </div>
                                                     </button>
                                                 </div>
                                             )}

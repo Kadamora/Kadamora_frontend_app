@@ -40,7 +40,7 @@ const PropertyView = lazy (() => import('@pages/Dashboard/PropertyListing/Proper
 const MyListing = lazy(() => import('@pages/Dashboard/PropertyListing/MyListing/MyListing'));
 const NotFound = lazy(() => import('@pages/Misc/NotFound'));
 const MySaved = lazy(() => import('@pages/Dashboard/PropertyListing/SavedProperty/MyListing'));
-
+const Subscription = lazy(() => import('@pages/Dashboard/subscription/SubscriptionPage'));
 
 // admin dashboard
 const AdminDashboard = lazy(() => import('@pages/Admin/Dashboard'));
@@ -116,6 +116,7 @@ export default function AppRoutes(){
                         <Route path="my-listing" element={<MyListing />} />
                         <Route path="property-view/:id" element={<PropertyView />} />
                         <Route path="saved" element={<MySaved />} />
+                        <Route path="subscription" element={<Subscription />} />
                     </Route>
                      <Route
                         path="admin"

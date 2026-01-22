@@ -274,13 +274,13 @@
 // export default DetailsStep;
 
 import React, { useMemo } from 'react';
-
 import { usePropertyListingForm } from '../formContext';
 import RadioGroup from '@components/forms/RadioGroup';
 import Select from '@components/forms/Select';
 import Input from '@components/forms/Input';
 import FacilitiesMultiSelect from '@components/forms/FacilitiesMultiSelect';
 import Textarea from '@components/forms/Textarea';
+import { useGetCountriesQuery, useGetStatesByCountryQuery } from '@store/api/locations';
 
 const AMENITY_OPTIONS: Array<{ label: string; value: string }> = [
     { label: 'Standing Fan', value: 'standing_fan' },
@@ -316,8 +316,45 @@ const AMENITY_OPTIONS: Array<{ label: string; value: string }> = [
 
 const DetailsStep: React.FC = () => {
     const { state, updateField, setFacilities, setAmenities } = usePropertyListingForm();
+     const {
+    data: countriesResponse,
+    isLoading: loadingCountries,
+} = useGetCountriesQuery();
+
+const {
+    data: statesResponse,
+    isLoading: loadingStates,
+    isFetching: fetchingStates,
+} = useGetStatesByCountryQuery(state.countryId, {
+    skip: !state.countryId,
+});
 
     const amenitiesSet = useMemo(() => new Set(state.amenities), [state.amenities]);
+   const countries = useMemo(() => {
+    const raw =
+        countriesResponse?.response?.countries ??
+        countriesResponse?.data ??
+        [];
+        console.log("raw",raw)
+
+    return raw.map((entry) => ({
+        label: String(entry.name ?? entry.id ?? ''),
+        value: String(entry.id ?? ''),
+    }));
+}, [countriesResponse]);
+
+const states = useMemo(() => {
+    const raw =
+        statesResponse?.response?.states ??
+        statesResponse?.data ??
+        [];
+        console.log("raw",raw)
+
+    return raw.map((entry) => ({
+        label: String(entry.name ?? entry.id ?? ''),
+        value: String(entry.id ?? ''),
+    }));
+}, [statesResponse]);
 
     return (
         <div className="space-y-8">
@@ -372,6 +409,32 @@ const DetailsStep: React.FC = () => {
                     placeholder="Enter location"
                     value={state.location}
                     onChange={(event) => updateField('location', event.target.value)}
+                />
+               <Select
+                    title="Country"
+                    value={state.countryId}
+                    onChange={(value) => {
+                        updateField('countryId', value);
+                        updateField('stateId', '');
+                    }}
+                    options={countries}
+                    placeholder={loadingCountries ? 'Loading countries...' : 'Select country'}
+                    disabled={loadingCountries}
+                />
+
+                <Select
+                    title="State"
+                    value={state.stateId}
+                    onChange={(value) => updateField('stateId', value)}
+                    options={states}
+                    placeholder={
+                        !state.countryId
+                            ? 'Select country first'
+                            : loadingStates || fetchingStates
+                            ? 'Loading states...'
+                            : 'Select state'
+                    }
+                    disabled={!state.countryId || loadingStates || fetchingStates}
                 />
                 <Input
                     title="Size (e.g., sqm or square feet)"
