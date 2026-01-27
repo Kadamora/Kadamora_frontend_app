@@ -20,7 +20,7 @@ export interface DashboardLayoutProps {
 }
 
 const navItems = [
-    { label: 'Home', to: '/dashboard/home', iconClass: 'icon-home' },
+    { label: 'Home', to: '/dashboard/property-listing', iconClass: 'icon-home' },
     // { label: 'Timeline', to: '/dashboard/timeline', iconClass: 'icon-timeline' },
     { label: 'Chat', to: '/dashboard/chat', iconClass: 'icon-chat' },
     // { label: 'Marketplace', to: '/dashboard/marketplace', iconClass: 'icon-marketplace' },
@@ -204,7 +204,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             >
                 <div className="w-full">
                     <div className="flex items-center gap-3 mb-10 sticky top-0 bg-white pt-2">
-                        <a href="/dashboard">
+                        <a href="/dashboard/property-listing">
                             <img src="/assets/logo/logo-small-black.png" alt="Kadamora Logo" className="h-10 w-auto" />
                         </a>
                     </div>
@@ -285,7 +285,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                         </button>
                         {/* Desktop logo */}
                         <div className="hidden lg:flex items-center gap-2 shrink-0 ml-4">
-                            <Link to="/dashboard">
+                            <Link to="/dashboard/property-listing">
                                 <img
                                     src="/assets/logo/logo-small-black.png"
                                     alt="Kadamora Logo"

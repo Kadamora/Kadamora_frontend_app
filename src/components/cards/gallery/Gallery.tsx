@@ -1,11 +1,20 @@
-import { fakeDb } from '@components/fakeDB/fakeDb';
 import { useState, useRef, useEffect } from 'react';
 import { MdArrowBackIosNew, MdArrowForwardIos } from 'react-icons/md';
 
-export default function Gallery() {
-    // Use the unified media array directly from fakeDb
-    const media = fakeDb.propertyMedia?.find((m) => m.listingId === 1);
-    const galleryMedia = media?.media || [];
+interface Media {
+    id: string;
+    url: string;
+    mediaType: 'image' | 'video';
+    altText?: string;
+    thumbnail?: string;
+}
+
+interface GalleryProps {
+    media?: Media[];
+}
+
+export default function Gallery({ media = [] }: GalleryProps) {
+    const galleryMedia = media || [];
 
     const [currentIndex, setCurrentIndex] = useState(0);
     const [showVideo, setShowVideo] = useState(false);
@@ -28,7 +37,13 @@ export default function Gallery() {
         }
     }, [currentIndex]);
 
-    if (!currentMedia) return null;
+    if (!currentMedia) {
+        return (
+            <div className="w-full h-60 md:h-90 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
+                No Media Available
+            </div>
+        );
+    }
 
     // Animation classes for main media
     const mainAnim = animating
@@ -46,8 +61,8 @@ export default function Gallery() {
                     {currentMedia.mediaType === 'video' && !showVideo ? (
                         <div className="relative w-full h-full">
                             <img
-                                src={currentMedia.thumbnail}
-                                alt={currentMedia.title || 'Video thumbnail'}
+                                src={currentMedia.thumbnail || currentMedia.url}
+                                alt={currentMedia.altText || 'Video thumbnail'}
                                 className="w-full h-full object-cover rounded-lg"
                             />
                             <div className="absolute inset-0 flex items-center justify-center">
@@ -75,7 +90,7 @@ export default function Gallery() {
                             key={currentMedia.id}
                             controls
                             autoPlay
-                            poster={currentMedia.thumbnail}
+                            poster={currentMedia.thumbnail || currentMedia.url}
                             onEnded={() => setShowVideo(false)}
                             className="w-full h-full object-cover rounded-lg"
                         >
@@ -85,7 +100,7 @@ export default function Gallery() {
                     ) : currentMedia.mediaType === 'image' ? (
                         <img
                             src={currentMedia.url}
-                            alt="Property main view"
+                            alt={currentMedia.altText || 'Property main view'}
                             className="w-full h-full object-cover rounded-lg"
                         />
                     ) : null}
@@ -161,13 +176,13 @@ export default function Gallery() {
                             setShowVideo(false);
                         }}
                         className={`cursor-pointer relative shrink-0 w-28 h-20 rounded-lg overflow-hidden group transition-all duration-300 ${idx === currentIndex ? 'ring-2 ring-primary scale-105 opacity-100 z-10' : 'opacity-70 hover:opacity-100'}`}
-                        aria-label={m.mediaType === 'video' ? `Play ${m.title || 'video'}` : `View image`}
-                        title={m.mediaType === 'video' ? m.title || 'Video' : 'Image'}
+                        aria-label={m.mediaType === 'video' ? `Play ${m.altText || 'video'}` : `View image`}
+                        title={m.mediaType === 'video' ? m.altText || 'Video' : 'Image'}
                         style={{ zIndex: idx === currentIndex ? 2 : 1 }}
                     >
                         <img
-                            src={m.thumbnail}
-                            alt={m.mediaType === 'video' ? m.title || 'Video' : 'Image'}
+                            src={m.thumbnail || m.url}
+                            alt={m.mediaType === 'video' ? m.altText || 'Video' : 'Image'}
                             className="w-full h-full object-cover transition-transform duration-300"
                         />
                         {/* Show play overlay on video thumbnails only if not currently playing that video */}

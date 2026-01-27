@@ -6,7 +6,7 @@ export default function Service({
     return (
         <div
             tabIndex={0}
-            className="group relative bg-white rounded-xl border border-gray-200 overflow-hidden w-80 flex-shrink-0 shadow-sm transition-all duration-300 ease-out outline-none hover:-translate-y-1 hover:border-[#43CC88]/40 focus-visible:ring-2 focus-visible:ring-primary/50"
+            className="group max-w-[370px] w-full relative bg-white rounded-xl border border-gray-200 overflow-hidden w-80 flex-shrink-0 shadow-sm transition-all duration-300 ease-out outline-none hover:-translate-y-1 hover:border-[#43CC88]/40 focus-visible:ring-2 focus-visible:ring-primary/50"
         >
             <div className="h-64 relative overflow-hidden">
                 <img

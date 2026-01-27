@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router';
-import { mockProperties } from './fakedb';
+import { useNavigate, Link } from 'react-router';
+// import { mockProperties } from './fakedb'; // Removing mock import, checking if file needs to be deleted later or just unused.
+import { useDebounce } from '../../../../hooks/useDebounce';
 import FilterBlocks, { MobileFilterModal } from './FilterBlocks';
 import ProductCard from '../../../../components/cards/product/ProductCard';
 import QuickActionCard from './components/QuickActionCard';
@@ -8,6 +9,8 @@ import OnboardingAgentFlowModal from './components/OnboardingAgent/OnboardingAge
 import VerificationInProgressModal from './components/VerificationInProgressModal';
 import ListPropertyFlowModal from './components/ListPropertyFlow/ListPropertyFlowModal';
 import { useGetAgentProfileQuery } from '@store/api/propertyAgent.api';
+import { useGetAllPropertyListingsQuery, useGetPropertyListingsFilterCountQuery } from '@store/api/propertyListings.api';
+import EmptyState from './components/EmptyState';
 const formatCurrency = (n: number) =>
     new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 2 }).format(n);
 
@@ -19,17 +22,42 @@ const PropertyManagementPage: React.FC = () => {
     const [onboardingOpen, setOnboardingOpen] = useState(false);
     const [onboardingStep, setOnboardingStep] = useState(0);
     const [verificationInProgressOpen, setVerificationInProgressOpen] = useState(false);
- 
+    
+    // Debounce search to avoid hitting server on every keystroke
+    const debouncedSearch = useDebounce(search, 500);
+
+    /* 
     const filtered = useMemo(
         () => mockProperties.filter((p) => p.title.toLowerCase().includes(search.toLowerCase())),
         [search],
     );
+    */
     const {
   data: agentProfiles,
   isLoading: isLoadingProfile,
   isError,
   error,
 } = useGetAgentProfileQuery();
+
+const {
+    data: propertyListingsResponse,
+    isLoading: isLoadingPropertyListings,
+} = useGetAllPropertyListingsQuery();
+const {data: filtercount} = useGetPropertyListingsFilterCountQuery();
+
+const filteredListings = useMemo(() => {
+    const listings = propertyListingsResponse?.data || [];
+    if (!Array.isArray(listings)) return [];
+    
+    if (!debouncedSearch) return listings;
+
+    const lowerSearch = debouncedSearch.toLowerCase();
+    return listings.filter((p) => 
+        p.title.toLowerCase().includes(lowerSearch) ||
+        p.location?.toLowerCase().includes(lowerSearch) ||
+        p.propertyType.toLowerCase().includes(lowerSearch)
+    );
+}, [propertyListingsResponse, debouncedSearch]);
 
 const agentProfile = agentProfiles?.data
 const profileNotFound =
@@ -162,21 +190,25 @@ const profileError =
         error: 'text-[#DC2626]',
     };
 
-    const productCards = useMemo(
-        () =>
-            filtered.map((p) => ({
-                id: p.id,
-                name: p.title,
-                price: formatCurrency(p.price),
-                description:
-                    'Felis sed amet aliqua cursus placerat. Risus morbi sed varius condimentum id odio magna condimentum.',
-                category: p.type, // will determine colour in ProductCard
-                subCategory: p.tags[1] || p.tags[0] || 'General',
-                image: p.img,
-            })),
-        [filtered],
-    );
+    const productCards = useMemo(() => {
+        return filteredListings.map((p) => ({
+            id: p.id,
+            name: p.title,
+            price: p.price ? formatCurrency(Number(p.price)) : 'N/A',
+            description: p.description || 'No description available.',
+            category: p.propertyType, // Using propertyType as category (e.g. rent, sell)
+            subCategory: p.propertySubType || 'General',
+            image: p.media?.find((m) => m.mediaType === 'image')?.url || '',
+        }));
+    }, [filteredListings]);
 
+      if (isLoadingPropertyListings) {
+        return (
+             <div className="flex items-center justify-center py-20">
+                <div className="h-10 w-10 animate-spin rounded-full border-2 border-gray-300 border-t-[#002E62]" />
+            </div>
+        );
+    }
     return (
         <div className="pb-10">
             <div className="mb-8 mt-4">
@@ -184,7 +216,7 @@ const profileError =
                     Property listing, Management and Investment
                 </h1>
                 <nav className="mb-2 text-[13px] flex items-center gap-1">
-                    <Link to="/dashboard/home" className="hover:underline">
+                    <Link to="/dashboard/property-listing" className="hover:underline">
                         Home
                     </Link>
                     <span>/</span>
@@ -303,17 +335,56 @@ const profileError =
                 <div className="grid lg:grid-cols-[250px_1fr] gap-6">
                     {/* Filters */}
                     <aside className="space-y-6 hidden lg:block">
-                        <FilterBlocks />
+                        <FilterBlocks counts={filtercount?.data} />
                     </aside>
                     {/* Property grid */}
-                    <div className="grid lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-2 gap-6">
+                    {/* <div className="grid lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-2 gap-6">
                         {productCards.map((p) => (
                             <ProductCard key={p.id} property={p} />
                         ))}
-                    </div>
+                    </div> */}
+                    <div className="grid lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-2 gap-6">
+  {productCards.length === 0 ? (
+    <EmptyState
+      title={
+        debouncedSearch
+          ? 'No properties match your search'
+          : 'No properties available yet'
+      }
+      description={
+        debouncedSearch
+          ? 'Try adjusting your search terms or clearing filters to see more results.'
+          : 'Properties listed by other users will appear here once available.'
+      }
+      actionLabel={debouncedSearch ? 'Clear search' : undefined}
+      onAction={
+        debouncedSearch
+          ? () => setSearch('')
+          : undefined
+      }
+      icon={
+        <svg
+          className="h-6 w-6"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.8}
+        >
+          <circle cx="11" cy="11" r="7" />
+          <path d="M21 21l-4.3-4.3" />
+        </svg>
+      }
+    />
+  ) : (
+    productCards.map((p) => (
+      <ProductCard key={p.id} property={p} />
+    ))
+  )}
+</div>
+
                 </div>
             </section>
-            <MobileFilterModal open={mobileFiltersOpen} onClose={() => setMobileFiltersOpen(false)} />
+            <MobileFilterModal open={mobileFiltersOpen} onClose={() => setMobileFiltersOpen(false)} counts={filtercount?.data} />
             <ListPropertyFlowModal open={listFlowOpen} onClose={() => setListFlowOpen(false)} />
             <OnboardingAgentFlowModal
                 open={onboardingOpen}

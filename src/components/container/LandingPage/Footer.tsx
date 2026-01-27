@@ -91,7 +91,6 @@ export default function Footer() {
                                 <li>contact@Kadamora.com</li>
                                 <li>+234 8101735245</li>
                                 <li>123 Opebi Allen Avenue, Ikeja Lagos, Nigeria</li>
-                                <li>123 Opebi Allen Avenue, Ikeja Lagos, Nigeria</li>
                             </ul>
                         </div>
                     </div>

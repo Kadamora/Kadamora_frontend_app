@@ -7,27 +7,26 @@ interface Props {
     billingCycle: BillingCycle;
     selectedTierId?: string;
     onSelectTier: (tierId: string) => void;
-    active?: boolean;
 }
 
 export default function PropertyPricingAccordion({
     open,
     pricing,
     onSelectTier,
-    active,
+    selectedTierId,
 }: Props) {
     return (
         <div
             className={`overflow-hidden transition-all duration-300 ${open ? "max-h-[600px] mt-6" : "max-h-0"
                 }`}
         >
-            <div className="border border-[#A2E9C1] rounded-xl bg-[#A2E9C1] overflow-hidden">
+            <div className="border border-[#A2E9C1] rounded-xl  overflow-hidden">
                 <table className="w-full text-sm">
-                    <thead>
-                        <tr className="text-primary-foreground">
+                    <thead className="bg-[#A2E9C1]/30">
+                        <tr className="text-primary-foreground border-b border-[#A2E9C1]">
                             <th className="p-4 w-36" />
                             {pricing.map((tier) => (
-                                <th key={tier.id} className="p-4 text-left">
+                                <th key={tier.id} className="p-4 text-left border-l border-[#A2E9C1]">
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <span className="text-primary-100">{tier.tierLabel}: </span>
@@ -35,11 +34,11 @@ export default function PropertyPricingAccordion({
                                         </div>
                                         <button
                                             onClick={() => onSelectTier(tier.id)}
-                                            className={`relative w-11 h-5 rounded-full transition-colors ${active ? "bg-[var(--color-primary)]" : "bg-gray-300"
+                                            className={`relative w-11 h-5 rounded-full transition-colors ${selectedTierId === tier.id ? "bg-[var(--color-primary)]" : "bg-gray-300"
                                                 }`}
                                         >
                                             <span
-                                                className={`absolute top-[2px] left-[4px] h-4 w-4 rounded-full bg-white transition-transform ${active ? "translate-x-5" : ""
+                                                className={`absolute top-[2px] left-[4px] h-4 w-4 rounded-full bg-white transition-transform ${selectedTierId === tier.id ? "translate-x-5" : "translate-x-0"
                                                     }`}
                                             />
                                         </button>
@@ -58,7 +57,9 @@ export default function PropertyPricingAccordion({
                             {pricing.map((tier) => (
                                 <td key={tier.id} className="p-4 border-l border-[#A2E9C1]">
                                     <div className="flex items-start gap-3">
-                                        <CircleCheckBig />
+                                        <div className="size-5">
+                                            <CircleCheckBig className="text-[var(--color-primary)]" size={20}  />
+                                        </div>
                                         <span className="text-foreground">{tier.targetUsers}</span>
                                     </div>
                                 </td>
@@ -72,7 +73,9 @@ export default function PropertyPricingAccordion({
                             {pricing.map((tier) => (
                                 <td key={tier.id} className="p-4 border-l border-[#A2E9C1]">
                                     <div className="flex items-start gap-3">
-                                        <CircleCheckBig />
+                                        <div className="size-5">
+                                            <CircleCheckBig className="text-[var(--color-primary)]" size={20}  />
+                                        </div>
                                         <span className="text-foreground">{tier.features}</span>
                                     </div>
                                 </td>
@@ -87,19 +90,19 @@ export default function PropertyPricingAccordion({
                                 <td key={tier.id} className="p-4 border-l border-[#A2E9C1]">
                                     <div className="space-y-2">
                                         <div className="flex items-center gap-3">
-                                            <CircleCheckBig />
+                                            <CircleCheckBig className="text-[var(--color-primary)]" size={20}  />
                                             <span className="text-foreground">
                                                 Monthly: {tier.prices.monthly.toLocaleString()}
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-3">
-                                            <CircleCheckBig />
+                                            <CircleCheckBig className="text-[var(--color-primary)]" size={20}  />
                                             <span className="text-foreground">
                                                 Quarterly: {tier.prices.quarterly.toLocaleString()}
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-3">
-                                            <CircleCheckBig />
+                                            <CircleCheckBig className="text-[var(--color-primary)]" size={20}  />
                                             <span className="text-foreground">
                                                 Annual: {tier.prices.annually.toLocaleString()}
                                             </span>
