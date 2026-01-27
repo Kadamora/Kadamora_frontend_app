@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import PaymentModal from './component/PaymentModal';
+import PaymentMethodModal from './component/PaymentMethodModal';
+import BankTransferModal from './component/BankTransferModal';
+import CreditCardModal from './component/CreditCardModal';
 import { CircleCheckBig, Fence } from 'lucide-react';
 import type { PricingTier } from './component/pricing';
 import SubscriptionServiceCard from './component/SubscriptionServiceCard';
@@ -45,7 +48,7 @@ export const PROPERTY_PRICING: PricingTier[] = [
 ];
 
 const SubscriptionPage = () => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalStep, setModalStep] = useState<'none' | 'info' | 'method' | 'bank_transfer' | 'credit_card'>('none');
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'quarterly' | 'annually'>('monthly');
     const [activeService, setActiveService] = useState<string | null>(null);
     const [selectedPropertyTier, setSelectedPropertyTier] = useState<string | null>(null);
@@ -63,6 +66,7 @@ const SubscriptionPage = () => {
 
         return total;
     })();
+    
     const services = [
         // {
         //     id: 'facility',
@@ -161,23 +165,6 @@ const SubscriptionPage = () => {
                 </div>
 
                 {/* Paid Services List */}
-                {/* <div className="space-y-4">
-                    {services.map((service) => (
-                        <div key={service.id} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex items-start gap-4 hover:shadow-md transition-shadow">
-                            <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-[var(--color-primary-600)] flex-shrink-0">
-                                {service.icon}
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="text-base font-bold text-[var(--color-secondary)]">{service.title}</h3>
-                                <p className="text-gray-400 text-sm mt-1">{service.description}</p>
-                            </div>
-                            <div className="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" className="sr-only peer" />
-                                <div className="w-11 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]"></div>
-                            </div>
-                        </div>
-                    ))}
-                </div> */}
                 <div className="space-y-4">
                     {services.map((service) => {
                         const isOpen = activeService === service.id;
@@ -196,7 +183,11 @@ const SubscriptionPage = () => {
                                         pricing={PROPERTY_PRICING}
                                         billingCycle={billingCycle}
                                         selectedTierId={selectedPropertyTier ?? undefined}
-                                        onSelectTier={setSelectedPropertyTier}
+                                        onSelectTier={(tierId) =>
+                                            setSelectedPropertyTier((prev) =>
+                                                prev === tierId ? null : tierId
+                                            )
+                                        }
                                     />
                                 )}
                             </SubscriptionServiceCard>
@@ -205,18 +196,11 @@ const SubscriptionPage = () => {
                     })}
                 </div>
 
-
                 {/* Bottom Bar */}
-                <div className="  mt-6 ">
-                    <div className="flex justify-end items-center ">
-                        {/* <button 
-                            onClick={() => setIsModalOpen(true)}
-                            className="bg-[var(--color-secondary)] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#1a2548] transition-colors flex items-center gap-2 shadow-lg shadow-blue-900/20"
-                        >
-                            Proceed to Pay <span className="font-bold ml-1">475,000</span>
-                        </button> */}
+                <div className="fixed bottom-0 right-0 left-0 md:left-[300px] bg-white border-t border-gray-100 p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-20">
+                    <div className="max-w-6xl mx-auto flex justify-end items-center gap-6 pr-8">
                         <button
-                            onClick={() => setIsModalOpen(true)}
+                            onClick={() => setModalStep('info')}
                             disabled={!totalAmount}
                             className="bg-[var(--color-secondary)] disabled:opacity-50 text-white px-8 py-3 rounded-lg font-semibold"
                         >
@@ -229,8 +213,42 @@ const SubscriptionPage = () => {
                 </div>
 
                 <PaymentModal
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
+                    isOpen={modalStep === 'info'}
+                    onClose={() => setModalStep('none')}
+                    onProceed={() => setModalStep('method')}
+                />
+
+                <PaymentMethodModal
+                    isOpen={modalStep === 'method'}
+                    onClose={() => setModalStep('none')}
+                    amount={totalAmount}
+                    onNext={(method) => {
+                         if (method === 'bank_transfer') {
+                             setModalStep('bank_transfer');
+                         } else if (method === 'credit_card') {
+                             setModalStep('credit_card');
+                         }
+                    }}
+                />
+
+                <BankTransferModal
+                    isOpen={modalStep === 'bank_transfer'}
+                    onClose={() => setModalStep('none')}
+                    amount={totalAmount}
+                    onConfirm={() => {
+                        // Handle confirmation
+                        setModalStep('none');
+                    }}
+                />
+
+                <CreditCardModal
+                    isOpen={modalStep === 'credit_card'}
+                    onClose={() => setModalStep('none')}
+                    amount={totalAmount}
+                    onPay={() => {
+                        // Handle payment
+                        setModalStep('none');
+                    }}
                 />
             </div>
         </div>

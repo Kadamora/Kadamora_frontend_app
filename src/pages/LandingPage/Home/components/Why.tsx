@@ -1,24 +1,21 @@
 const whyKadamora = [
     {
-        title: 'All-in-One Access:',
-        desc: 'Manage facilities, list properties, run projects, and access logistics — all from one powerful platform.',
+        title: 'Seamless Property Listings:',
+        desc: 'Effortlessly create and manage detailed property listings to attract potential tenants and buyers.',
     },
     {
-        title: 'Tailored for Every User:',
-        desc: "Whether you're a resident, agent, supplier, hotelier, developer, or event organizer, Kadamora is built to meet your specific needs.",
+        title: 'Comprehensive Tenant Management:',
+        desc: "Streamline communication with tenants, track payments, and manage maintenance requests in one place.",
     },
     {
-        title: 'Subscription-Driven Value:',
-        desc: 'Gain premium access to exclusive features like project and property investment tools, ensuring the best ROI for professionals and investors.',
+        title: 'Intuitive Market Analytics:',
+        desc: 'Gain insights into market trends and property valuations to make informed investment decisions.',
     },
     {
-        title: 'Cultural & Hospitality Experience:',
-        desc: 'Discover and promote festivals, events, and tourism destinations including Detty December, Ojude Oba etc.',
+        title: 'Enhanced Marketing Tools:',
+        desc: 'Utilize advanced marketing features to promote properties across multiple channels for maximum exposure.',
     },
-    {
-        title: 'Community-Focused Ecosystem:',
-        desc: 'Designed to bring value to both individuals and organizations, fostering collaboration and local economic development.',
-    },
+    
 ];
 
 export default function Why() {

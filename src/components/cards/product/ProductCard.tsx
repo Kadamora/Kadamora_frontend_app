@@ -24,13 +24,13 @@ export default function ProductCard({
     available = false,
     availabilityLabel,
     onToggleAvailability,
-}: ProductCardProps) {
+}: any) {
     const availabilityText = availabilityLabel ?? (available ? 'Visible to clients' : 'Hidden');
 
     return (
         <Link
             to={landingPage ? `/property-view/${property.id}` : `/dashboard/property-view/${property.id}`}
-            className="group relative bg-white rounded-xl border border-[#CCE3FD] overflow-hidden shadow-sm transition-all duration-300 ease-out hover:-translate-y-1 focus-visible:ring-2 focus-visible:ring-primary/40 block"
+            className="group relative bg-white h-fit rounded-xl border border-[#CCE3FD] overflow-hidden shadow-sm transition-all duration-300 ease-out hover:-translate-y-1 focus-visible:ring-2 focus-visible:ring-primary/40 block"
         >
             {/* Heart Icon */}
             <button
