@@ -5,50 +5,79 @@ import { LuShieldCheck } from 'react-icons/lu';
 import Gallery from '../../../../components/cards/gallery/Gallery';
 import { fakeDb } from '../../../../components/fakeDB/fakeDb';
 import ProductCard from '../../../../components/cards/product/ProductCard';
+import { useNavigate } from 'react-router';
+import { useGetAgentPropertyListingsByIdQuery } from '@store/api/propertyListings.api';
 
 export default function PropertyView() {
-    const amenities = [
-        { name: 'Swimming Pool', icon: '/assets/icons/check2.png' },
-        { name: 'Gym', icon: '/assets/icons/check2.png' },
-        { name: 'Garden', icon: '/assets/icons/check2.png' },
-        { name: 'Wi-Fi', icon: '/assets/icons/check2.png' },
-        { name: 'Parking', icon: '/assets/icons/check2.png' },
-    ];
+    const navigate = useNavigate();
+    // const {agentId} = useParams<{agentId: string}>();
+    const agentId = '51bbfacf-78fa-4a87-85a0-cfcf003afa59';
+    const {data: propertyListings} = useGetAgentPropertyListingsByIdQuery(agentId!, {
+        skip: !agentId,
+    });
+    const property = propertyListings?.data;
+    const formatCurrency = (amount: string | number | null | undefined) => {
+        if (!amount) return 'N/A';
+        return `₦ ${Number(amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    };
+
+    const humanize = (str: string | null | undefined) => {
+        if (!str) return '';
+        return str
+            .replace(/_/g, ' ')
+            .toLowerCase()
+            .replace(/\b\w/g, (c) => c.toUpperCase());
+    };
+
+    const amenities =
+        property?.amenities?.map((amenity: string) => ({
+            name: humanize(amenity),
+            icon: '/assets/icons/check2.png',
+        })) || [];
 
     const facilities = [
-        { count: 6, label: 'Bedroom' },
-        { count: 2, label: 'Kitchen' },
-        { count: 3, label: 'Toilet/Bathroom' },
-        { count: 1, label: 'Store' },
-        { count: 2, label: 'Living Room' },
-        { count: 1, label: 'Dinning Room' },
-    ];
+        { count: property?.bedrooms, label: 'Bedroom' },
+        { count: property?.kitchens, label: 'Kitchen' },
+        { count: property?.bathrooms, label: 'Toilet/Bathroom' },
+        { count: property?.stores, label: 'Store' },
+        { count: property?.livingRooms, label: 'Living Room' },
+    ].filter((f) => f.count !== undefined && f.count !== null && f.count > 0);
 
     const categoryData = [
-        { label: 'Property Category', value: 'Affordable' },
-        { label: 'Property Type', value: 'Duplex' },
-        { label: 'Payment Type', value: 'Annually' },
-        { label: 'Other Charges', value: '₦ 234,999.00' },
-        { label: 'Category Type', value: 'Residential Properties' },
-        { label: 'Furnish Status', value: 'Fully furnished' },
-        { label: 'Caution Fee', value: '₦ 234,999.00' },
-    ];
+        { label: 'Property Category', value: humanize(property?.propertyCategory) },
+        { label: 'Property Type', value: humanize(property?.propertySubType || property?.propertyType) },
+        { label: 'Payment Type', value: humanize(property?.paymentTerm) },
+        { label: 'Service Charge', value: property?.serviceCharge ? formatCurrency(property?.serviceCharge) : 'None' },
+        { label: 'Category Type', value: humanize(property?.categoryType) },
+        { label: 'Furnish Status', value: humanize(property?.furnishingStatus) },
+        { label: 'Other Charges', value: property?.otherCharges ? formatCurrency(property?.otherCharges) : 'None' },
+    ].filter((item) => item.value && item.value !== 'None' && item.value !== 'N/A');
 
     const safetyTips = [
         'Never send payments in advance.',
         'Carefully inspect the property or item to confirm it meets your needs.',
         'Verify all relevant documents and proceed with payment only when fully satisfied.',
     ];
+    
+    if (!property) {
+        return (
+            <div className="flex items-center justify-center py-20">
+                <div className="h-10 w-10 animate-spin rounded-full border-2 border-gray-300 border-t-[#002E62]" />
+            </div>
+        );
+    }
 
     return (
         <>
             {/* Breadcrumb */}
             <div className="py-6">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="max-w-7xl mx-auto">
                     <nav className="flex">
-                        <span>Listings</span>
-                        <span className="mx-2">›</span>
-                        <span className="text-primary">Hillary Court Lagos</span>
+                        <span onClick={() => navigate('/dashboard/property-listing')} className="cursor-pointer text-sm">Home</span>
+                        <span className="mx-2 text-sm">›</span>
+                        <span onClick={() => navigate(-1)} className="cursor-pointer text-sm">Listings</span>
+                        <span className="mx-2 text-sm">›</span>
+                        <span className="text-primary text-sm">{property.title}</span>
                     </nav>
                 </div>
             </div>
@@ -57,12 +86,12 @@ export default function PropertyView() {
                 <div className="max-w-7xl mx-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Left Column - Images / Video */}
-                        <Gallery />
+                        <Gallery media={property.media} />
 
                         {/* Right Column - Property Details */}
                         <div className="bg-white p-4 rounded-lg shadow-border">
                             <div className="flex items-center justify-between">
-                                <div className="text-2xl font-bold text-[#002E62]">Hillary Court Lagos</div>
+                                <div className="text-2xl font-bold text-[#002E62]">{property.title}</div>
                                 <button
                                     className="p-2 rounded-full border border-gray-300 hover:bg-gray-50"
                                     aria-label="Add to favorites"
@@ -83,19 +112,21 @@ export default function PropertyView() {
                                 </button>
                             </div>
 
-                            <p className="text-[18px] mb-4">₦ 234,999.00 / year</p>
+                            <p className="text-[18px] mb-4">
+                                {formatCurrency(property.price)} {property.paymentTerm ? `/ ${property.paymentTerm}` : ''}
+                            </p>
 
                             <p className="mb-2 leading-7.5 text-[#6E6D6D]">
-                                Felis sed amet eget aliquam cursus placerat. Risus morbi arut sed cursibhur auismod a
-                                odio magna condimentum. amet eget aliquam cursus placerat. Felis morbi arut sed
-                                cursibhur auismod a odio magna condimentum.
+                                {property.description || 'No description provided.'}
                             </p>
                             {/* Location */}
                             <div className="flex items-center gap-2 text-sm text-[#0A2D50] mb-3.75">
                                 <MdOutlineLocationOn className="w-5 h-5 text-[#6E6D6D]" />
-                                <a className="text-[#002E62] underline-offset-2 hover:underline" href="#">
-                                    Dalaba Street Aminu Kano Cresent, Wuse Zone 2 Abuja, Nigeria
-                                </a>
+                                <p className="text-[#002E62] ">
+                                    {property.location}
+                                    {property.state?.name ? `, ${property.state.name}` : ''}
+                                    {property.country?.name ? `, ${property.country.name}` : ''}
+                                </p>
                             </div>
 
                             <div className="h-px w-full bg-[#E4E4E7] mb-6" />
@@ -111,10 +142,10 @@ export default function PropertyView() {
                             <div className="mb-6">
                                 <h3 className="font-semibold mb-3 text-[#002E62]">Amenities</h3>
                                 <div className="flex flex-wrap gap-3">
-                                    {amenities.map((amenity, index) => (
+                                    {amenities.map((amenity: any, index: any) => (
                                         <span
                                             key={index}
-                                            className="inline-flex items-center gap-2 rounded-full border border-[#E4E4E7] bg-[#F9FAFB] px-3 py-1 text-[13px] text-[#6E6D6D]"
+                                            className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[13px] text-[#6E6D6D]"
                                         >
                                             <img src={amenity.icon} alt="" className="h-4 w-4" aria-hidden />
                                             {amenity.name}
@@ -126,7 +157,7 @@ export default function PropertyView() {
                             {/* Facilities */}
                             <div className="mb-6">
                                 <h3 className="font-semibold mb-3 text-[#002E62]">Facilities</h3>
-                                <div className="grid grid-cols-[repeat(auto-fit,minmax(138px,1fr))] gap-3">
+                                <div className="flex flex-wrap gap-3">
                                     {facilities.map((facility, index) => (
                                         <div
                                             key={index}
@@ -176,15 +207,18 @@ export default function PropertyView() {
                                     </p>
                                     <div className="mt-4 flex items-center gap-3">
                                         <img
-                                            src="https://api.dicebear.com/7.x/avataaars/svg?seed=Abel"
-                                            alt="Abel Johnson Charles"
+                                            src={
+                                                property.agent?.user?.imgUrl ||
+                                                `https://api.dicebear.com/7.x/avataaars/svg?seed=${property.agent?.user?.firstName || 'User'}`
+                                            }
+                                            alt={`${property.agent?.user?.firstName} ${property.agent?.user?.lastName}`}
                                             className="h-12 w-12 rounded-full border border-[#CCE3FD]"
                                         />
                                         <div>
                                             <p className="text-[14px] font-semibold text-[#002E62]">
-                                                Abel Johnson Charles
+                                                {property.agent?.user?.firstName} {property.agent?.user?.lastName}
                                             </p>
-                                            <p className="text-[13px] text-[#52525B]">Abeljohnsoncharles@gmail.com</p>
+                                            <p className="text-[13px] text-[#52525B]">{property.agent?.user?.email}</p>
                                         </div>
                                     </div>
                                 </div>

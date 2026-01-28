@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import type { FilterCounts } from '@store/api/propertyListings.api';
 
 interface FilterCardProps {
     title: string;
@@ -14,7 +15,7 @@ const FilterCard: React.FC<FilterCardProps> = ({ title, children }) => (
     </div>
 );
 
-const PillButton: React.FC<{ label: string; active?: boolean }> = ({ label, active }) => (
+const PillButton: React.FC<{ label: string; count?: number; active?: boolean }> = ({ label, count, active }) => (
     <button
         type="button"
         className={[
@@ -24,34 +25,38 @@ const PillButton: React.FC<{ label: string; active?: boolean }> = ({ label, acti
                 : 'bg-[#F4F6FA] border-transparent text-[#475467] hover:bg-[#EDF1F7]',
         ].join(' ')}
     >
-        {label}
+        {label} {count ? `(${count})` : ''}
     </button>
 );
 
-export const FilterBlocks: React.FC = () => (
+interface FilterBlocksProps {
+    counts?: FilterCounts;
+}
+
+export const FilterBlocks: React.FC<FilterBlocksProps> = ({ counts }) => (
     <>
         <FilterCard title="Property Type">
             <div className="flex flex-wrap gap-2">
-                <PillButton label="Rent (62)" active />
-                <PillButton label="Lease (234)" />
-                <PillButton label="Sell (120)" />
-                <PillButton label="Shortlet (234)" />
+                <PillButton label="Rent" count={counts?.propertyType?.rent} active />
+                <PillButton label="Lease" count={counts?.propertyType?.lease} />
+                <PillButton label="Sell" count={counts?.propertyType?.sell} />
+                <PillButton label="Shortlet" count={counts?.propertyType?.short_let} />
             </div>
         </FilterCard>
         <FilterCard title="Property Category">
             <div className="flex flex-wrap gap-2">
-                <PillButton label="Affordable" />
-                <PillButton label="Luxurious (34)" />
-                <PillButton label="Ultra-Luxurious (83)" />
+                <PillButton label="Affordable" count={counts?.propertyCategory?.affordable} />
+                <PillButton label="Luxurious" count={counts?.propertyCategory?.luxurious} />
+                <PillButton label="Ultra-Luxurious" count={counts?.propertyCategory?.ultra_luxurious} />
             </div>
         </FilterCard>
         <FilterCard title="Category Type">
             <div className="flex flex-wrap gap-2">
-                <PillButton label="Residentials (634)" />
-                <PillButton label="Commercial (62)" />
-                <PillButton label="Mixed Used Property (234)" />
-                <PillButton label="Land Listing (234)" />
-                <PillButton label="Others (234)" />
+                <PillButton label="Residentials" count={counts?.categoryType?.residential} />
+                <PillButton label="Commercial" count={counts?.categoryType?.commercial} />
+                <PillButton label="Mixed Used Property" count={counts?.categoryType?.mixed_used} />
+                <PillButton label="Land Listing" count={counts?.categoryType?.land_listing} />
+                <PillButton label="Others" count={counts?.categoryType?.others} />
             </div>
         </FilterCard>
         <FilterCard title="Location">
@@ -103,15 +108,15 @@ export const FilterBlocks: React.FC = () => (
         </FilterCard>
         <FilterCard title="Property Condition">
             <div className="flex flex-wrap gap-2">
-                <PillButton label="New (634)" />
-                <PillButton label="Renovated (62)" />
-                <PillButton label="Not New (234)" />
+                <PillButton label="New" count={counts?.propertyCondition?.new} />
+                <PillButton label="Renovated" count={counts?.propertyCondition?.renovated} />
+                <PillButton label="Not New" count={counts?.propertyCondition?.not_new} />
             </div>
         </FilterCard>
     </>
 );
 
-export const MobileFilterModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
+export const MobileFilterModal: React.FC<{ open: boolean; onClose: () => void; counts?: FilterCounts }> = ({ open, onClose, counts }) => {
     useEffect(() => {
         if (!open) return;
         const handler = (e: KeyboardEvent) => {
@@ -161,7 +166,7 @@ export const MobileFilterModal: React.FC<{ open: boolean; onClose: () => void }>
                     </button>
                 </div>
                 <div className="p-5 space-y-5 overflow-y-auto max-h-[60vh] pb-6">
-                    <FilterBlocks />
+                    <FilterBlocks counts={counts} />
                 </div>
                 <div className="mt-auto px-5 py-4 border-t border-[#E3ECF5] bg-white">
                     <button

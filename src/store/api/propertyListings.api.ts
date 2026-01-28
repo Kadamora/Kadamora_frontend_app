@@ -73,6 +73,20 @@ export interface AgentPropertyMedia {
     deletedAt?: string | null;
 }
 
+export interface PropertyCountry {
+    id: string;
+    name: string;
+    code: string;
+    dialCode: string;
+}
+
+export interface PropertyState {
+    id: string;
+    name: string;
+    code: string;
+    country: string;
+}
+
 export interface AgentPropertyListing {
     id: string;
     createdAt?: string;
@@ -81,8 +95,8 @@ export interface AgentPropertyListing {
     title: string;
     description?: string | null;
     location?: string | null;
-    country?: string | null;
-    state?: string | null;
+    country?: PropertyCountry | null;
+    state?: PropertyState | null;
     propertyType: string;
     propertyCategory?: string | null;
     categoryType?: string | null;
@@ -118,24 +132,59 @@ export interface AgentPropertyListing {
     [key: string]: unknown;
 }
 
-export interface AgentPropertyListingsResponse {
-        data?: AgentPropertyListing[];
-        message?: string;
+export interface BaseResponse<T> {
+    success?: boolean;
+    statusCode?: number;
+    message?: string;
+    data?: T;
 }
+
+export interface FilterCounts {
+    propertyType: Record<string, number>;
+    propertyCategory: Record<string, number>;
+    categoryType: Record<string, number>;
+    propertyCondition: Record<string, number>;
+    totalProperties: number;
+}
+
+export type AgentPropertyListingsResponse = BaseResponse<AgentPropertyListing[]>;
+export type AgentPropertyListingResponse = BaseResponse<AgentPropertyListing>;
+export type PropertyListingsFilterCountResponse = BaseResponse<FilterCounts>;
 
 export const propertyListingApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         getAgentPropertyListings: builder.query<AgentPropertyListingsResponse, void>({
             query: () => ({
-                url: "/api/v1/properties-listing/agent/listings",
+                url: "/api/v1/listings/agent/listings",
                 method: "GET",
             }),
             providesTags: ["Property"],
         }),
-
+        getAllPropertyListings: builder.query<AgentPropertyListingsResponse, string | void>({
+            query: (search) => ({
+                url: "/api/v1/listings/all",
+                method: "GET",
+                params: search ? { search } : undefined,
+            }),
+            providesTags: ["Property"],
+        }),
+        getPropertyListingsFilterCount: builder.query<PropertyListingsFilterCountResponse, void>({
+            query: () => ({
+                url: "/api/v1/listings/filter-counts",
+                method: "GET",
+            }),
+            providesTags: ["Property"],
+        }),
+        getAgentPropertyListingsById: builder.query<any, string>({
+            query: (id) => ({
+                url: `/api/v1/listings/${id}`,
+                method: "GET",
+            }),
+            providesTags: ["Property"],
+        }),
         createPropertyListing: builder.mutation<CreatePropertyListingResponse, CreatePropertyListingPayload>({
             query: (payload) => ({
-                url: "/api/v1/properties-listing/agent",
+                url: "/api/v1/listings/agent",
                 method: "POST",
                 body: payload,
             }),
@@ -146,5 +195,8 @@ export const propertyListingApi = baseApi.injectEndpoints({
 
 export const {
     useGetAgentPropertyListingsQuery,
+    useGetAgentPropertyListingsByIdQuery,
     useCreatePropertyListingMutation,
+    useGetPropertyListingsFilterCountQuery,
+    useGetAllPropertyListingsQuery,
 } = propertyListingApi

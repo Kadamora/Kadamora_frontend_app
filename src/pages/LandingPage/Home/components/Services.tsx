@@ -16,20 +16,19 @@ export default function Services() {
 
     return (
         <section className="pt-16 bg-[#f7f8fa]">
-            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="grid lg:grid-cols-2 gap-12 items-center">
-                    <div className="mb-12">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex gap-12 items-center">
+                    <div className="mb-12 max-w-[400px] w-full">
                            <h2 className="text-3xl md:text-[40px] font-bold text-secondary mb-4">Our Service</h2>
-                        <p className="text-gray-600 max-w-2xl">
-                            Lorem ipsum dolor sit amet consectetur. Rutrum risus consequat interdum tempus sapien sed amet
-                            dignissim aliquam. Consequat adipiscing et venenatis ultricies ut vestibulum.
+                        <p className="text-gray-600">
+                            Discover how Kadamora is transforming real estate management with our integrated suite of services. From property listings to property managements, we've got you covered.
                     </p>
                 </div>
 
                 {/* Services Carousel Container */}
                 <div className="relative">
                     {/* Scrollable Services Container */}
-                    <div ref={scrollerRef} className="overflow-x-auto scrollbar-hide scroll-smooth">
+                    <div ref={scrollerRef} className="w-full scrollbar-hide scroll-smooth">
                         <div className="flex gap-6 pb-4" style={{ width: 'max-content' }}>
                             {fakeDb.services.map((service) => (
                                 <Service key={service.id} service={service} />

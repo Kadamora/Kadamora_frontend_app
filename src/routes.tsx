@@ -33,7 +33,7 @@ const AdminResetPassword = lazy(() => import('@pages/Auth/AdminResetPassword'));
 const AdminForgotPassword = lazy(() => import('@pages/Auth/AdminForgotPassword'))
 
 // dashboard
-const Dashboard = lazy(() => import('@pages/Dashboard/Home/Dashboard'))
+// const Dashboard = lazy(() => import('@pages/Dashboard/Home/Dashboard'))
 const PropertyListing = lazy(() => import('@pages/Dashboard/PropertyListing/Home/PropertyManagementPage'))
 const PropertyManagement = lazy (() => import('@pages/Dashboard/PropertyManagement/PropertyManagementRoot'))
 const PropertyView = lazy (() => import('@pages/Dashboard/PropertyListing/PropertyView/PropertyView'))
@@ -109,8 +109,8 @@ export default function AppRoutes(){
                              </RequireAuth>
                         }
                     >
-                        <Route index element={<Dashboard />} />
-                        <Route path="home" element={<Dashboard />} />
+                        <Route index element={<PropertyListing />} />
+                        <Route path="home" element={<PropertyListing />} />
                         <Route path="property-listing" element={<PropertyListing />} />
                         <Route path="property-management/*" element={<PropertyManagement />} />
                         <Route path="my-listing" element={<MyListing />} />
