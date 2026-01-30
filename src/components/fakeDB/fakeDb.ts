@@ -8,7 +8,7 @@ export const fakeDb = {
     // },
     {
       id: 2,
-      title: "Project Management",
+      title: "Property Management",
       description: "Our platform empowers property managers to efficiently oversee and optimize residential, commercial, and mixed-use properties for maximum returns.",
       image: "/assets/images/service_data_1.png"
     },
