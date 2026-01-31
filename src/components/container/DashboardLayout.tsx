@@ -6,6 +6,11 @@ import { useAppDispatch, useAppSelector } from '@store/hooks';
 import type { NotificationItem } from '../widgets/NotificationPanel';
 import NotificationPanel from '../widgets/NotificationPanel';
 import { logout } from '@store/slices/auth.slice';
+import {
+    useGetNotificationsQuery,
+    useGetUnreadNotificationCountQuery,
+    useMarkAllNotificationsReadMutation,
+} from '@store/api/notification.api';
 
 export interface DashboardLayoutProps {
     children?: React.ReactNode;
@@ -69,29 +74,7 @@ const userMenuItems = [
     },
 ];
 
-const notificationsSample: NotificationItem[] = [
-    {
-        id: 1,
-        title: 'Ayo Ola',
-        body: 'Vorem ipsum dolor sit amet, consectetur adipiscing elit. Vorem ipsum dolor sit amet.',
-        date: 'March 01, 2025 7:55 pm',
-        read: false,
-    },
-    {
-        id: 2,
-        title: 'Dayo David',
-        body: 'A property you follow has new updates. Check the dashboard for details.',
-        date: 'March 01, 2025 7:50 pm',
-        read: true,
-    },
-    {
-        id: 3,
-        title: 'Ope Ade',
-        body: 'You have a new inquiry regarding one of your listings.',
-        date: 'March 01, 2025 7:45 pm',
-        read: false,
-    },
-];
+
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     children,
@@ -131,13 +114,41 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     // Sidebar slides over content (overlay style) on all breakpoints; start closed.
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [notifications, setNotifications] = useState<NotificationItem[]>(notificationsSample);
 
-    const unreadCount = notifications.filter((n) => !n.read).length;
+    // Notification API Integration
+    const { data: notificationsData, refetch: refetchNotifications } = useGetNotificationsQuery(
+      { page: 1, limit: 20 },
+      { pollingInterval: 30000 } // Poll every 30 seconds
+    );
+    const { data: unreadCountData, refetch: refetchUnreadCount } = useGetUnreadNotificationCountQuery(undefined, { pollingInterval: 30000 });
+    const [markAllReadMutation] = useMarkAllNotificationsReadMutation();
+
+    // Map API data to UI model
+    const notifications: NotificationItem[] = useMemo(() => {
+        if (!notificationsData?.data) return [];
+        return notificationsData.data.map((n) => ({
+            id: n.id,
+            title: n.title || 'Notification',
+            body: n.body,
+            date: n.createdAt ? new Date(n.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '',
+            read: n.isRead,
+        }));
+    }, [notificationsData]);
+
+    const unreadCount = unreadCountData?.count ?? 0;
+
     const toggleNotif = () => setNotifOpen((o) => !o);
-    const markAllRead = useCallback(() => {
-        setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    }, []);
+
+    const markAllRead = useCallback(async () => {
+        try {
+            await markAllReadMutation().unwrap();
+            // Optimistically update or refetch
+            refetchNotifications();
+            refetchUnreadCount();
+        } catch (error) {
+            console.error('Failed to mark all as read', error);
+        }
+    }, [markAllReadMutation, refetchNotifications, refetchUnreadCount]);
     const location = useLocation();
 
     // Sidebar animation trigger class for stagger effect each time it opens

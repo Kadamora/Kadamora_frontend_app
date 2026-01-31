@@ -6,7 +6,7 @@ export default function Service({
     return (
         <div
             tabIndex={0}
-            className="group max-w-[370px] w-full relative bg-white rounded-xl border border-gray-200 overflow-hidden w-80 flex-shrink-0 shadow-sm transition-all duration-300 ease-out outline-none hover:-translate-y-1 hover:border-[#43CC88]/40 focus-visible:ring-2 focus-visible:ring-primary/50"
+            className="group lg:max-w-[370px] lg:w-full relative bg-white rounded-xl border border-gray-200 overflow-hidden w-80 flex-shrink-0 shadow-sm transition-all duration-300 ease-out outline-none hover:-translate-y-1 hover:border-[#43CC88]/40 focus-visible:ring-2 focus-visible:ring-primary/50"
         >
             <div className="h-64 relative overflow-hidden">
                 <img
@@ -17,7 +17,7 @@ export default function Service({
                 {/* subtle gradient overlay on hover */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none" />
             </div>
-            <div className="p-6">
+            <div className="lg:p-6 p-4">
                 <h3 className="text-xl font-semibold text-primary mb-3 transition-transform duration-300 group-hover:-translate-y-0.5">
                     {service.title}
                 </h3>
