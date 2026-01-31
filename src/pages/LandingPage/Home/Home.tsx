@@ -8,6 +8,7 @@ import Testimonials from "./components/Testimonials";
 import ContactForm from "@components/landingPage/ContactForm";
 import Hero from "./components/Hero";
 import FAQ from "@components/landingPage/FAQ";
+import Assistance from "./components/Assistance";
 
 export default function Home() {
     return (
@@ -23,6 +24,7 @@ export default function Home() {
                 </div>
                 <Testimonials />
                 <ContactForm />
+                <Assistance/>
             </LandingPageContainer>
         </>
     );
