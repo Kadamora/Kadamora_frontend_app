@@ -60,6 +60,7 @@ export default function MyListing() {
         data,
         isLoading,
         isError,
+        error,
     } = useGetAgentPropertyListingsQuery();
 
     const agentListings: AgentPropertyListing[] = data?.data ?? [];
@@ -162,6 +163,10 @@ export default function MyListing() {
     /* ========================
        UI States
     ======================== */
+    const backendErrorMessage =
+  (error as any)?.data?.message ||
+  (error as any)?.error ||
+  'Something went wrong while loading listings';
 
     if (isLoading) {
         return (
@@ -171,13 +176,45 @@ export default function MyListing() {
         );
     }
 
-    if (isError) {
-        return (
-            <p className="py-20 text-center text-red-600">
-                Failed to load listings
-            </p>
-        );
-    }
+   if (isError) {
+  return (
+    <div className="flex items-center justify-center py-24">
+      <div className="max-w-md rounded-xl border border-red-200 bg-red-50 p-6 text-center">
+        <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
+          <svg
+            className="h-5 w-5 text-red-600"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 9v2m0 4h.01M12 3a9 9 0 100 18 9 9 0 000-18z"
+            />
+          </svg>
+        </div>
+
+        <h3 className="mb-1 text-sm font-semibold text-red-700">
+          Unable to load listings
+        </h3>
+
+        <p className="text-sm text-red-600">
+          {backendErrorMessage}
+        </p>
+
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-4 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+        >
+          Retry
+        </button>
+      </div>
+    </div>
+  );
+}
+
 
     const noResults = hasAgentListings
         ? filteredAgentListings.length === 0
