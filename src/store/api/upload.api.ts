@@ -24,6 +24,13 @@ export const uploadApi = baseApi.injectEndpoints({
                 body: formData,
             }),
         }),
+        uploadVideo: builder.mutation<UploadResponse, FormData>({
+            query: (formData) => ({
+                url: "/api/v1/upload/video",
+                method: "POST",
+                body: formData,
+            }),
+        }),
     }),
 });
 
@@ -31,4 +38,4 @@ export const uploadApi = baseApi.injectEndpoints({
    Hooks
 ======================= */
 
-export const { useUploadFilesMutation } = uploadApi;
+export const { useUploadFilesMutation, useUploadVideoMutation } = uploadApi;

@@ -135,7 +135,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         }));
     }, [notificationsData]);
 
-    const unreadCount = unreadCountData?.count ?? 0;
+    const unreadCount = unreadCountData?.data?.unreadCount ?? 0;
 
     const toggleNotif = () => setNotifOpen((o) => !o);
 

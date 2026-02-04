@@ -20,7 +20,9 @@ export interface NotificationResponse {
 }
 
 export interface UnreadCountResponse {
-    count: number;
+    data: {
+        unreadCount: number;
+    };
 }
 
 /* =======================
@@ -29,31 +31,28 @@ export interface UnreadCountResponse {
 
 export const notificationApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
-        /* =======================
-           Notifications
-        ====================== */
 
         getNotifications: builder.query<NotificationResponse, { page?: number; limit?: number }>({
-            query: ({ page = 1, limit = 20 }) => `/notifications?page=${page}&limit=${limit}`,
+            query: ({ page = 1, limit = 20 }) => `/api/v1/notifications?page=${page}&limit=${limit}`,
             providesTags: ["Notification"],
         }),
 
         markAllNotificationsRead: builder.mutation<{ message: string }, void>({
             query: () => ({
-                url: "/notifications/mark-all-read",
+                url: "/api/v1/notifications/mark-all-read",
                 method: "POST",
             }),
             invalidatesTags: ["Notification"],
         }),
 
         getUnreadNotificationCount: builder.query<UnreadCountResponse, void>({
-            query: () => "/notifications/unread-count",
+            query: () => "/api/v1/notifications/unread-count",
             providesTags: ["Notification"],
         }),
 
         deleteNotification: builder.mutation<{ message: string }, string>({
             query: (id) => ({
-                url: `/notifications/${id}`,
+                url: `/api/v1/notifications/${id}`,
                 method: "DELETE",
             }),
             invalidatesTags: ["Notification"],
@@ -61,7 +60,7 @@ export const notificationApi = baseApi.injectEndpoints({
 
         markNotificationRead: builder.mutation<{ message: string }, string>({
             query: (id) => ({
-                url: `/notifications/${id}/read`,
+                url: `/api/v1/notifications/${id}/read`,
                 method: "POST",
             }),
             invalidatesTags: ["Notification"],

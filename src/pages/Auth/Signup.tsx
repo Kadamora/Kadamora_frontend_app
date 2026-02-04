@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
-
 import { SignupSEO } from '@components/SEO/SEO';
 import { IoEye } from 'react-icons/io5';
 import { IoIosEyeOff } from 'react-icons/io';
 import { useSignupMutation, type SignupPayload } from '@store/api/auth.api';
-
 import PhoneNumberInput from '@components/forms/PhoneNumberInput';
 import Checkbox from '@components/forms/Checkbox';
 import Input from '@components/forms/Input';
