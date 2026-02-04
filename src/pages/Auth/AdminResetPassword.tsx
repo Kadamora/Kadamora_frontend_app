@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { IoEye } from 'react-icons/io5';
 import { IoIosEyeOff } from 'react-icons/io';
-import { isAxiosError } from 'axios';
 import { useResetPasswordMutation } from '@store/api/auth.api';
 import logo from '/assets/images/logo.png';
 
@@ -56,13 +55,13 @@ export default function AdminResetPassword() {
             setSuccessMessage(response.message || 'Password reset successful. You can now sign in.');
             form.reset();
             setTimeout(() => navigate('/admin/auth/login'), 2000);
-        } catch (err) {
-            if (isAxiosError(err)) {
-                const apiMessage = (err.response?.data as { message?: string })?.message;
-                setErrorMessage(apiMessage || 'Unable to reset password. Please try again.');
-            } else {
-                setErrorMessage('Something went wrong. Please try again later.');
-            }
+        } catch (err: any) {
+            const message =
+            err?.data?.message ||
+            err?.error ||
+            'Unable to log you in with those details. Please try again.';
+
+        setErrorMessage(message);
         } finally {
             setIsSubmitting(false);
         }

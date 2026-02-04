@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { isAxiosError } from 'axios';
 import { useVerifyAccountMutation } from '@store/api/auth.api';
 import { saveTokens } from '@utils/authStorage';
 
@@ -91,13 +90,13 @@ export default function SignupVerify() {
                 },
                 replace: true,
             });
-        } catch (err) {
-            if (isAxiosError(err)) {
-                const apiMessage = (err.response?.data as { message?: string })?.message;
-                setErrorMessage(apiMessage || 'We could not verify your account. Please check the code and try again.');
-            } else {
-                setErrorMessage('Something went wrong while verifying. Please try again later.');
-            }
+        } catch (err: any) {
+            const message =
+            err?.data?.message ||
+            err?.error || 
+            'Unable to log you in with those details. Please try again.';
+
+        setErrorMessage(message);
         } finally {
             setIsVerifying(false);
         }

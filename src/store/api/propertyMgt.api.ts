@@ -60,7 +60,7 @@ export const propertyMgtApi = baseApi.injectEndpoints({
             CreatePropertyPayload
         >({
             query: (payload) => ({
-                url: "/management/create-property",
+                url: "/api/v1/management/create-property",
                 method: "POST",
                 body: payload,
             }),
@@ -72,7 +72,7 @@ export const propertyMgtApi = baseApi.injectEndpoints({
             UpdatePropertyPayload
         >({
             query: ({ propertyId, ...payload }) => ({
-                url: `/management/update-property/${propertyId}`,
+                url: `/api/v1/management/update-property/${propertyId}`,
                 method: "PUT",
                 body: payload,
             }),
@@ -84,7 +84,7 @@ export const propertyMgtApi = baseApi.injectEndpoints({
             { propertyId: string }
         >({
             query: ({ propertyId }) => ({
-                url: `/management/delete-property/${propertyId}`,
+                url: `/api/v1/management/delete-property/${propertyId}`,
                 method: "DELETE",
             }),
             invalidatesTags: ["PropertyMgt"],
@@ -95,7 +95,7 @@ export const propertyMgtApi = baseApi.injectEndpoints({
             void
         >({
             query: () => ({
-                url: "/management/dashboard-summary",
+                url: "/api/v1/management/dashboard-summary",
                 method: "GET",
             }),
             providesTags: ["PropertyMgt"],
@@ -106,7 +106,7 @@ export const propertyMgtApi = baseApi.injectEndpoints({
             void
         >({
             query: () => ({
-                url: "/management/properties",
+                url: "/api/v1/management/properties",
                 method: "GET",
             }),
             providesTags: ["PropertyMgt"],
@@ -117,7 +117,7 @@ export const propertyMgtApi = baseApi.injectEndpoints({
             { propertyId: string; tenantId: string }
         >({
             query: ({ propertyId, tenantId }) => ({
-                url: `/management/delete-tenant/${propertyId}/${tenantId}`,
+                url: `/api/v1/management/delete-tenant/${propertyId}/${tenantId}`,
                 method: "DELETE",
             }),
             invalidatesTags: ["PropertyMgt"],

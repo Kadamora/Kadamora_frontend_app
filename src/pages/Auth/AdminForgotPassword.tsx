@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { isAxiosError } from 'axios';
 import { useRequestPasswordResetMutation } from '@store/api/auth.api';
 import Input from '@components/forms/Input';
 import logo from '/assets/images/logo.png';
@@ -51,13 +50,13 @@ export default function AdminForgotPassword() {
             const response = await triggerPasswordReset({ email }).unwrap();
             showToast(response.message || 'Password reset link sent. Please check your email.');
             form.reset();
-        } catch (err) {
-            if (isAxiosError(err)) {
-                const apiMessage = (err.response?.data as { message?: string })?.message;
-                setErrorMessage(apiMessage || 'Unable to send reset code. Please try again.');
-            } else {
-                setErrorMessage('Something went wrong. Please try again later.');
-            }
+        } catch (err: any) {
+            const message =
+            err?.data?.message ||
+            err?.error ||
+            'Unable to log you in with those details. Please try again.';
+
+        setErrorMessage(message);
         } finally {
             setIsSubmitting(false);
         }
