@@ -5,13 +5,12 @@ import { LuShieldCheck } from 'react-icons/lu';
 import Gallery from '../../../../components/cards/gallery/Gallery';
 import { fakeDb } from '../../../../components/fakeDB/fakeDb';
 import ProductCard from '../../../../components/cards/product/ProductCard';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import { useGetAgentPropertyListingsByIdQuery } from '@store/api/propertyListings.api';
 
 export default function PropertyView() {
     const navigate = useNavigate();
-    // const {agentId} = useParams<{agentId: string}>();
-    const agentId = '51bbfacf-78fa-4a87-85a0-cfcf003afa59';
+    const {agentId} = useParams<{agentId: string}>();
     const {data: propertyListings} = useGetAgentPropertyListingsByIdQuery(agentId!, {
         skip: !agentId,
     });

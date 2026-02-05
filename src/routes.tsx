@@ -114,7 +114,7 @@ export default function AppRoutes(){
                         <Route path="property-listing" element={<PropertyListing />} />
                         <Route path="property-management/*" element={<PropertyManagement />} />
                         <Route path="my-listing" element={<MyListing />} />
-                        <Route path="property-view/:id" element={<PropertyView />} />
+                        <Route path="property-view/:agentId" element={<PropertyView />} />
                         <Route path="saved" element={<MySaved />} />
                         <Route path="subscription" element={<Subscription />} />
                     </Route>
