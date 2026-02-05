@@ -1,73 +1,154 @@
 import { useMemo, useState } from 'react';
-import { mockProperties } from '../Home/fakedb';
 import { Link } from 'react-router';
 import Select from '@components/forms/Select';
 import ProductCard from '@components/cards/product/ProductCard';
 import Input from '@components/forms/Input';
+import { useGetFavoritesQuery } from '@store/api/favorites.api';
 
-
-interface ListingItem {
-    id: number;
+// Use strict types for the API response
+interface FavoriteProperty {
+    id: string;
     title: string;
-    price: number;
-    image: string;
+    price: string | number;
+    location: string;
+    propertyCategory: string;
+    propertyType: string;
+    propertySubType: string;
+    amenities: string[];
     description: string;
-    tags: string[];
-    category: string;
-    condition: string;
-    type: string;
-    available: boolean;
+    image?: string; // Adjust based on actual API response structure if needed
+    media?: { url: string }[];
+    [key: string]: any;
 }
 
-const DESCRIPTIONS = [
-    'Felis sed amet eget aliquam cursus placerat. Risus morbi erat sed curabitur euismod a odio magna condimentum.',
-    'Mauris luctus dictum sapien, quis iaculis mauris interdum vitae. Donec efficitur tellus eu odio congue rhoncus.',
-    'Etiam sit amet nunc nec ex sollicitudin viverra. Integer pretium arcu quis lorem congue condimentum.',
-];
-
-const INITIAL_LISTINGS: ListingItem[] = mockProperties.slice(0, 9).map((property, index) => ({
-    id: property.id,
-    title: property.title,
-    price: property.price,
-    image: property.img,
-    description: DESCRIPTIONS[index % DESCRIPTIONS.length],
-    tags: property.tags,
-    category: property.category,
-    condition: property.condition,
-    type: property.type,
-    available: true,
-}));
-
-const normalize = (value: string) => value.trim().toLowerCase();
+const normalize = (value: string) => value?.trim().toLowerCase() ?? '';
 
 export default function MyListing() {
-    const [listings, setListings] = useState<ListingItem[]>(INITIAL_LISTINGS);
     const [categoryFilter, setCategoryFilter] = useState<string>('all');
     const [typeFilter, setTypeFilter] = useState<string>('all');
     const [searchTerm, setSearchTerm] = useState<string>('');
 
-    const categories = useMemo(() => ['all', ...new Set(listings.map((item) => item.category))], [listings]);
-    const types = useMemo(() => ['all', ...new Set(listings.map((item) => item.type))], [listings]);
+    const {
+        data,
+        isLoading,
+        isError,
+        error,
+    } = useGetFavoritesQuery({});
 
-    const filteredListings = useMemo(() => {
+    const favoriteListing: FavoriteProperty[] = data?.data?.userFavorites ?? [];
+    const hasFavorite = favoriteListing.length > 0;
+
+    /* ========================
+       Category & Type Options
+    ======================== */
+
+    const categories = useMemo(() => {
+        if (hasFavorite) {
+            return [
+                'all',
+                ...Array.from(
+                    new Set(favoriteListing.map((l) => l.propertyCategory).filter(Boolean)),
+                ),
+            ];
+        }
+        return ['all'];
+    }, [favoriteListing, hasFavorite]);
+
+    const types = useMemo(() => {
+        if (hasFavorite) {
+            return [
+                'all',
+                ...Array.from(
+                    new Set(favoriteListing.map((l) => l.propertyType).filter(Boolean)),
+                ),
+            ];
+        }
+        return ['all'];
+    }, [favoriteListing, hasFavorite]);
+
+    /* ========================
+       Filtering Logic
+    ======================== */
+
+    const filteredFavoriteListings = useMemo(() => {
+        if (!hasFavorite) return [];
         const search = normalize(searchTerm);
-        return listings.filter((listing) => {
-            const matchesCategory = categoryFilter === 'all' || listing.category === categoryFilter;
-            const matchesType = typeFilter === 'all' || listing.type === typeFilter;
+        return favoriteListing.filter((listing) => {
+            const matchesCategory =
+                categoryFilter === 'all' || listing.propertyCategory === categoryFilter;
+
+            const matchesType =
+                typeFilter === 'all' || listing.propertyType === typeFilter;
+
             const matchesSearch =
                 !search ||
-                normalize(listing.title).includes(search) ||
-                normalize(listing.category).includes(search) ||
-                listing.tags.some((tag) => normalize(tag).includes(search));
+                [
+                    listing.title,
+                    listing.location,
+                    listing.propertyCategory,
+                    listing.propertyType,
+                    listing.propertySubType,
+                ].some((field) => normalize(field || '').includes(search)) ||
+                listing.amenities?.some((tag: any) => normalize(tag).includes(search));
+
             return matchesCategory && matchesType && matchesSearch;
         });
-    }, [listings, categoryFilter, typeFilter, searchTerm]);
+    }, [favoriteListing, categoryFilter, typeFilter, searchTerm, hasFavorite]);
 
-    const toggleAvailability = (id: number) => {
-        setListings((prev) =>
-            prev.map((listing) => (listing.id === id ? { ...listing, available: !listing.available } : listing)),
+
+    const backendErrorMessage =
+        (error as any)?.data?.message ||
+        (error as any)?.error ||
+        'Something went wrong while loading listings';
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center py-20">
+                <div className="h-10 w-10 animate-spin rounded-full border-2 border-gray-300 border-t-[#002E62]" />
+            </div>
         );
-    };
+    }
+
+    if (isError) {
+        return (
+            <div className="flex items-center justify-center py-24">
+                <div className="max-w-md rounded-xl border border-red-200 bg-red-50 p-6 text-center">
+                    <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
+                        <svg
+                            className="h-5 w-5 text-red-600"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M12 9v2m0 4h.01M12 3a9 9 0 100 18 9 9 0 000-18z"
+                            />
+                        </svg>
+                    </div>
+
+                    <h3 className="mb-1 text-sm font-semibold text-red-700">
+                        Unable to load listings
+                    </h3>
+
+                    <p className="text-sm text-red-600">
+                        {backendErrorMessage}
+                    </p>
+
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="mt-4 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    const noResults = filteredFavoriteListings.length === 0;
 
     return (
         <div className="pb-10">
@@ -151,13 +232,28 @@ export default function MyListing() {
             </header>
 
             <section>
-                {filteredListings.length === 0 ? (
-                    <div className="rounded-3xl border border-dashed border-[#C5D4E3] bg-white/70 py-20 text-center text-[#64748B]">
-                        No listings match your filters yet. Try adjusting the filters or create a new listing.
+                {!hasFavorite ? (
+                     <div className="flex flex-col items-center justify-center py-20 text-center">
+                        <div className="mb-4 h-24 w-24 rounded-full bg-gray-50 flex items-center justify-center">
+                           <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                           </svg>
+                        </div>
+                        <h3 className="text-xl font-medium text-gray-900 mb-2">No favorites yet</h3>
+                        <p className="text-gray-500 max-w-sm">
+                            Items you mark as favorite will appear here. Browse properties to find your dream home.
+                        </p>
+                        <Link to="/dashboard/home" className="mt-6 text-[#002E62] font-semibold hover:underline">
+                            Browse Properties
+                        </Link>
+                    </div>
+                ) : noResults ? (
+                    <div className="rounded-xl border border-dashed p-16 text-center text-gray-500">
+                        No listings match your filters.
                     </div>
                 ) : (
                     <div className="grid gap-7 sm:grid-cols-2 xl:grid-cols-4">
-                        {filteredListings.map((listing) => (
+                        {filteredFavoriteListings.map((listing) => (
                             <ProductCard
                                 key={listing.id}
                                 property={{
@@ -165,14 +261,12 @@ export default function MyListing() {
                                     name: listing.title,
                                     price: formatCurrency(listing.price),
                                     description: listing.description,
-                                    category: listing.tags[0] ?? listing.type,
-                                    subCategory: listing.tags[1] ?? listing.category,
-                                    image: listing.image,
+                                    category: listing.propertyCategory,
+                                    subCategory: listing.propertySubType,
+                                    image: listing.image || (listing.media && listing.media[0]?.url) || '', // Fallback for image
                                 }}
-                                showAvailabilityToggle
-                                available={listing.available}
-                                availabilityLabel={listing.available ? 'Visible to clients' : 'Hidden from clients'}
-                                onToggleAvailability={() => toggleAvailability(listing.id)}
+                                // showAvailabilityToggle={true} 
+                                // available={true} 
                             />
                         ))}
                     </div>
@@ -182,6 +276,8 @@ export default function MyListing() {
     );
 }
 
-function formatCurrency(value: number): string {
-    return `₦ ${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+function formatCurrency(value: number | string): string {
+    const numValue = typeof value === 'string' ? parseFloat(value) : value;
+    if (isNaN(numValue)) return '₦ 0.00';
+    return `₦ ${numValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }

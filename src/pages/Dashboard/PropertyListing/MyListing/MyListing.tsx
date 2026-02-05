@@ -251,6 +251,8 @@ export default function MyListing() {
                     />
 
                     <Select
+                        containerClassName="relative"
+                        placeholder="Category (All)"
                         value={typeFilter}
                         onChange={setTypeFilter}
                         options={types.map((t) => ({

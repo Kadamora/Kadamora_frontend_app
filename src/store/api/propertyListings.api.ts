@@ -190,6 +190,28 @@ export const propertyListingApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["Property"],
         }),
+        updatePropertyListing: builder.mutation<CreatePropertyListingResponse, { id: string, payload: CreatePropertyListingPayload }>({
+            query: ({ id, payload }) => ({
+                url: `/api/v1/listings/update/${id}`,
+                method: "PUT",
+                body: payload,
+            }),
+            invalidatesTags: ["Property"],
+        }),
+        deletePropertyListing: builder.mutation<CreatePropertyListingResponse, string>({
+            query: (id) => ({
+                url: `/api/v1/listings/delete/${id}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["Property"],
+        }),
+        disablePropertyListing: builder.mutation<CreatePropertyListingResponse, string>({
+            query: (id) => ({
+                url: `/api/v1/listings/disable/${id}`,
+                method: "PUT",
+            }),
+            invalidatesTags: ["Property"],
+        }),
     }),
 });
 
@@ -199,4 +221,7 @@ export const {
     useCreatePropertyListingMutation,
     useGetPropertyListingsFilterCountQuery,
     useGetAllPropertyListingsQuery,
+    useUpdatePropertyListingMutation,
+    useDeletePropertyListingMutation,
+    useDisablePropertyListingMutation,
 } = propertyListingApi
