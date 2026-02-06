@@ -1,8 +1,9 @@
 import { Link } from 'react-router';
+import { useMarkFavoriteMutation, useGetFavoritesQuery } from '@store/api/favorites.api';
 
 export interface ProductCardProps {
     property: {
-        id: number;
+        id: number | string;
         name: string;
         price: string;
         description: string;
@@ -27,6 +28,25 @@ export default function ProductCard({
 }: any) {
     const availabilityText = availabilityLabel ?? (available ? 'Visible to clients' : 'Hidden');
 
+    const [markFavorite, { isLoading: isToggling }] = useMarkFavoriteMutation();
+    const { data: favoritesData } = useGetFavoritesQuery({});
+    
+    // Check if current property is in favorites
+    // Handle potential ID type mismatch (string vs number)
+    const isFavorite = favoritesData?.data?.userFavorites?.some((fav: any) => String(fav.id) === String(property.id));
+
+    const handleFavorite = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+            await markFavorite(String(property.id)).unwrap();
+            // Optional: Add simple console log or temporary UI feedback if needed
+            // console.log('Favorite updated');
+        } catch (error) {
+            console.error('Failed to update favorite', error);
+        }
+    };
+
     return (
         <Link
             to={landingPage ? `/property-view/${property.id}` : `/dashboard/property-view/${property.id}`}
@@ -34,14 +54,17 @@ export default function ProductCard({
         >
             {/* Heart Icon */}
             <button
-                aria-label="Add to favourites"
-                onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }}
-                className="absolute top-3 right-3 z-10 w-9 h-9 bg-white/70 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm transition-transform duration-150 hover:scale-105 active:scale-95"
+                aria-label={isFavorite ? "Remove from favourites" : "Add to favourites"}
+                onClick={handleFavorite}
+                disabled={isToggling}
+                className="absolute top-3 right-3 z-10 w-9 h-9 bg-white/70 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm transition-transform duration-150 hover:scale-105 active:scale-95 disabled:opacity-50"
             >
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg 
+                    className={`w-5 h-5 transition-colors duration-200 ${isFavorite ? 'text-red-500 fill-current' : 'text-gray-400'}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                >
                     <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
