@@ -6,6 +6,7 @@ interface ModalProps {
     title: string;
     onClose: () => void;
     children: React.ReactNode;
+    footer?: React.ReactNode;
     maxWidth?: string;
     height?: string;
 }
@@ -16,6 +17,7 @@ const Modal: React.FC<ModalProps> = ({
     title,
     onClose,
     children,
+    footer,
     maxWidth = 'max-w-3xl',
     height = 'max-h-[80vh]',
 }) => {
@@ -88,6 +90,9 @@ const Modal: React.FC<ModalProps> = ({
 
                 {/* Modal Body */}
                 <div className="flex-1 overflow-y-auto">{children}</div>
+
+                {/* Modal Footer */}
+                {footer && <div className="border-t border-gray-200 bg-white">{footer}</div>}
             </div>
         </div>
     );

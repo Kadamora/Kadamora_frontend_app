@@ -26,7 +26,7 @@ export interface DashboardLayoutProps {
 
 const navItems = [
     { label: 'Home', to: '/dashboard/property-listing', iconClass: 'icon-home' },
-    // { label: 'Timeline', to: '/dashboard/timeline', iconClass: 'icon-timeline' },
+    { label: 'Timeline', to: '/dashboard/timeline', iconClass: 'icon-timeline' },
     { label: 'Chat', to: '/dashboard/chat', iconClass: 'icon-chat' },
     // { label: 'Marketplace', to: '/dashboard/marketplace', iconClass: 'icon-marketplace' },
     // { label: 'Services', to: '/dashboard/services', iconClass: 'icon-services' },

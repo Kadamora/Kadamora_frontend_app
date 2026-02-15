@@ -1,4 +1,5 @@
 import React from 'react';
+import ImageCollage from './ImageCollage';
 
 interface TimelinePost {
     id: number;
@@ -51,122 +52,24 @@ const PostBody: React.FC<PostBodyProps> = ({
 }) => {
     const px = paddingX ? 'px-6' : '';
 
+    // Normalize images: favor `images` array, fallback to single `image` wrapped in array
+    const postImages = post.images && post.images.length > 0 
+        ? post.images 
+        : post.image 
+            ? [post.image] 
+            : [];
+
     return (
         <>
             {/* Content */}
             <div className={`${px} pt-2 pb-4 text-[#6E6D6D] text-base leading-relaxed font-normal`}>{post.content}</div>
 
-            {/* Image(s) */}
-            {post.images && post.images.length > 0 ? (
-                <div className="w-full mb-4">
-                    {post.images.length === 1 ? (
-                        <img
-                            src={post.images[0]}
-                            alt="Post content"
-                            className={`w-full max-h-[400px] object-cover object-center ${onImageClick ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
-                            onClick={() => onImageClick?.(0)}
-                            onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.style.display = 'none';
-                            }}
-                        />
-                    ) : post.images.length === 2 ? (
-                        <div className="grid grid-cols-2 gap-1">
-                            {post.images.map((img, index) => (
-                                <img
-                                    key={index}
-                                    src={img}
-                                    alt={`Post content ${index + 1}`}
-                                    className={`w-full h-[300px] object-cover object-center ${onImageClick ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
-                                    onClick={() => onImageClick?.(index)}
-                                    onError={(e) => {
-                                        const target = e.target as HTMLImageElement;
-                                        target.style.display = 'none';
-                                    }}
-                                />
-                            ))}
-                        </div>
-                    ) : post.images.length === 3 ? (
-                        <div className="grid grid-cols-2 gap-1 h-[500px]">
-                            <img
-                                src={post.images[0]}
-                                alt="Post content 1"
-                                className={`w-full h-full object-cover object-center ${onImageClick ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
-                                onClick={() => onImageClick?.(0)}
-                                onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.style.display = 'none';
-                                }}
-                            />
-                            <div className="grid grid-rows-2 gap-1">
-                                {post.images.slice(1, 3).map((img, index) => (
-                                    <img
-                                        key={index + 1}
-                                        src={img}
-                                        alt={`Post content ${index + 2}`}
-                                        className={`w-full h-[250px] object-cover object-center ${onImageClick ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
-                                        onClick={() => onImageClick?.(index + 1)}
-                                        onError={(e) => {
-                                            const target = e.target as HTMLImageElement;
-                                            target.style.display = 'none';
-                                        }}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-2 gap-1 h-[400px]">
-                            {post.images.slice(0, 3).map((img, index) => (
-                                <img
-                                    key={index}
-                                    src={img}
-                                    alt={`Post content ${index + 1}`}
-                                    className={`w-full h-full object-cover object-center ${index === 0 ? 'row-span-2' : ''} ${onImageClick ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
-                                    onClick={() => onImageClick?.(index)}
-                                    onError={(e) => {
-                                        const target = e.target as HTMLImageElement;
-                                        target.style.display = 'none';
-                                    }}
-                                />
-                            ))}
-                            {post.images.length > 4 && (
-                                <div
-                                    className={`relative ${onImageClick ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
-                                    onClick={() => onImageClick?.(3)}
-                                >
-                                    <img
-                                        src={post.images[3]}
-                                        alt="Post content 4"
-                                        className="w-full h-full object-cover object-center"
-                                        onError={(e) => {
-                                            const target = e.target as HTMLImageElement;
-                                            target.style.display = 'none';
-                                        }}
-                                    />
-                                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                                        <span className="text-white text-xl font-semibold">
-                                            +{post.images.length - 4}
-                                        </span>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    )}
+            {/* Image Collage */}
+            {postImages.length > 0 && (
+                <div className={paddingX ? '' : ''}>
+                    <ImageCollage images={postImages} onImageClick={onImageClick} />
                 </div>
-            ) : post.image ? (
-                <div className="w-full mb-4">
-                    <img
-                        src={post.image}
-                        alt="Post content"
-                        className={`w-full max-h-[300px] object-cover object-center ${onImageClick ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
-                        onClick={() => onImageClick?.(0)}
-                        onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                        }}
-                    />
-                </div>
-            ) : null}
+            )}
 
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                 {/* Engagement Stats */}
@@ -223,7 +126,10 @@ const PostBody: React.FC<PostBodyProps> = ({
                             Like
                         </button>
 
-                        <button className="flex items-center justify-center flex-1 py-2 px-4 rounded-full text-sm bg-[#e6f1fe]  transition-all duration-200">
+                        <button 
+                            className="flex items-center justify-center flex-1 py-2 px-4 rounded-full text-sm bg-[#e6f1fe]  transition-all duration-200"
+                            onClick={onOpenModal}
+                        >
                             <svg
                                 className="w-5 h-5 mr-2"
                                 fill="none"

@@ -36,9 +36,10 @@ interface TimelinePost {
 interface TimelineCardProps {
     post: TimelinePost;
     onClose?: () => void;
+    onLike?: (id: number) => void;
 }
 
-const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose }) => {
+const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose, onLike }) => {
     const [liked, setLiked] = useState(false);
     const [likeCount, setLikeCount] = useState(post.likes);
     const [showMenu, setShowMenu] = useState(false);
@@ -49,6 +50,9 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose }) => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const menuRef = React.useRef<HTMLDivElement>(null);
 
+    const [comments, setComments] = useState(post.comments || []);
+
+    console.log(onLike)
     const handleLike = () => {
         setLiked(!liked);
         setLikeCount(liked ? likeCount - 1 : likeCount + 1);
@@ -140,17 +144,25 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose }) => {
     };
 
     const handleCommentLike = (commentId: number) => {
-        console.log(`Liked comment ${commentId}`);
-        // Handle comment like here
+        setComments((prevComments) =>
+            prevComments.map((comment) => {
+                if (comment.id === commentId) {
+                    const isLiked = !comment.showLike; // Toggle logic
+                    return {
+                        ...comment,
+                        showLike: isLiked,
+                        likes: isLiked ? comment.likes + 1 : Math.max(0, comment.likes - 1),
+                    };
+                }
+                return comment;
+            })
+        );
     };
 
     const handleCommentReply = (commentId: number) => {
         console.log(`Reply to comment ${commentId}`);
         // Handle comment reply here
     };
-
-    // Sample comments to display in the modal as per design
-    const comments = post.comments || [];
 
     return (
         <div
@@ -248,7 +260,114 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose }) => {
             />
 
             {/* Modal for post details and comments */}
-            <Modal isOpen={showModal} isClosing={isModalClosing} title={post.user.name} onClose={handleCloseModal}>
+            <Modal
+                isOpen={showModal}
+                isClosing={isModalClosing}
+                title={post.user.name}
+                onClose={handleCloseModal}
+                footer={
+                    <div className="p-4">
+                        <div className="flex gap-3">
+                            <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center flex-shrink-0">
+                                <img
+                                    src={post.user.avatar}
+                                    alt={post.user.name}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        target.src =
+                                            'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNGM0Y0RjYiLz4KPHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1zbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiBzdHlsZT0icG9zaXRpb246IGFic29sdXRlOyB0b3A6IDUwJTsgbGVmdDogNTAlOyB0cmFuc2Zvcm06IHRyYW5zbGF0ZSgtNTAlLCAtNTAlKSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNDEyIDNTMTQuMjEgNiAxNiA4VDEyIDEyWk0xMiAxNEMxNi40MiAxNCAyMCAxNi41OCAyMCAyMVYyMkg0VjIxQzQgMTYuNTggNy41OCAxNCAxMiAxNFoiIGZpbGw9IiM5Q0E0QUYiLz4KPC9zdmc+Cjwvc3ZnPgo=';
+                                    }}
+                                />
+                            </div>
+                            <div className="flex-1 bg-gray-50 rounded-2xl p-4 border border-[#E4E4E7]">
+                                <textarea
+                                    placeholder="Comment here ..."
+                                    rows={2}
+                                    className="w-full bg-transparent placeholder:text-gray-400 outline-none resize-none text-base"
+                                    onInput={(e) => {
+                                        const target = e.target as HTMLTextAreaElement;
+                                        target.style.height = 'auto';
+                                        target.style.height = `${target.scrollHeight}px`;
+                                    }}
+                                />
+
+                                <div className="flex items-center justify-between mt-3">
+                                    <div className="flex items-center gap-4">
+                                        <button
+                                            title="Add"
+                                            aria-label="Add attachment"
+                                            className="p-2 hover:text-gray-600 transition-colors bg-[#F4F4F4] "
+                                        >
+                                            <img src="/assets/icons/plus.svg" alt="Add" width="20" height="20" className="" />
+                                        </button>
+                                        <button
+                                            title="Emoji"
+                                            aria-label="Insert emoji"
+                                            className="p-1 hover:text-gray-600 transition-colors"
+                                        >
+                                            <img src="/assets/icons/emoji.png" alt="Emoji" width="20" height="20" className="" />
+                                        </button>
+                                        <button
+                                            title="Mention"
+                                            aria-label="Mention someone"
+                                            className="p-1 hover:text-gray-600 transition-colors"
+                                        >
+                                            <img
+                                                src="/assets/icons/mention.png"
+                                                alt="Mention"
+                                                width="20"
+                                                height="20"
+                                                className=""
+                                            />
+                                        </button>
+                                        <button
+                                            title="Video"
+                                            aria-label="Add video"
+                                            className="p-1 hover:text-gray-600 transition-colors"
+                                        >
+                                            <img src="/assets/icons/video.png" alt="Video" width="20" height="20" className="" />
+                                        </button>
+                                        <button
+                                            title="Voice"
+                                            aria-label="Add voice message"
+                                            className="p-1 hover:text-gray-600 transition-colors"
+                                        >
+                                            <img
+                                                src="/assets/icons/microphone.png"
+                                                alt="Microphone"
+                                                width="20"
+                                                height="20"
+                                                className=""
+                                            />
+                                        </button>
+                                        <button
+                                            title="Document"
+                                            aria-label="Add document"
+                                            className="p-1 hover:text-gray-600 transition-colors"
+                                        >
+                                            <img
+                                                src="/assets/icons/document.png"
+                                                alt="Document"
+                                                width="20"
+                                                height="20"
+                                                className=""
+                                            />
+                                        </button>
+                                    </div>
+                                    <button
+                                        className="h-10 px-6 bg-[#43CC88] rounded-full flex items-center gap-2 text-white hover:bg-green-600 transition-colors font-medium"
+                                        title="Send comment"
+                                        aria-label="Send comment"
+                                    >
+                                        <span>Send</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            >
                 <div className="p-8">
                     {/* Post Header (avatar, name, date) */}
                     <div className="flex items-center mb-2">
@@ -294,108 +413,6 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose }) => {
                                     formatDate={formatDate}
                                 />
                             ))}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Comment composer */}
-                <div className="mt-4 sticky bottom-0 bg-white p-4 border-t border-gray-200">
-                    <div className="flex gap-3">
-                        <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center flex-shrink-0">
-                            <img
-                                src={post.user.avatar}
-                                alt={post.user.name}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.src =
-                                        'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNGM0Y0RjYiLz4KPHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1zbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiBzdHlsZT0icG9zaXRpb246IGFic29sdXRlOyB0b3A6IDUwJTsgbGVmdDogNTAlOyB0cmFuc2Zvcm06IHRyYW5zbGF0ZSgtNTAlLCAtNTAlKSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNDEyIDNTMTQuMjEgNiAxNiA4VDEyIDEyWk0xMiAxNEMxNi40MiAxNCAyMCAxNi41OCAyMCAyMVYyMkg0VjIxQzQgMTYuNTggNy41OCAxNCAxMiAxNFoiIGZpbGw9IiM5Q0E0QUYiLz4KPC9zdmc+Cjwvc3ZnPgo=';
-                                }}
-                            />
-                        </div>
-                        <div className="flex-1 bg-gray-50 rounded-2xl p-4 border border-[#E4E4E7]">
-                            <textarea
-                                placeholder="Comment here ..."
-                                rows={2}
-                                className="w-full bg-transparent placeholder:text-gray-400 outline-none resize-none text-base"
-                                onInput={(e) => {
-                                    const target = e.target as HTMLTextAreaElement;
-                                    target.style.height = 'auto';
-                                    target.style.height = `${target.scrollHeight}px`;
-                                }}
-                            />
-
-                            <div className="flex items-center justify-between mt-3">
-                                <div className="flex items-center gap-4">
-                                    <button
-                                        title="Add"
-                                        aria-label="Add attachment"
-                                        className="p-2 hover:text-gray-600 transition-colors bg-[#F4F4F4] "
-                                    >
-                                        <img src="assets/icons/plus.png" alt="Add" width="20" height="20" className="" />
-                                    </button>
-                                    <button
-                                        title="Emoji"
-                                        aria-label="Insert emoji"
-                                        className="p-1 hover:text-gray-600 transition-colors"
-                                    >
-                                        <img src="assets/icons/emoji.png" alt="Emoji" width="20" height="20" className="" />
-                                    </button>
-                                    <button
-                                        title="Mention"
-                                        aria-label="Mention someone"
-                                        className="p-1 hover:text-gray-600 transition-colors"
-                                    >
-                                        <img
-                                            src="assets/icons/mention.png"
-                                            alt="Mention"
-                                            width="20"
-                                            height="20"
-                                            className=""
-                                        />
-                                    </button>
-                                    <button
-                                        title="Video"
-                                        aria-label="Add video"
-                                        className="p-1 hover:text-gray-600 transition-colors"
-                                    >
-                                        <img src="assets/icons/video.png" alt="Video" width="20" height="20" className="" />
-                                    </button>
-                                    <button
-                                        title="Voice"
-                                        aria-label="Add voice message"
-                                        className="p-1 hover:text-gray-600 transition-colors"
-                                    >
-                                        <img
-                                            src="assets/icons/microphone.png"
-                                            alt="Microphone"
-                                            width="20"
-                                            height="20"
-                                            className=""
-                                        />
-                                    </button>
-                                    <button
-                                        title="Document"
-                                        aria-label="Add document"
-                                        className="p-1 hover:text-gray-600 transition-colors"
-                                    >
-                                        <img
-                                            src="assets/icons/document.png"
-                                            alt="Document"
-                                            width="20"
-                                            height="20"
-                                            className=""
-                                        />
-                                    </button>
-                                </div>
-                                <button
-                                    className="h-10 px-6 bg-[#43CC88] rounded-full flex items-center gap-2 text-white hover:bg-green-600 transition-colors font-medium"
-                                    title="Send comment"
-                                    aria-label="Send comment"
-                                >
-                                    <span>Send</span>
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>
