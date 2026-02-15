@@ -96,7 +96,10 @@ const CommentCard: React.FC<CommentCardProps> = ({ comment, onMenuClick, onLike,
                     </div>
 
                     <div className="flex items-center text-gray-600">
-                        <button className="hover:text-gray-800" onClick={() => onLike?.(comment.id)}>
+                        <button 
+                            className={`hover:text-gray-800 ${comment.showLike ? 'text-blue-600 font-medium' : ''}`} 
+                            onClick={() => onLike?.(comment.id)}
+                        >
                             Like
                         </button>
                         <span className="mx-3 inline-block h-4 w-px bg-gray-300" />

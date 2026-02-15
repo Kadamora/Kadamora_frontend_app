@@ -307,197 +307,19 @@ export const fakeDb = {
     {
       id: 1,
       user: {
-        name: "John Smith",
-        avatar: "/assets/avatars/john.jpg",
+        name: "Charles Bankole",
+        avatar: "/assets/images/samuel.png", // Using existing placeholder for now or consistent ones
         role: "Property Manager"
       },
-      content: "Just completed another successful property inspection at Bentley Estate. The facility management system has made our workflow incredibly efficient! 🏠✨",
-      timestamp: "2024-01-15T10:30:00Z",
-      likes: 24,
+      content: "Felis sed amet eget aliquam cursus placerat. Risus morbi erat sed curabitur euismod a odio magna condimentum. erat sed curabitur euismod a odio magna condimentum.amet eget aliquam cursus placerat. Risus morbi erat sed curabitur euismod a odio magna condimentum.",
+      timestamp: "2025-05-20T10:30:00Z",
+      likes: 1200,
       comments: [
         {
           id: 1,
           user: { 
-            name: 'Charles Bankole', 
-            avatar: '/fakeDB/images/charles.png' 
-          },
-          date: '2024-01-15T11:00:00Z',
-          content: 'Great work on the property inspection! The attention to detail really shows.',
-          likes: 12,
-          replies: 2,
-          showLike: true,
-          showHeart: true,
-        },
-        {
-          id: 2,
-          user: { 
-            name: 'Janeth Felix', 
-            avatar: '/fakeDB/images/samuel.png' 
-          },
-          date: '2024-01-15T12:30:00Z',
-          content: 'This facility management system has revolutionized how we handle property maintenance.',
-          likes: 8,
-          replies: 0,
-          showLike: false,
-          showHeart: true,
-        }
-      ],
-      shares: 3,
-      image: "/fakeDB/images/listing_data_1.png",
-      type: "property_update"
-    },
-    {
-      id: 2,
-      user: {
-        name: "Sarah Johnson",
-        avatar: "/assets/avatars/sarah.jpg",
-        role: "Real Estate Agent"
-      },
-      content: "Exciting news! 🎉 We just listed a beautiful 4-bedroom villa in Kigali. The property features modern amenities and stunning views. Contact me for more details!",
-      timestamp: "2024-01-14T15:45:00Z",
-      likes: 18,
-      comments: [
-        {
-          id: 3,
-          user: { 
-            name: 'Michael Chen', 
+            name: 'Benita Hellen', 
             avatar: '/assets/images/charles.png' 
-          },
-          date: '2024-01-14T16:00:00Z',
-          content: 'Beautiful property! Is it still available for viewing?',
-          likes: 5,
-          replies: 1,
-          showLike: true,
-          showHeart: false,
-        },
-        {
-          id: 4,
-          user: { 
-            name: 'Aisha Okafor', 
-            avatar: '/assets/images/samuel.png' 
-          },
-          date: '2024-01-14T17:15:00Z',
-          content: 'The location in Kigali is perfect for families. Great listing!',
-          likes: 15,
-          replies: 3,
-          showLike: true,
-          showHeart: true,
-        }
-      ],
-      shares: 12,
-      image: "/fakeDB/listing_data_2.png",
-      type: "new_listing"
-    },
-    {
-      id: 3,
-      user: {
-        name: "David Wilson",
-        avatar: "/assets/avatars/david.jpg",
-        role: "Construction Manager"
-      },
-      content: "Project milestone achieved! Our team has successfully completed phase 1 of the Ambassador development. The project management tools on this platform have been game-changing for coordination.",
-      timestamp: "2024-01-13T09:15:00Z",
-      likes: 31,
-      comments: [],
-      shares: 7,
-      images: [
-        "/fakeDB/listing_data_1.png",
-        "/fakeDB/listing_data_2.png", 
-        "/fakeDB/listing_data_3.png"
-      ],
-      type: "project_update"
-    },
-    {
-      id: 4,
-      user: {
-        name: "Fatima Hassan",
-        avatar: "/assets/avatars/fatima.jpg",
-        role: "Logistics Manager"
-      },
-      content: "Successfully delivered building materials to 3 construction sites today. The integrated logistics and insurance features give me complete peace of mind. Great platform! 🚛📦",
-      timestamp: "2024-01-12T16:20:00Z",
-      likes: 15,
-      comments: [],
-      shares: 2,
-      type: "logistics_update"
-    },
-    {
-      id: 5,
-      user: {
-        name: "Michael Chen",
-        avatar: "/assets/avatars/michael.jpg",
-        role: "Facility Manager"
-      },
-      content: "Maintenance team responded within 30 minutes to a service request today. Our facility management system keeps everything running smoothly. Residents are happy! 👷‍♂️",
-      timestamp: "2024-01-11T11:00:00Z",
-      likes: 22,
-      comments: [],
-      shares: 1,
-      type: "maintenance_update"
-    },
-    {
-      id: 6,
-      user: {
-        name: "Aisha Okafor",
-        avatar: "/assets/avatars/aisha.jpg",
-        role: "Event Organizer"
-      },
-      content: "Planning an amazing community event at the Ambassador complex next month! The event management features make organizing so much easier. Stay tuned for details! 🎪🎊",
-      timestamp: "2024-01-10T14:30:00Z",
-      likes: 28,
-      comments: [],
-      shares: 9,
-      image: "/fakeDB/listing_data_3.png",
-      type: "event_announcement"
-    },
-    {
-      id: 7,
-      user: {
-        name: "Robert Anderson",
-        avatar: "/assets/avatars/robert.jpg",
-        role: "Property Developer"
-      },
-      content: "Breaking ground on our newest luxury development project! This will feature 50 premium units with state-of-the-art facilities. Exciting times ahead! 🏗️",
-      timestamp: "2024-01-09T08:45:00Z",
-      likes: 45,
-      comments: [],
-      shares: 15,
-      images: [
-        "/fakeDB/listing_data_4.png",
-        "/fakeDB/listing_data_5.png"
-      ],
-      type: "development_news"
-    },
-    {
-      id: 8,
-      user: {
-        name: "Emma Thompson",
-        avatar: "/assets/avatars/emma.jpg",
-        role: "Property Owner"
-      },
-      content: "Thank you to the amazing maintenance team for the quick response to our heating issue. The facility management service is top-notch! ⭐⭐⭐⭐⭐",
-      timestamp: "2024-01-08T13:15:00Z",
-      likes: 19,
-      comments: [],
-      shares: 2,
-      type: "testimonial"
-    },
-    {
-      id: 9,
-      user: {
-        name: "Benita Hellen",
-        avatar: "/assets/avatars/benita.jpg",
-        role: "Site Engineer"
-      },
-      content: "Felis sed amet eget aliquam cursus placerat. Risus morbi erat sed curabitur euismod a odio magna condimentum.amet eget aliquam cursus placerat.",
-      timestamp: "2025-06-16T10:30:00Z",
-      likes: 240,
-      comments: [
-        {
-          id: 5,
-          user: { 
-            name: 'Charles Bankole', 
-            avatar: '/fakeDB/charles.png' 
           },
           date: '2025-06-16T11:00:00Z',
           content: 'Felis sed amet eget aliquam cursus placerat. Risus morbi erat sed curabitur euismod a odio magna condimentum.amet eget aliquam cursus placerat.',
@@ -507,138 +329,180 @@ export const fakeDb = {
           showHeart: true,
         },
         {
-          id: 6,
+          id: 2,
           user: { 
             name: 'Janeth Felix', 
-            avatar: '/fakeDB/samuel.png' 
+            avatar: '/assets/images/charles.png' 
           },
           date: '2025-06-16T12:30:00Z',
-          content: 'Felis sed amet eget aliquam cursus placerat. Risus morbi erat sed curabitur euismod a odio magna condimentum.',
-          likes: 20,
+          content: 'Risus morbi erat sed curabitur euismod a odio magna condimentum.',
+          likes: 8,
           replies: 0,
           showLike: false,
           showHeart: true,
-        },
+        }
+      ],
+      shares: 240,
+      image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=1471&auto=format&fit=crop",
+      type: "property_update"
+    },
+    {
+      id: 2,
+      user: {
+        name: "Bonita Hellen",
+        avatar: "/assets/images/charles.png",
+        role: "Real Estate Agent"
+      },
+      content: "Felis sed amet eget aliquam cursus placerat. Risus morbi erat sed curabitur euismod a odio magna condimentum.amet eget aliquam cursus placerat.",
+      timestamp: "2025-06-16T15:45:00Z",
+      likes: 15000,
+      comments: [
         {
-          id: 7,
+          id: 3,
           user: { 
-            name: 'Kabiru John', 
-            avatar: '/fakeDB/charles.png' 
+            name: 'Charles Bankole', 
+            avatar: '/assets/images/samuel.png' 
           },
-          date: '2025-06-17T09:00:00Z',
-          content: 'Risus morbi erat sed curabitur euismod a odio magna condimentum.',
-          likes: 20,
-          replies: 0,
+          date: '2025-06-16T16:00:00Z',
+          content: 'Wow, this is stunning!',
+          likes: 55,
+          replies: 1,
           showLike: true,
           showHeart: false,
         }
       ],
-      shares: 15,
+      shares: 240,
+      image: "https://images.unsplash.com/photo-1613977257363-707ba9348227?q=80&w=1470&auto=format&fit=crop",
+      type: "new_listing"
+    },
+    {
+      id: 3,
+      user: {
+        name: "Bonita Hellen",
+        avatar: "/assets/images/charles.png",
+        role: "Construction Manager"
+      },
+      content: "Felis sed amet eget aliquam cursus placerat. Risus morbi erat sed curabitur euismod a odio magna condimentum.amet eget aliquam cursus placerat.",
+      timestamp: "2025-06-16T09:15:00Z",
+      likes: 1200,
+      comments: [],
+      shares: 240,
       images: [
-        "/fakeDB/listing_data_6.png",
-        "/fakeDB/listing_data_7.png",
-        "/fakeDB/listing_data_8.png"
+        "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=1470&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=1470&auto=format&fit=crop", 
+        "https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=1470&auto=format&fit=crop", 
       ],
-      type: "construction_update"
+      type: "project_update"
+    },
+    {
+      id: 4,
+      user: {
+        name: "Bonita Hellen",
+        avatar: "/assets/avatars/benita.jpg",
+        role: "Logistics Manager"
+      },
+      content: "Felis sed amet eget aliquam cursus placerat. Risus morbi erat sed curabitur euismod a odio magna condimentum.amet eget aliquam cursus placerat.",
+      timestamp: "2025-06-16T16:20:00Z",
+      likes: 1400,
+      comments: [],
+      shares: 240,
+      type: "logistics_update"
+      // No images, text only
+    },
+    {
+      id: 5,
+      user: {
+        name: "Michael Chen",
+        avatar: "/assets/avatars/michael.jpg",
+        role: "Facility Manager"
+      },
+      content: "Felis sed amet eget aliquam cursus placerat. Risus morbi erat sed curabitur euismod a odio magna condimentum.amet eget aliquam cursus placerat.",
+      timestamp: "2025-06-15T11:00:00Z",
+      likes: 3100,
+      comments: [],
+      shares: 50,
+      images: [
+          "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1470&auto=format&fit=crop",
+          "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=1453&auto=format&fit=crop",
+          "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?q=80&w=1470&auto=format&fit=crop",
+          "https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=1470&auto=format&fit=crop",
+           "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?q=80&w=1470&auto=format&fit=crop"
+      ],
+      type: "maintenance_update"
+    },
+    {
+        id: 6,
+        user: {
+            name: "Charles Bankole",
+            avatar: "/assets/images/samuel.png",
+            role: "User"
+        },
+        content: "Felis sed amet eget aliquam cursus placerat. Risus morbi erat sed curabitur euismod a odio magna condimentum.",
+        timestamp: "2025-05-20T12:00:00Z",
+        likes: 85,
+        comments: [],
+        shares: 10,
+        images: [
+            "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1470&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1470&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1470&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1470&auto=format&fit=crop",
+        ],
+        type: "general"
     }
   ],
-  postComments: {
-    1: [
-      {
-        id: 1,
-        user: { 
-          name: 'Charles Bankole', 
-          avatar: '/assets/images/charles.png' 
-        },
-        date: '2024-01-15T11:00:00Z',
-        content: 'Great work on the property inspection! The attention to detail really shows.',
-        likes: 12,
-        replies: 2,
-        showLike: true,
-        showHeart: true,
-      },
-      {
-        id: 2,
-        user: { 
-          name: 'Janeth Felix', 
-          avatar: '/assets/images/samuel.png' 
-        },
-        date: '2024-01-15T12:30:00Z',
-        content: 'This facility management system has revolutionized how we handle property maintenance.',
-        likes: 8,
-        replies: 0,
-        showLike: false,
-        showHeart: true,
-      }
-    ],
-    2: [
-      {
-        id: 3,
-        user: { 
-          name: 'Michael Chen', 
-          avatar: '/assets/images/charles.png' 
-        },
-        date: '2024-01-14T16:00:00Z',
-        content: 'Beautiful property! Is it still available for viewing?',
-        likes: 5,
-        replies: 1,
-        showLike: true,
-        showHeart: false,
-      },
-      {
-        id: 4,
-        user: { 
-          name: 'Aisha Okafor', 
-          avatar: '/fakeDB/images/samuel.png' 
-        },
-        date: '2024-01-14T17:15:00Z',
-        content: 'The location in Kigali is perfect for families. Great listing!',
-        likes: 15,
-        replies: 3,
-        showLike: true,
-        showHeart: true,
-      }
-    ],
-    9: [
-      {
-        id: 5,
-        user: { 
-          name: 'Charles Bankole', 
-          avatar: '/fakeDB/images/charles.png' 
-        },
-        date: '2025-06-16T11:00:00Z',
-        content: 'Felis sed amet eget aliquam cursus placerat. Risus morbi erat sed curabitur euismod a odio magna condimentum.amet eget aliquam cursus placerat.',
-        likes: 20,
-        replies: 2,
-        showLike: true,
-        showHeart: true,
-      },
-      {
-        id: 6,
-        user: { 
-          name: 'Janeth Felix', 
-          avatar: '/fakeDB/images/samuel.png' 
-        },
-        date: '2025-06-16T12:30:00Z',
-        content: 'Felis sed amet eget aliquam cursus placerat. Risus morbi erat sed curabitur euismod a odio magna condimentum.',
-        likes: 20,
-        replies: 0,
-        showLike: false,
-        showHeart: true,
-      },
-      {
-        id: 7,
-        user: { 
-          name: 'Kabiru John', 
-          avatar: '/fakeDB/images/charles.png' 
-        },
-        date: '2025-06-17T09:00:00Z',
-        content: 'Risus morbi erat sed curabitur euismod a odio magna condimentum.',
-        likes: 20,
-        replies: 0,
-        showLike: true,
-        showHeart: false,
-      }
-    ]
-  }
+  postComments: {}, // Removed usage of this separate object in favor of nested comments in timelinePosts for simplicity as per new structure
+  ads: [
+    {
+      id: 1,
+      title: "Sunflower Oil",
+      price: "₦5,732.00",
+      description: "Felis sed amet eget aliquam cursus placerat. Risus morbi erat sed curabitur euismod a odio magna condimentum.",
+      image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1470&auto=format&fit=crop",
+      badge: "Ads"
+    },
+    {
+      id: 2,
+      title: "5 Bedroom Terrace",
+      price: "₦90,000,000.00",
+      description: "Felis sed amet eget aliquam cursus placerat. Risus morbi erat sed curabitur euismod a odio magna condimentum.",
+      image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1470&auto=format&fit=crop",
+      tag: "Sell",
+      badge: "Ads"
+    },
+    {
+      id: 3,
+      title: "Luxury Sofa Set",
+      price: "₦450,000.00",
+      description: "Experience comfort and style with our premium velvet sofa set. Perfect for your modern living room.",
+      image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1470&auto=format&fit=crop",
+      badge: "Ads"
+    },
+    {
+      id: 4,
+      title: "Duplex in Lekki",
+      price: "₦120,000,000.00",
+      description: "A stunning 4-bedroom duplex with swimming pool and gym. Secure environment.",
+      image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=1453&auto=format&fit=crop",
+      tag: "Rent",
+      badge: "Ads"
+    },
+    {
+      id: 5,
+      title: "Smart 4k TV",
+      price: "₦285,000.00",
+      description: "Watch your favorite movies in crystal clear resolution. Smart features included.",
+      image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?q=80&w=1470&auto=format&fit=crop",
+      badge: "Ads"
+    },
+    {
+      id: 6,
+      title: "Office Complex",
+      price: "₦850,000,000.00",
+      description: "Prime office space in the heart of the business district. Ample parking.",
+      image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1470&auto=format&fit=crop",
+      tag: "Lease",
+      badge: "Ads"
+    }
+  ]
 };

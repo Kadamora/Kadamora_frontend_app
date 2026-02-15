@@ -1,4 +1,5 @@
 import TimelineCard from '@components/cards/timeline/TimelineCard';
+import AdsWidget from '@components/cards/timeline/AdsWidget';
 import LandingPageContainer from '@components/container/LandingPage/LandingPageContainer';
 import { fakeDb } from '@components/fakeDB/fakeDb';
 import { TimelineSEO } from '@components/SEO/SEO';
@@ -31,9 +32,9 @@ const Timeline: React.FC = () => {
                 <div className="min-h-screen bg-gray-50">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         {/* Timeline 2-column Layout */}
-                        <div className="flex flex-col md:flex-row gap-6 py-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-8">
                             {/* Left: Posts */}
-                            <div className="w-full md:max-w-2xl">
+                            <div className="w-full lg:col-span-2">
                                 {/* Posts */}
                                 {filteredPosts.length > 0 ? (
                                     filteredPosts.map((post:any) => (
@@ -70,9 +71,9 @@ const Timeline: React.FC = () => {
                                     </div>
                                 )}
                             </div>
-                            {/* Right: Empty Card/Box */}
-                            <div className="hidden md:block w-full max-w-xs">
-                                {/* <div className="bg-white rounded-2xl border border-gray-200 shadow-sm min-h-[250px] h-full"></div> */}
+                            {/* Right: Ads Column */}
+                            <div className="hidden md:block lg:col-span-1">
+                                <AdsWidget ads={fakeDb.ads} />
                             </div>
                         </div>
                     </div>
