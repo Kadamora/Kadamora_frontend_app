@@ -42,34 +42,30 @@ export const subscriptionApi = baseApi.injectEndpoints({
             providesTags: ["Timeline"],
         }),
         createPost: builder.mutation({
-            query: (data) => ({
+            query: () => ({
                 url: `/api/v1/timeline/create-post`,
                 method: "POST",
-                body: data,
             }),
             invalidatesTags: ["Timeline"],
         }),
         createAnnouncement: builder.mutation({
-            query: (data) => ({
+            query: () => ({
                 url: `/api/v1/timeline/create-announcement`,
                 method: "POST",
-                body: data,
             }),
             invalidatesTags: ["Timeline"],
         }),
         createEvent: builder.mutation({
-            query: (data) => ({
+            query: () => ({
                 url: `/api/v1/timeline/create-event`,
                 method: "POST",
-                body: data,
             }),
             invalidatesTags: ["Timeline"],
         }),
         createComment: builder.mutation({
-            query: (data) => ({
+            query: () => ({
                 url: `/api/v1/timeline/create-comment`,
                 method: "POST",
-                body: data,
             }),
             invalidatesTags: ["Timeline"],
         }),
