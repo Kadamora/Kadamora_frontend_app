@@ -163,12 +163,7 @@ export default function MyListing() {
                 <p className="text-gray-500 max-w-md mb-8">
                     Your property portfolio is currently empty. Start managing your real estate listings by adding your first property.
                 </p>
-                <Link 
-                    to="/dashboard/property-listing/create" 
-                    className="bg-[#002E62] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#003da1] transition-colors"
-                >
-                    Add New Property
-                </Link>
+               
             </div>
         );
     }
