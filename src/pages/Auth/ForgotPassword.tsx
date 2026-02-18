@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { useRequestPasswordResetMutation } from '@store/api/auth.api';
 import Input from '@components/forms/Input';
 
 
 
 export default function ForgotPassword() {
+    const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -50,6 +52,9 @@ export default function ForgotPassword() {
             const response = await triggerPasswordReset({ email }).unwrap();
             showToast(response.message || 'Password reset link sent. Please check your email.');
             form.reset();
+            // Store email in sessionStorage or route state if needed for next step
+            sessionStorage.setItem('resetEmail', email);
+            setTimeout(() => navigate('/auth/forgot-password/verify'), 2000);
         } catch (err: any) {
            const message =
             err?.data?.message ||

@@ -17,6 +17,7 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
     const [description, setDescription] = useState('');
     const [images, setImages] = useState<File[]>([]);
     const [previews, setPreviews] = useState<string[]>([]);
+    const [error, setError] = useState('');
     
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [isClosing, setIsClosing] = useState(false);
@@ -50,6 +51,13 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
     const handleSubmit = async () => {
         if (!title || !location || !maxAttendees || !eventDate || !eventTime || !description) return;
 
+        if (title.length < 3 || location.length < 3 || description.length < 3) {
+            setError('Title, location, and description must be at least 3 characters long.');
+            return;
+        }
+
+        setError('');
+
         try {
             const formData = new FormData();
             formData.append('title', title);
@@ -76,9 +84,12 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
             setDescription('');
             setImages([]);
             setPreviews([]);
+            setError('');
             
             handleClose();
-        } catch (error) {
+        } catch (error: any) {
+             const message = error?.data?.message || 'Failed to create event';
+            setError(message);
             console.error('Failed to create event:', error);
         }
     };
@@ -213,6 +224,12 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
                 </div>
 
                 <div className="pt-4">
+                    {error && (
+                        <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            {error}
+                        </div>
+                    )}
                     <button 
                          onClick={handleSubmit}
                          disabled={isLoading || !title || !location || !maxAttendees || !eventDate || !eventTime || !description}
