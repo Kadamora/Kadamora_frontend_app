@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router'; 
+// No API import needed if we just navigate.
 
 export default function ForgotPasswordVerify() {
     const navigate = useNavigate();
-    const [code, setCode] = useState<string[]>(['', '', '', '']);
-    const [seconds, setSeconds] = useState(60);
+    const [code, setCode] = useState<string[]>(['', '', '', '', '', '']);
+    const [seconds, setSeconds] = useState(900); // 15 minutes
     const inputs = useRef<Array<HTMLInputElement | null>>([]);
 
     useEffect(() => {
@@ -14,7 +15,7 @@ export default function ForgotPasswordVerify() {
     }, [seconds]);
 
     const onChange = (idx: number, value: string) => {
-        const digit = value.replace(/\D/g, '').slice(0, 1);
+        const digit = value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 1).toUpperCase();
         const next = [...code];
         next[idx] = digit;
         setCode(next);
@@ -32,15 +33,17 @@ export default function ForgotPasswordVerify() {
     const canContinue = code.every((c) => c.length === 1);
 
     const handleResend = () => {
-        setCode(['', '', '', '']);
-        setSeconds(60);
+        setCode(['', '', '', '', '', '']);
+        setSeconds(900);
         inputs.current[0]?.focus();
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // TODO: verify and navigate to reset page
-        navigate('/admin/auth/forgot-password/reset');
+        const verificationCode = code.join('');
+        const email = sessionStorage.getItem('resetEmail');
+        // Navigate to reset password page with email and code
+        navigate('/auth/reset-password', { state: { email, code: verificationCode } });
     };
 
     const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
@@ -50,7 +53,7 @@ export default function ForgotPasswordVerify() {
         <div className="w-full max-w-md">
             <h1 className="text-[30px] sm:text-3xl lg:text-[50px] font-semibold text-secondary">Forget Password</h1>
             <p className="text-gray-600 mt-2">
-                Enter the four digit pin we sent to your email to proceed with setting a new password.
+                Enter the six digit pin we sent to your email to proceed with setting a new password.
             </p>
 
             <form onSubmit={handleSubmit} className="mt-8 space-y-5">
@@ -64,8 +67,7 @@ export default function ForgotPasswordVerify() {
                             value={c}
                             onChange={(e) => onChange(idx, e.target.value)}
                             onKeyDown={(e) => onKeyDown(idx, e)}
-                            inputMode="numeric"
-                            pattern="[0-9]*"
+                            inputMode="text"
                             maxLength={1}
                             aria-label={`OTP digit ${idx + 1}`}
                             className="w-12 h-12 text-center rounded-lg bg-[#F5F7FB] border border-[#E6EAF2] focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-base"
