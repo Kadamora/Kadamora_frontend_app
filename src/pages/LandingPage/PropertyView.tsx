@@ -2,25 +2,58 @@ import Gallery from "@components/cards/gallery/Gallery";
 import ProductCard from "@components/cards/product/ProductCard";
 import LandingPageContainer from "@components/container/LandingPage/LandingPageContainer";
 import { fakeDb } from "@components/fakeDB/fakeDb";
+import { useParams } from 'react-router';
+import { useGetAgentPropertyListingsByIdQuery } from '@store/api/propertyListings.api';
+import { MdOutlineLocationOn } from "react-icons/md";
+import CategoryCard from "@pages/Dashboard/PropertyListing/PropertyView/components/CategoryCard";
 
 
-export default function PropertyView() {
-    const amenities = [
-        { name: 'Swimming Pool', icon: '/assets/icons/check2.png' },
-        { name: 'Gym', icon: '/assets/icons/check2.png' },
-        { name: 'Garden', icon: '/assets/icons/check2.png' },
-        { name: 'Wi-Fi', icon: '/assets/icons/check2.png' },
-        { name: 'Parking', icon: '/assets/icons/check2.png' },
-    ];
+export default function PropertyView() {    
+        const {agentId} = useParams<{agentId: string}>();
+        console.log("one", agentId)
+        const {data: propertyListings} = useGetAgentPropertyListingsByIdQuery(agentId!, {
+            skip: !agentId,
+        });
+        const property = propertyListings?.data;
+        console.log(propertyListings)
+        const formatCurrency = (amount: string | number | null | undefined) => {
+            if (!amount) return 'N/A';
+            return `₦ ${Number(amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        };
+    
+        const humanize = (str: string | null | undefined) => {
+            if (!str) return '';
+            return str
+                .replace(/_/g, ' ')
+                .toLowerCase()
+                .replace(/\b\w/g, (c) => c.toUpperCase());
+        };
+        
+    const amenities =
+        property?.amenities?.map((amenity: string) => ({
+            name: humanize(amenity),
+            icon: '/assets/icons/check2.png',
+        })) || [];
+   
 
-    const facilities = [
-        { count: 6, label: 'Bedroom' },
-        { count: 2, label: 'Kitchen' },
-        { count: 3, label: 'Toilet/Bathroom' },
-        { count: 1, label: 'Store' },
-        { count: 2, label: 'Living Room' },
-        { count: 1, label: 'Dinning Room' },
-    ];
+       const facilities = [
+        { count: property?.bedrooms, label: 'Bedroom' },
+        { count: property?.kitchens, label: 'Kitchen' },
+        { count: property?.bathrooms, label: 'Toilet/Bathroom' },
+        { count: property?.stores, label: 'Store' },
+        { count: property?.livingRooms, label: 'Living Room' },
+    ].filter((f) => f.count !== undefined && f.count !== null && f.count > 0);
+
+    const categoryData = [
+        { label: 'Property Category', value: humanize(property?.propertyCategory) },
+        { label: 'Property Type', value: humanize(property?.propertySubType || property?.propertyType) },
+        { label: 'Payment Type', value: humanize(property?.paymentTerm) },
+        { label: 'Service Charge', value: property?.serviceCharge ? formatCurrency(property?.serviceCharge) : 'None' },
+        { label: 'Category Type', value: humanize(property?.categoryType) },
+        { label: 'Furnish Status', value: humanize(property?.furnishingStatus) },
+        { label: 'Other Charges', value: property?.otherCharges ? formatCurrency(property?.otherCharges) : 'None' },
+    ].filter((item) => item.value && item.value !== 'None' && item.value !== 'N/A');
+
 
     return (
         <LandingPageContainer>
@@ -30,7 +63,7 @@ export default function PropertyView() {
                     <nav className="flex">
                         <span>Listings</span>
                         <span className="mx-2">›</span>
-                        <span className="text-primary">Hillary Court Lagos</span>
+                        <span className="text-primary">{property?.title}</span>
                     </nav>
                 </div>
             </div>
@@ -44,8 +77,8 @@ export default function PropertyView() {
                         {/* Right Column - Property Details */}
                         <div className="bg-white p-6 rounded-lg shadow-border">
                             <div className="flex items-center justify-between">
-                                <div className="text-2xl font-bold text-secondary">Hillary Court Lagos</div>
-                                <button
+                                <div className="text-2xl font-bold text-secondary">{property?.title}</div>
+                                {/* <button
                                     className="p-2 rounded-full border border-gray-300 hover:bg-gray-50"
                                     aria-label="Add to favorites"
                                 >
@@ -62,22 +95,39 @@ export default function PropertyView() {
                                             d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                                         />
                                     </svg>
-                                </button>
+                                </button> */}
                             </div>
 
-                            <p className="text-sm mb-4">6-bedroom Apartment in Lagos</p>
-
-                            <p className="mb-6 leading-7.5 text-[#6E6D6D]">
-                                Felis sed amet eget aliquam cursus placerat. Risus morbi arut sed cursibhur auismod a
-                                odio magna condimentum. amet eget aliquam cursus placerat. Felis morbi arut sed
-                                cursibhur auismod a odio magna condimentum.
+                            <p className="text-[18px] mb-4">
+                                {formatCurrency(property.price)} {property.paymentTerm ? `/ ${property.paymentTerm}` : ''}
                             </p>
 
+                            <p className="mb-6 leading-7.5 text-[#6E6D6D]">
+                                {property?.description || 'No description available'}
+                            </p>
+                            {/* Location */}
+                            <div className="flex items-center gap-2 text-sm text-[#0A2D50] mb-3.75">
+                                <MdOutlineLocationOn className="w-5 h-5 text-[#6E6D6D]" />
+                                <p className="text-[#002E62] ">
+                                    {property.location}
+                                    {property.state?.name ? `, ${property.state.name}` : ''}
+                                    {property.country?.name ? `, ${property.country.name}` : ''}
+                                </p>
+                            </div>
+
+                            <div className="h-px w-full bg-[#E4E4E7] mb-6" />
+
+                            {/* Category */}
+                            <div className="w-full mt-5 mb-5">
+                                <CategoryCard data={categoryData} />
+                            </div>
+
+                            <div className="h-px w-full bg-[#E4E4E7] mb-6" />
                             {/* Amenities */}
                             <div className="mb-6">
                                 <h3 className="font-semibold mb-3 text-secondary">Amenities</h3>
                                 <div className="space-y-2">
-                                    {amenities.map((amenity, index) => (
+                                    {amenities.map((amenity: any, index: any) => (
                                         <div key={index} className="flex items-center space-x-2">
                                             <img src={amenity.icon} alt={amenity.name} className="w-4 h-4" />
                                             <span className="text-[#6E6D6D]">{amenity.name}</span>

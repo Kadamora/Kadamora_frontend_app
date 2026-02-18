@@ -71,7 +71,7 @@ export default function AppRoutes(){
                     <Route path="timeline" element={<Timeline />} />
                     <Route path="contact" element={<ContactUs />} />
                     <Route path="property-listing" element={<UnAuthPropertyListing />} />
-                    <Route path="property-view/:id" element={<UnAuthPropertyView />} />
+                    <Route path="property-view/:agentId" element={<UnAuthPropertyView />} />
 
                     <Route
                         path="auth"

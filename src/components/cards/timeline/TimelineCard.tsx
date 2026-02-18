@@ -3,22 +3,37 @@ import CommentCard from './CommentCard';
 import ImageViewer from './ImageViewer';
 import PostBody from './PostBody';
 import Modal from './Modal';
+import { useCreateLikeUnlikePostMutation, useGetCommentsByPostIdQuery } from '../../../store/api/timeline.api';
 
 interface TimelinePost {
-    id: number;
-    user: {
+    id: string;
+    title?: string;
+    content: string;
+    images?: string[];
+    createdBy: {
+        id: string;
+        firstName: string;
+        lastName: string;
+        imgUrl: string | null;
+    };
+    likesCount: number;
+    commentsCount: number;
+    createdAt: string;
+    updatedAt: string;
+    type: string;
+    // Legacy fields for backward compatibility
+    user?: {
         name: string;
         avatar: string;
         role: string;
     };
-    content: string;
-    timestamp: string;
-    likes: number;
-    comments: {
-        id: number;
+    timestamp?: string;
+    likes?: number;
+    comments?: {
+        id: string | number;
         user: {
             name: string;
-            avatar: string;
+            avatar: string | null;
         };
         date: string;
         content: string;
@@ -27,10 +42,8 @@ interface TimelinePost {
         showLike: boolean;
         showHeart: boolean;
     }[];
-    shares: number;
+    shares?: number;
     image?: string;
-    images?: string[];
-    type: string;
 }
 
 interface TimelineCardProps {
@@ -39,9 +52,10 @@ interface TimelineCardProps {
     onLike?: (id: number) => void;
 }
 
-const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose, onLike }) => {
+const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose }) => {
+    
     const [liked, setLiked] = useState(false);
-    const [likeCount, setLikeCount] = useState(post.likes);
+    const [likeCount, setLikeCount] = useState(post.likesCount ?? post.likes ?? 0);
     const [showMenu, setShowMenu] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [isModalClosing, setIsModalClosing] = useState(false);
@@ -49,13 +63,44 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose, onLike }) =>
     const [isImageViewerClosing, setIsImageViewerClosing] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const menuRef = React.useRef<HTMLDivElement>(null);
+    const [createLikeUnlikePost] = useCreateLikeUnlikePostMutation();
+    const { data: commentsData} = useGetCommentsByPostIdQuery(
+        post.id,
+        { skip: !showModal }
+    );
 
-    const [comments, setComments] = useState(post.comments || []);
+    // Map API comments to UI format
+    const comments = React.useMemo(() => {
+        if (!commentsData?.data) return [];
+        return commentsData.data.map((c: any) => ({
+            id: c.id,
+            user: {
+                name: `${c.user.firstName} ${c.user.lastName}`,
+                avatar: c.user.imgUrl,
+            },
+            date: c.createdAt,
+            content: c.content,
+            likes: 0, // content doesn't have likes count yet
+            replies: c.replies?.length || 0,
+            showLike: false,
+            showHeart: false,
+        }));
+    }, [commentsData]);
 
-    console.log(onLike)
-    const handleLike = () => {
-        setLiked(!liked);
-        setLikeCount(liked ? likeCount - 1 : likeCount + 1);
+    // Computed values with fallbacks
+    const user = post.createdBy ?? post.user;
+    const userName = user ? `${(user as any).firstName || ''} ${(user as any).lastName || ''}`.trim() || (user as any).name || 'Unknown User' : 'Unknown User';
+    const userAvatar = (user as any)?.imgUrl ?? (user as any)?.avatar ?? null;
+    const postTimestamp = post.createdAt ?? post.timestamp ?? new Date().toISOString();
+
+    const handleLike = async () => {
+        try {
+            await createLikeUnlikePost(post.id).unwrap();
+            setLiked(!liked);
+            setLikeCount(liked ? likeCount - 1 : likeCount + 1);
+        } catch (error) {
+            console.error("Failed to like post:", error);
+        }
     };
 
     const handleCloseModal = () => {
@@ -109,6 +154,7 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose, onLike }) =>
 
     // Format date as '16 June, 2025'
     const formatDate = (timestamp: string) => {
+        if (!timestamp) return '';
         const date = new Date(timestamp);
         return date.toLocaleDateString('en-GB', {
             day: '2-digit',
@@ -138,58 +184,64 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose, onLike }) =>
     };
 
     // Comment interaction handlers
-    const handleCommentMenuClick = (commentId: number, action: string) => {
+    const handleCommentMenuClick = (commentId: string | number, action: string) => {
         console.log(`Comment ${commentId} action: ${action}`);
         // Handle comment menu actions here
     };
 
-    const handleCommentLike = (commentId: number) => {
-        setComments((prevComments) =>
-            prevComments.map((comment) => {
-                if (comment.id === commentId) {
-                    const isLiked = !comment.showLike; // Toggle logic
-                    return {
-                        ...comment,
-                        showLike: isLiked,
-                        likes: isLiked ? comment.likes + 1 : Math.max(0, comment.likes - 1),
-                    };
-                }
-                return comment;
-            })
-        );
+    const handleCommentLike = (commentId: string | number) => {
+        // Optimistic update for comment likes if we interpret "Like" button as local state until API supports it
+        console.log('Like comment', commentId);
     };
 
-    const handleCommentReply = (commentId: number) => {
+    const handleCommentReply = (commentId: string | number) => {
         console.log(`Reply to comment ${commentId}`);
         // Handle comment reply here
     };
 
     return (
         <div
-            className={`bg-white rounded-2xl mb-8 overflow-hidden shadow-border cursor-pointer ${
-                !showModal ? 'hover:shadow-lg hover:bg-gray-50' : ''
-            }`}
+            className={`bg-white rounded-2xl mb-8 overflow-hidden shadow-border cursor-pointer 
+                ${!showModal ? 'hover:shadow-lg hover:bg-gray-50' : ''}`}
             onClick={handleTimelineClick}
         >
             {/* Header */}
             <div className="flex items-center px-6 pt-6 pb-2">
-                <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center mr-3">
-                    <img
-                        src={post.user.avatar}
-                        alt={post.user.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src =
-                                'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNGM0Y0RjYiLz4KPHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1zbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiBzdHlsZT0icG9zaXRpb246IGFic29sdXRlOyB0b3A6IDUwJTsgbGVmdDogNTAlOyB0cmFuc2Zvcm06IHRyYW5zbGF0ZSgtNTAlLCAtNTAlKSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNDEyIDNTMTQuMjEgNiAxNiA4VDEyIDEyWk0xMiAxNEMxNi40MiAxNCAyMCAxNi41OCAyMCAyMVYyMkg0VjIxQzQgMTYuNTggNy41OCAxNCAxMiAxNFoiIGZpbGw9IiM5Q0E0QUYiLz4KPC9zdmc+Cjwvc3ZnPgo=';
-                        }}
-                    />
+                <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center mr-3 shrink-0">
+                    {userAvatar ? (
+                        <img
+                            src={userAvatar}
+                            alt={userName}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                            }}
+                        />
+                    ) : (
+                        <span className="text-base font-semibold text-gray-600">
+                             {userName
+                                .split(' ')
+                                .map((n: string) => n[0])
+                                .join('')
+                                .toUpperCase()
+                                .slice(0, 2)}
+                        </span>
+                    )}
+                     <span className="hidden text-base font-semibold text-gray-600">
+                             {userName
+                                .split(' ')
+                                .map((n: string) => n[0])
+                                .join('')
+                                .toUpperCase()
+                                .slice(0, 2)}
+                    </span>
                 </div>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2">
-                        <span className="font-semibold text-base text-gray-800 truncate">{post.user.name}</span>
+                        <span className="font-semibold text-base text-gray-800 truncate">{userName}</span>
                     </div>
-                    <div className="text-xs text-gray-500 mt-0.5">{formatDate(post.timestamp)}</div>
+                    <div className="text-xs text-gray-500 mt-0.5">{formatDate(postTimestamp)}</div>
                 </div>
                 <div className="flex items-center space-x-2" ref={menuRef}>
                     <div className="relative">
@@ -263,22 +315,40 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose, onLike }) =>
             <Modal
                 isOpen={showModal}
                 isClosing={isModalClosing}
-                title={post.user.name}
+                title={post?.title || userName}
                 onClose={handleCloseModal}
                 footer={
                     <div className="p-4">
                         <div className="flex gap-3">
                             <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center flex-shrink-0">
-                                <img
-                                    src={post.user.avatar}
-                                    alt={post.user.name}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                        const target = e.target as HTMLImageElement;
-                                        target.src =
-                                            'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNGM0Y0RjYiLz4KPHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1zbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiBzdHlsZT0icG9zaXRpb246IGFic29sdXRlOyB0b3A6IDUwJTsgbGVmdDogNTAlOyB0cmFuc2Zvcm06IHRyYW5zbGF0ZSgtNTAlLCAtNTAlKSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNDEyIDNTMTQuMjEgNiAxNiA4VDEyIDEyWk0xMiAxNEMxNi40MiAxNCAyMCAxNi41OCAyMCAyMVYyMkg0VjIxQzQgMTYuNTggNy41OCAxNCAxMiAxNFoiIGZpbGw9IiM5Q0E0QUYiLz4KPC9zdmc+Cjwvc3ZnPgo=';
-                                    }}
-                                />
+                                {userAvatar ? (
+                                    <img
+                                        src={userAvatar}
+                                        alt={userName}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            e.currentTarget.style.display = 'none';
+                                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                        }}
+                                    />
+                                ) : (
+                                    <span className="text-base font-semibold text-gray-600">
+                                         {userName
+                                            .split(' ')
+                                            .map((n: string) => n[0])
+                                            .join('')
+                                            .toUpperCase()
+                                            .slice(0, 2)}
+                                    </span>
+                                )}
+                                <span className="hidden text-base font-semibold text-gray-600">
+                                         {userName
+                                            .split(' ')
+                                            .map((n: string) => n[0])
+                                            .join('')
+                                            .toUpperCase()
+                                            .slice(0, 2)}
+                                </span>
                             </div>
                             <div className="flex-1 bg-gray-50 rounded-2xl p-4 border border-[#E4E4E7]">
                                 <textarea
@@ -371,21 +441,39 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose, onLike }) =>
                 <div className="p-8">
                     {/* Post Header (avatar, name, date) */}
                     <div className="flex items-center mb-2">
-                        <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center mr-3">
-                            <img
-                                src={post.user.avatar}
-                                alt={post.user.name}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.src =
-                                        'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNGM0Y0RjYiLz4KPHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1zbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiBzdHlsZT0icG9zaXRpb246IGFic29sdXRlOyB0b3A6IDUwJTsgbGVmdDogNTAlOyB0cmFuc2Zvcm06IHRyYW5zbGF0ZSgtNTAlLCAtNTAlKSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNDEyIDNTMTQuMjEgNiAxNiA4VDEyIDEyWk0xMiAxNEMxNi40MiAxNCAyMCAxNi41OCAyMCAyMVYyMkg0VjIxQzQgMTYuNTggNy41OCAxNCAxMiAxNFoiIGZpbGw9IiM5Q0E0QUYiLz4KPC9zdmc+Cjwvc3ZnPgo=';
-                                }}
-                            />
+                        <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center mr-3 shrink-0">
+                            {userAvatar ? (
+                                <img
+                                    src={userAvatar}
+                                    alt={userName}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        e.currentTarget.style.display = 'none';
+                                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                    }}
+                                />
+                            ) : (
+                                <span className="text-sm font-semibold text-gray-600">
+                                     {userName
+                                        .split(' ')
+                                        .map((n: string) => n[0])
+                                        .join('')
+                                        .toUpperCase()
+                                        .slice(0, 2)}
+                                </span>
+                            )}
+                             <span className="hidden text-sm font-semibold text-gray-600">
+                                     {userName
+                                        .split(' ')
+                                        .map((n: string) => n[0])
+                                        .join('')
+                                        .toUpperCase()
+                                        .slice(0, 2)}
+                            </span>
                         </div>
                         <div>
-                            <div className="font-semibold text-base text-gray-800">{post.user.name}</div>
-                            <div className="text-xs text-gray-500">{formatDate(post.timestamp)}</div>
+                            <div className="font-semibold text-base text-gray-800">{userName}</div>
+                            <div className="text-xs text-gray-500">{formatDate(postTimestamp)}</div>
                         </div>
                     </div>
 
@@ -403,7 +491,7 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose, onLike }) =>
                     <div className="mt-6">
                         <h3 className="text-sm font-semibold text-gray-800 mb-3">Recent Comment</h3>
                         <div className="space-y-6">
-                            {comments.map((comment) => (
+                            {comments.map((comment: any) => (
                                 <CommentCard
                                     key={comment.id}
                                     comment={comment}

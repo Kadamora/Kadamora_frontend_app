@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
+import axios from 'axios';
+import { useSelector } from 'react-redux';
 
 import StepsSidebar from './components/StepsSidebar';
 import { type StepDef } from './components/types';
@@ -142,6 +144,8 @@ const ListPropertyFlowModal: React.FC<Props> = ({ open, onClose }) => {
     const [showSuccessPrompt, setShowSuccessPrompt] = useState(false);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const navigate = useNavigate();
+    const token = useSelector((state: any) => state.auth.token);
+    const [videoUploadProgress, setVideoUploadProgress] = useState(0);
 
     const handleClose = useCallback(() => {
         onClose();
@@ -210,6 +214,9 @@ const ListPropertyFlowModal: React.FC<Props> = ({ open, onClose }) => {
                         setCurrentIdx={setCurrentIdx}
                         onClose={handleClose}
                         onSuccess={handleListingCreated}
+                        token={token}
+                        videoUploadProgress={videoUploadProgress}
+                        setVideoUploadProgress={setVideoUploadProgress}
                     />
                 </PropertyListingFormProvider>
             )}
@@ -228,6 +235,9 @@ interface ListingFormContentProps {
     setCurrentIdx: React.Dispatch<React.SetStateAction<number>>;
     onClose: () => void;
     onSuccess: (message?: string) => void;
+    token: string | null;
+    videoUploadProgress: number;
+    setVideoUploadProgress: (progress: number) => void;
 }
 
 const ListingFormContent: React.FC<ListingFormContentProps> = ({
@@ -237,6 +247,9 @@ const ListingFormContent: React.FC<ListingFormContentProps> = ({
     setCurrentIdx,
     onClose,
     onSuccess,
+    token,
+    videoUploadProgress,
+    setVideoUploadProgress,
 }) => {
     const { state, resetForm } = usePropertyListingForm();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -248,7 +261,7 @@ const ListingFormContent: React.FC<ListingFormContentProps> = ({
     const isLast = currentIdx === steps.length - 1;
 
     const goPrev = () => {
-        if (currentIdx === 0 || isSubmitting) return;
+        if (isSubmitting) return;
         setSubmitError(null);
         setCurrentIdx((index) => Math.max(index - 1, 0));
     };
@@ -269,15 +282,36 @@ const ListingFormContent: React.FC<ListingFormContentProps> = ({
 
         setIsSubmitting(true);
         setSubmitError(null);
+        setVideoUploadProgress(0); // Reset progress
+
         try {
-            const uploadFile = async (file: File) => {
+             const uploadFile = async (file: File) => {
                 const formData = new FormData();
                 formData.append('files', file);
                 const res = await uploadFiles(formData).unwrap();
                 return res.data.urls[0];
             };
 
-            const payload = await buildCreatePropertyPayload(listingType, state, uploadFile);
+            const uploadVideoWithProgress = async (file: File) => {
+                const formData = new FormData();
+                formData.append('video', file);
+
+                const response = await axios.post('https://kadamora-test-app-38pdp.ondigitalocean.app/api/v1/upload/video', formData, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'multipart/form-data',
+                    },
+                    onUploadProgress: (progressEvent) => {
+                        const total = progressEvent.total || file.size;
+                        const percent = Math.round((progressEvent.loaded * 100) / total);
+                        setVideoUploadProgress(percent);
+                    },
+                });
+                return response.data.data.urls[0];
+            };
+
+
+            const payload = await buildCreatePropertyPayload(listingType, state, uploadFile, uploadVideoWithProgress);
             // console.log('payload', payload);
             const response = await createPropertyListing(payload).unwrap();
             resetForm();
@@ -288,16 +322,19 @@ const ListingFormContent: React.FC<ListingFormContentProps> = ({
             setSubmitError(resolveCreateError(error));
         } finally {
             setIsSubmitting(false);
+            setVideoUploadProgress(0);
         }
     };
 
     return (
         <div className="w-full md:w-295 lg:w-310 max-w-[96vw] rounded-xl overflow-hidden flex bg-white shadow-[0_4px_32px_-4px_rgba(15,23,42,0.12)] md:flex-row flex-col md:h-175">
+            {/* ... sidebar ... */}
             <div className="hidden md:block w-[35%]">
                 <StepsSidebar steps={steps} currentIdx={currentIdx} listingType={listingType} />
             </div>
 
-            <div className="md:hidden w-full px-6 pt-6 pb-2 flex items-center justify-between">
+            {/* ... mobile header ... */}
+             <div className="md:hidden w-full px-6 pt-6 pb-2 flex items-center justify-between">
                 <h2 className="text-[22px] font-bold leading-tight text-[#0F172A]">
                     <span className="text-[#16A34A]">{activeStep?.title}</span>
                 </h2>
@@ -305,12 +342,14 @@ const ListingFormContent: React.FC<ListingFormContentProps> = ({
             </div>
 
             <div className="flex-1 flex flex-col md:max-h-none max-h-[80vh]">
-                <div className="h-17.5 md:flex hidden items-center justify-between pl-10 pr-6 border-b border-[#EDF1F5] bg-white/70 backdrop-blur-sm">
+                 {/* ... desktop header ... */}
+                 <div className="h-17.5 md:flex hidden items-center justify-between pl-10 pr-6 border-b border-[#EDF1F5] bg-white/70 backdrop-blur-sm">
                     <h3 className="text-[20px] font-semibold text-[#001731]">{activeStep?.title}</h3>
                     <CloseButton onClick={() => (!isSubmitting ? onClose() : undefined)} />
                 </div>
 
-                <div className="flex-1 overflow-y-auto md:px-10 px-6 md:pt-10 pt-2 md:pb-8 pb-2">
+                {/* ... steps content ... */}
+                 <div className="flex-1 overflow-y-auto md:px-10 px-6 md:pt-10 pt-2 md:pb-8 pb-2">
                     {activeStep?.id === 'details' && <DetailsStep />}
                     {activeStep?.id === 'rent_payment' && <RentPaymentStep />}
                     {activeStep?.id === 'lease_pricing' && <LeasePricingStep />}
@@ -323,6 +362,22 @@ const ListingFormContent: React.FC<ListingFormContentProps> = ({
                 </div>
 
                 <div className="border-t border-[#E2E8F0] bg-white px-6 py-4">
+                    {/* Progress Bar */}
+                    {isSubmitting && videoUploadProgress > 0 && videoUploadProgress < 100 && (
+                        <div className="mb-4">
+                            <div className="flex justify-between text-xs mb-1 text-gray-600">
+                                <span>Uploading Video...</span>
+                                <span>{videoUploadProgress}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div 
+                                    className="bg-[#002E62] h-2 rounded-full transition-all duration-300" 
+                                    style={{ width: `${videoUploadProgress}%` }}
+                                ></div>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                         {submitError && <p className="text-sm text-red-500 font-medium md:mr-auto">{submitError}</p>}
                         <div className="flex items-center justify-between md:justify-end gap-3">
@@ -366,14 +421,19 @@ function validateListingForm(listingType: ListingType, state: PropertyListingFor
     return null;
 }
 
+// ... types ...
+type Uploader = (file: File) => Promise<string>;
+
 async function buildCreatePropertyPayload(
     listingType: ListingType,
     state: PropertyListingFormState,
-    uploadFile: (file: File) => Promise<string>,
+    uploadFile: Uploader,
+    uploadVideo: Uploader,
 ): Promise<CreatePropertyListingPayload> {
     const facilities = mapFacilities(state.facilities);
-    const media = await prepareMediaPayload(listingType, state, uploadFile);
-    const payload: CreatePropertyListingPayload = {
+    const media = await prepareMediaPayload(listingType, state, uploadFile, uploadVideo);
+    // ... payload construction
+     const payload: CreatePropertyListingPayload = {
         title: state.title.trim(),
         description: state.description.trim(),
         location: state.location.trim(),
@@ -391,9 +451,8 @@ async function buildCreatePropertyPayload(
         amenities: state.amenities,
         media,
     };
-    console.log(payload)
-
-    if (state.paymentTerm) payload.paymentTerm = state.paymentTerm;
+    
+     if (state.paymentTerm) payload.paymentTerm = state.paymentTerm;
     if (state.serviceCharge) payload.serviceCharge = toNumber(state.serviceCharge);
     if (state.additionalCharges.trim()) payload.additionalCharges = state.additionalCharges.trim();
     if (state.weeklyRate) payload.weeklyRate = toNumber(state.weeklyRate);
@@ -412,45 +471,53 @@ async function buildCreatePropertyPayload(
 
     return payload;
 }
+// function mapFacilities(facilities: FacilitySelection): PropertyFacilitiesPayload {
+//     return {
+//         basicFacilities: facilities.basic
+//             .filter((f) => f.selected)
+//             .map((f) => ({
+//                 id: f.id,
+//                 name: f.name,
+//                 count: f.count > 0 ? f.count : undefined,
+//             })),
+//         safetyFacilities: facilities.safety
+//             .filter((f) => f.selected)
+//             .map((f) => ({
+//                 id: f.id,
+//                 name: f.name,
+//             })),
+//         communityFacilities: facilities.community
+//             .filter((f) => f.selected)
+//             .map((f) => ({
+//                 id: f.id,
+//                 name: f.name,
+//             })),
+//     };
 
 function mapFacilities(facilities: FacilitySelection[]): PropertyFacilitiesPayload {
-    const facilityMap: PropertyFacilitiesPayload = {};
-    facilities.forEach(({ value, units }) => {
-        const count = toNumber(units, 0);
-        if (count <= 0) {
-            return;
-        }
-        switch (value) {
-            case 'living_room':
-                facilityMap.livingRooms = count;
-                break;
-            case 'bedroom':
-                facilityMap.bedrooms = count;
-                break;
-            case 'bathroom':
-                facilityMap.bathrooms = count;
-                break;
-            case 'kitchen':
-                facilityMap.kitchens = count;
-                break;
-            case 'store':
-                facilityMap.stores = count;
-                break;
-            default:
-                facilityMap[value] = count;
+    const payload: PropertyFacilitiesPayload = {};
+    
+    facilities.forEach((facility) => {
+        if (facility.units > 0) {
+            // Convert the facility value to the expected key format
+            // e.g., "Living Rooms" -> "livingRooms"
+            const key = facility.value;
+            payload[key] = facility.units;
         }
     });
-    return facilityMap;
+    
+    return payload;
 }
 
 async function prepareMediaPayload(
     listingType: ListingType,
     state: PropertyListingFormState,
-    uploadFile: (file: File) => Promise<string>,
+    uploadFile: Uploader,
+    uploadVideo: Uploader,
 ): Promise<PropertyMediaPayload[]> {
     const photoUploads = await Promise.all(
         state.photos.map((photo, index) => {
-            return uploadFile(photo.file).then<PropertyMediaPayload>((url) => ({
+            return uploadFile(photo.file).then((url): PropertyMediaPayload => ({
                 url,
                 altText: photo.file.name || `${state.title || 'property'}-${index + 1}`,
                 mediaType: 'image',
@@ -463,7 +530,8 @@ async function prepareMediaPayload(
     const media: PropertyMediaPayload[] = [...photoUploads];
 
     if (state.video) {
-        const videoUrl = await uploadFile(state.video.file);
+        // Use uploadVideo for video
+        const videoUrl = await uploadVideo(state.video.file);
         media.push({
             url: videoUrl,
             altText: state.video.file.name || `${state.title || 'property'}-video`,
