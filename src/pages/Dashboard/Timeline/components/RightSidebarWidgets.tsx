@@ -1,28 +1,31 @@
 import React from 'react';
 import AdsWidget from '@components/cards/timeline/AdsWidget';
+import { useGetAnnouncementsQuery } from '@store/api/timeline.api';
 
 interface RightSidebarWidgetsProps {
     ads: any[]; // Using any for simplicity as matching fakeDb type
 }
 
 export const AnnouncementWidget = () => {
+    const { data: announcementsData } = useGetAnnouncementsQuery({});
+    const recentAnnouncements = announcementsData?.data?.slice(0, 3) || [];
+
     return (
         <div className="bg-white rounded-[10px] p-4 border border-[#CCE3FD]  mb-6">
             <h3 className="text-[#091E42] font-semibold text-[15px] mb-4">Today's Announcement</h3>
             
-            <div className="mb-2 border-b border-[#E4E4E7] pb-2">
-                <div className="text-[#172B4D] font-semibold text-xs mb-1">Water Maintenance Scheduled</div>
-                <p className="text-[#5E6C84] text-xs leading-relaxed">
-                    Please be advised that water will be temporarily shut off on December 22nd from 9:00 AM to 1:00 PM for routine maintenance of the building's plumbing system.
-                </p>
-            </div>
-
-            <div>
-                <div className="text-[#172B4D] font-semibold text-xs mb-1">New Visitor Parking Rules</div>
-                <p className="text-[#5E6C84] text-xs leading-relaxed">
-                    Effective immediately, visitor parking is limited to 2 hours during weekdays. Please inform your guests to register at the front desk upon arrival.
-                </p>
-            </div>
+            {recentAnnouncements.length > 0 ? (
+                recentAnnouncements.map((announcement: any) => (
+                    <div key={announcement.id} className="mb-2 border-b border-[#E4E4E7] pb-2 last:border-0">
+                        <div className="text-[#172B4D] font-semibold text-xs mb-1">{announcement.title}</div>
+                        <p className="text-[#5E6C84] text-xs leading-relaxed line-clamp-3">
+                            {announcement.content}
+                        </p>
+                    </div>
+                ))
+            ) : (
+                <p className="text-[#5E6C84] text-xs">No announcements today.</p>
+            )}
         </div>
     );
 };

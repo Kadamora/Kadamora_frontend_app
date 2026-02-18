@@ -3,13 +3,34 @@ import { fakeDb } from '@components/fakeDB/fakeDb';
 import Input from '@components/forms/Input';
 
 import Select from '@components/forms/Select';
+import { useGetAllPropertyListingsQuery } from '@store/api/propertyListings.api';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
+import { useDebounce } from '../../../../hooks/useDebounce';
 
 export default function Listings() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
+        const debouncedSearch = useDebounce(searchTerm, 500);
+    
 
+       const {
+            data: propertyListingsResponse,
+        } = useGetAllPropertyListingsQuery();
+
+       const filteredListings = useMemo(() => {
+            const listings = propertyListingsResponse?.data || [];
+            if (!Array.isArray(listings)) return [];
+    
+            if (!debouncedSearch) return listings;
+    
+            const lowerSearch = debouncedSearch.toLowerCase();
+            return listings.filter((p) =>
+                p.title.toLowerCase().includes(lowerSearch) ||
+                p.location?.toLowerCase().includes(lowerSearch) ||
+                p.propertyType.toLowerCase().includes(lowerSearch)
+            );
+        }, [propertyListingsResponse, debouncedSearch]);
     const categories = useMemo(() => {
         const unique = new Set(fakeDb.listings.map((item) => item.category));
         return ['All', ...unique];
@@ -24,19 +45,32 @@ export default function Listings() {
         [categories],
     );
 
-    const filteredListings = useMemo(() => {
-        const query = searchTerm.trim().toLowerCase();
-        return fakeDb.listings.filter((property) => {
-            const matchesCategory = selectedCategory === 'All' || property.category === selectedCategory;
-            if (!query) {
-                return matchesCategory;
-            }
-            const haystack = `${property.name} ${property.location} ${property.description}`.toLowerCase();
-            return matchesCategory && haystack.includes(query);
-        });
-    }, [searchTerm, selectedCategory]);
+    // const filteredListings = useMemo(() => {
+    //     const query = searchTerm.trim().toLowerCase();
+    //     return fakeDb.listings.filter((property) => {
+    //         const matchesCategory = selectedCategory === 'All' || property.category === selectedCategory;
+    //         if (!query) {
+    //             return matchesCategory;
+    //         }
+    //         const haystack = `${property.name} ${property.location} ${property.description}`.toLowerCase();
+    //         return matchesCategory && haystack.includes(query);
+    //     });
+    // }, [searchTerm, selectedCategory]);
 
-    const visibleListings = filteredListings.slice(0, 8);
+    const formatCurrency = (n: number) =>
+    new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 2 }).format(n);
+
+      const visibleListings = useMemo(() => {
+            return filteredListings.slice(0, 8).map((p) => ({
+                id: p.id,
+                name: p.title,
+                price: p.price ? formatCurrency(Number(p.price)) : 'N/A',
+                description: p.description || 'No description available.',
+                category: p.propertyType, // Using propertyType as category (e.g. rent, sell)
+                subCategory: p.propertySubType || 'General',
+                image: p.media?.find((m) => m.mediaType === 'image')?.url || '',
+            }));
+        }, [filteredListings]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { value } = e.target;

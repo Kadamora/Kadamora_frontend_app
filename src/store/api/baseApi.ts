@@ -11,12 +11,12 @@ export const baseApi = createApi({
             if(token){
                 headers.set('authorization', `Bearer ${token}`);
             }
-            headers.set('content-type', 'application/json');
+
             return headers;
         }
     }),
     tagTypes: [
-        'Account', 'AdminAgent', 'AgentProfile', 'Property', 'Location', 'Notification', 'PropertyMgt', 'Favorites', 'Subscription', 'ServiceMarket'
+        'Account', 'AdminAgent', 'AgentProfile', 'Property', 'Location', 'Notification', 'PropertyMgt', 'Favorites', 'Subscription', 'ServiceMarket', 'Timeline'
     ],
     endpoints: () => ({})
 })

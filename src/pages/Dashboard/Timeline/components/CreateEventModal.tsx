@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Modal from '@components/cards/timeline/Modal';
+import { useCreateEventMutation } from '../../../../store/api/timeline.api';
 
 interface CreateEventModalProps {
     isOpen: boolean;
@@ -7,6 +8,18 @@ interface CreateEventModalProps {
 }
 
 const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) => {
+    const [createEvent, { isLoading }] = useCreateEventMutation();
+    const [title, setTitle] = useState('');
+    const [location, setLocation] = useState('');
+    const [maxAttendees, setMaxAttendees] = useState('');
+    const [eventDate, setEventDate] = useState('');
+    const [eventTime, setEventTime] = useState('');
+    const [description, setDescription] = useState('');
+    const [images, setImages] = useState<File[]>([]);
+    const [previews, setPreviews] = useState<string[]>([]);
+    const [error, setError] = useState('');
+    
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [isClosing, setIsClosing] = useState(false);
 
     const handleClose = () => {
@@ -17,6 +30,70 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
         }, 200);
     };
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            const newFiles = Array.from(e.target.files);
+            setImages((prev) => [...prev, ...newFiles]);
+            
+            const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+            setPreviews((prev) => [...prev, ...newPreviews]);
+        }
+    };
+
+    const removeImage = (index: number) => {
+        setImages((prev) => prev.filter((_, i) => i !== index));
+        setPreviews((prev) => {
+            URL.revokeObjectURL(prev[index]);
+            return prev.filter((_, i) => i !== index);
+        });
+    };
+
+    const handleSubmit = async () => {
+        if (!title || !location || !maxAttendees || !eventDate || !eventTime || !description) return;
+
+        if (title.length < 3 || location.length < 3 || description.length < 3) {
+            setError('Title, location, and description must be at least 3 characters long.');
+            return;
+        }
+
+        setError('');
+
+        try {
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('location', location);
+            formData.append('maxAttendees', maxAttendees);
+            formData.append('eventDate', eventDate);
+            formData.append('eventTime', eventTime);
+            formData.append('description', description);
+            images.forEach((image) => {
+                formData.append('images', image);
+            });
+
+            await createEvent(formData).unwrap();
+            
+            // cleanup previews
+            previews.forEach(url => URL.revokeObjectURL(url));
+            
+            // Reset state
+            setTitle('');
+            setLocation('');
+            setMaxAttendees('');
+            setEventDate('');
+            setEventTime('');
+            setDescription('');
+            setImages([]);
+            setPreviews([]);
+            setError('');
+            
+            handleClose();
+        } catch (error: any) {
+             const message = error?.data?.message || 'Failed to create event';
+            setError(message);
+            console.error('Failed to create event:', error);
+        }
+    };
+
     return (
         <Modal
             isOpen={isOpen}
@@ -24,35 +101,41 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
             onClose={handleClose}
             title="New Event"
             maxWidth="max-w-3xl"
-            height="h-auto"
+            height="max-h-[90vh]"
         >
             <div className="p-6 space-y-6">
                 {/* Title */}
                 <div className="space-y-2">
-                    <label className="text-sm font-semibold text-[#172B4D]">Title</label>
+                    <label className="text-sm font-semibold text-[#172B4D]">Title <span className="text-red-500">*</span></label>
                     <input
                         type="text"
-                        placeholder="Enter ticket title"
+                        placeholder="Enter event title"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
                         className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-[#F9FAFB] text-gray-900 placeholder:text-gray-500 outline-none focus:border-blue-500 transition-colors"
                     />
                 </div>
 
                  {/* Location */}
                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-[#172B4D]">Location</label>
+                    <label className="text-sm font-semibold text-[#172B4D]">Location <span className="text-red-500">*</span></label>
                     <input
                         type="text"
-                        placeholder="Enter ticket title" 
+                        placeholder="Enter location" 
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
                         className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-[#F9FAFB] text-gray-900 placeholder:text-gray-500 outline-none focus:border-blue-500 transition-colors"
                     />
                 </div>
 
                  {/* Maximum Attendees */}
                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-[#172B4D]">Maximum Attendees</label>
+                    <label className="text-sm font-semibold text-[#172B4D]">Maximum Attendees <span className="text-red-500">*</span></label>
                     <input
                         type="number"
-                        placeholder="Enter maximum attendee"
+                        placeholder="Enter maximum attendees"
+                        value={maxAttendees}
+                        onChange={(e) => setMaxAttendees(e.target.value)}
                         className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-[#F9FAFB] text-gray-900 placeholder:text-gray-500 outline-none focus:border-blue-500 transition-colors"
                     />
                 </div>
@@ -60,24 +143,30 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                      {/* Date */}
                      <div className="space-y-2">
-                        <label className="text-sm font-semibold text-[#172B4D]">Date</label>
-                         <select className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-[#F9FAFB] text-gray-500 outline-none focus:border-blue-500 transition-colors appearance-none">
-                            <option>Select Date</option>
-                        </select>
+                        <label className="text-sm font-semibold text-[#172B4D]">Date <span className="text-red-500">*</span></label>
+                         <input 
+                            type="date"
+                            value={eventDate}
+                            onChange={(e) => setEventDate(e.target.value)}
+                            className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-[#F9FAFB] text-gray-500 outline-none focus:border-blue-500 transition-colors"
+                        />
                     </div>
 
                     {/* Time */}
                     <div className="space-y-2">
-                        <label className="text-sm font-semibold text-[#172B4D]">Time</label>
-                        <select className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-[#F9FAFB] text-gray-500 outline-none focus:border-blue-500 transition-colors appearance-none">
-                            <option>Select Time</option>
-                        </select>
+                        <label className="text-sm font-semibold text-[#172B4D]">Time <span className="text-red-500">*</span></label>
+                        <input 
+                            type="time"
+                            value={eventTime}
+                            onChange={(e) => setEventTime(e.target.value)}
+                            className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-[#F9FAFB] text-gray-500 outline-none focus:border-blue-500 transition-colors"
+                        />
                     </div>
                 </div>
 
                 {/* Description */}
                 <div className="space-y-2">
-                    <label className="text-sm font-semibold text-[#172B4D]">Description</label>
+                    <label className="text-sm font-semibold text-[#172B4D]">Description <span className="text-red-500">*</span></label>
                     <div className="border border-gray-200 rounded-xl overflow-hidden">
                         {/* Toolbar */}
                         <div className="border-b border-gray-200 bg-white p-2 flex gap-4">
@@ -86,15 +175,11 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
                             <button className="p-1 hover:bg-gray-100 rounded text-gray-600 underline font-serif">U</button>
                             <div className="w-px h-6 bg-gray-200 my-auto"></div>
                             <button className="p-1 hover:bg-gray-100 rounded text-gray-600">Aa</button>
-                             <button className="p-1 hover:bg-gray-100 rounded text-gray-600">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-                            </button>
-                             <button className="p-1 hover:bg-gray-100 rounded text-gray-600">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-                            </button>
                         </div>
                         <textarea
-                            placeholder="Enter Message Here"
+                            placeholder="Enter description here"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
                             className="w-full h-32 p-4 bg-[#F9FAFB] placeholder:text-gray-500 outline-none resize-none"
                         ></textarea>
                     </div>
@@ -103,15 +188,54 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
                 {/* Upload File */}
                  <div className="space-y-2">
                     <label className="text-sm font-semibold text-[#172B4D]">Upload File</label>
-                    <div className="border-2 border-dashed border-[#DADDF1] rounded-xl bg-[#F9FAFB] h-32 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 mb-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                        <span className="text-sm text-gray-500">Drag and drop or select file to upload</span>
+                    <div className="grid grid-cols-3 gap-4">
+                        {previews.map((src, i) => (
+                             <div key={i} className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden group border border-gray-200">
+                                <img 
+                                    src={src} 
+                                    className="w-full h-full object-cover" 
+                                    alt="preview"
+                                />
+                                <button 
+                                    onClick={() => removeImage(i)}
+                                    className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-sm hover:bg-gray-100 cursor-pointer"
+                                >
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                </button>
+                             </div>
+                        ))}
+                        <div 
+                            className="aspect-video bg-[#F9FAFB] rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 mb-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                            <span className="text-xs text-gray-500">Add Image</span>
+                        </div>
                     </div>
+                    <input 
+                        type="file" 
+                        ref={fileInputRef} 
+                        className="hidden" 
+                        multiple 
+                        accept="image/*"
+                        onChange={handleFileChange}
+                    />
+                    <p className="text-xs text-gray-500 mt-2">Upload up to 10 images.</p>
                 </div>
 
                 <div className="pt-4">
-                    <button className="px-6 py-3 bg-[#091E42] text-white rounded-lg font-medium hover:bg-[#172B4D] transition-colors">
-                        Add Event
+                    {error && (
+                        <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            {error}
+                        </div>
+                    )}
+                    <button 
+                         onClick={handleSubmit}
+                         disabled={isLoading || !title || !location || !maxAttendees || !eventDate || !eventTime || !description}
+                         className="px-6 py-3 bg-[#091E42] text-white rounded-lg font-medium hover:bg-[#172B4D] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isLoading ? 'Creating Event...' : 'Add Event'}
                     </button>
                 </div>
             </div>
