@@ -3,7 +3,7 @@ import CommentCard from './CommentCard';
 import ImageViewer from './ImageViewer';
 import PostBody from './PostBody';
 import Modal from './Modal';
-import { useCreateLikeUnlikePostMutation, useGetCommentsByPostIdQuery } from '../../../store/api/timeline.api';
+import { useCreateLikeUnlikePostMutation, useGetCommentsByPostIdQuery, useCreateCommentMutation } from '../../../store/api/timeline.api';
 
 interface TimelinePost {
     id: string;
@@ -55,6 +55,7 @@ interface TimelineCardProps {
 const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose }) => {
     
     const [liked, setLiked] = useState(false);
+    const [commentText, setCommentText] = useState('');
     const [likeCount, setLikeCount] = useState(post.likesCount ?? post.likes ?? 0);
     const [showMenu, setShowMenu] = useState(false);
     const [showModal, setShowModal] = useState(false);
@@ -64,6 +65,7 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose }) => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const menuRef = React.useRef<HTMLDivElement>(null);
     const [createLikeUnlikePost] = useCreateLikeUnlikePostMutation();
+    const [createComment, { isLoading: isCommenting }] = useCreateCommentMutation();
     const { data: commentsData} = useGetCommentsByPostIdQuery(
         post.id,
         { skip: !showModal }
@@ -100,6 +102,19 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose }) => {
             setLikeCount(liked ? likeCount - 1 : likeCount + 1);
         } catch (error) {
             console.error("Failed to like post:", error);
+        }
+    };
+
+    const handleCreateComment = async () => {
+        if (!commentText.trim()) return;
+        try {
+            await createComment({
+                postId: post.id,
+                data: { content: commentText.trim() },
+            }).unwrap();
+            setCommentText('');
+        } catch (error) {
+            console.error('Failed to post comment:', error);
         }
     };
 
@@ -354,6 +369,8 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose }) => {
                                 <textarea
                                     placeholder="Comment here ..."
                                     rows={2}
+                                    value={commentText}
+                                    onChange={(e) => setCommentText(e.target.value)}
                                     className="w-full bg-transparent placeholder:text-gray-400 outline-none resize-none text-base"
                                     onInput={(e) => {
                                         const target = e.target as HTMLTextAreaElement;
@@ -363,7 +380,7 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose }) => {
                                 />
 
                                 <div className="flex items-center justify-between mt-3">
-                                    <div className="flex items-center gap-4">
+                                    {/* <div className="flex items-center gap-4">
                                         <button
                                             title="Add"
                                             aria-label="Add attachment"
@@ -424,13 +441,24 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose }) => {
                                                 className=""
                                             />
                                         </button>
-                                    </div>
+                                    </div> */}
+                                    <div></div>
                                     <button
-                                        className="h-10 px-6 bg-[#43CC88] rounded-full flex items-center gap-2 text-white hover:bg-green-600 transition-colors font-medium"
+                                        className={`h-10 px-6 rounded-full flex items-center gap-2 text-white font-medium transition-colors ${
+                                            !commentText.trim() || isCommenting
+                                                ? 'bg-gray-400 cursor-not-allowed'
+                                                : 'bg-[#43CC88] hover:bg-green-600'
+                                        }`}
                                         title="Send comment"
                                         aria-label="Send comment"
+                                        onClick={handleCreateComment}
+                                        disabled={!commentText.trim() || isCommenting}
                                     >
-                                        <span>Send</span>
+                                        {isCommenting ? (
+                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                        ) : (
+                                            <span>Send</span>
+                                        )}
                                     </button>
                                 </div>
                             </div>

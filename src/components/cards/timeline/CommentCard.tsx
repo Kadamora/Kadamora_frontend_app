@@ -22,7 +22,7 @@ interface CommentCardProps {
     formatDate: (timestamp: string) => string;
 }
 
-const CommentCard: React.FC<CommentCardProps> = ({ comment, onMenuClick, onLike, onReply, formatDate }) => {
+const CommentCard: React.FC<CommentCardProps> = ({ comment, onMenuClick, formatDate }) => {
     const getInitials = (name: string) => {
         return name
             .split(' ')
@@ -92,7 +92,7 @@ const CommentCard: React.FC<CommentCardProps> = ({ comment, onMenuClick, onLike,
                         <span>Replies</span>
                     </div>
 
-                    <div className="flex items-center text-gray-600">
+                    {/* <div className="flex items-center text-gray-600">
                         <button 
                             className={`hover:text-gray-800 ${comment.showLike ? 'text-blue-600 font-medium' : ''}`} 
                             onClick={() => onLike?.(comment.id)}
@@ -103,7 +103,7 @@ const CommentCard: React.FC<CommentCardProps> = ({ comment, onMenuClick, onLike,
                         <button className="hover:text-gray-800" onClick={() => onReply?.(comment.id)}>
                             Reply
                         </button>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>
