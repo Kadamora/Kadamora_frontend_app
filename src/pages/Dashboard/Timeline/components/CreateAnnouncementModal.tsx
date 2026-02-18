@@ -14,7 +14,6 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ isOpe
     const [content, setContent] = useState('');
     const [images, setImages] = useState<File[]>([]);
     const [previews, setPreviews] = useState<string[]>([]);
-    const [error, setError] = useState('');
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [isClosing, setIsClosing] = useState(false);
 
@@ -47,13 +46,6 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ isOpe
     const handleSubmit = async () => {
         if (!title || !content || !priority) return;
 
-        if (title.length < 3 || content.length < 3) {
-            setError('Title and content must be at least 3 characters long.');
-            return;
-        }
-
-        setError('');
-
         try {
             const formData = new FormData();
             formData.append('priority', priority);
@@ -74,12 +66,9 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ isOpe
             setPriority('High');
             setImages([]);
             setPreviews([]);
-            setError('');
             
             handleClose();
-        } catch (error: any) {
-             const message = error?.data?.message || 'Failed to create announcement';
-            setError(message);
+        } catch (error) {
             console.error('Failed to create announcement:', error);
         }
     };
@@ -180,12 +169,6 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ isOpe
                 </div>
 
                 <div className="pt-4">
-                    {error && (
-                        <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                            {error}
-                        </div>
-                    )}
                     <button 
                         onClick={handleSubmit}
                         disabled={isLoading || !title || !content}
