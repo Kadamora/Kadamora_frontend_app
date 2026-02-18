@@ -2,20 +2,34 @@ import React from 'react';
 import ImageCollage from './ImageCollage';
 
 interface TimelinePost {
-    id: number;
-    user: {
+    id: string;
+    title?: string;
+    content: string;
+    images?: string[];
+    createdBy: {
+        id: string;
+        firstName: string;
+        lastName: string;
+        imgUrl: string | null;
+    };
+    likesCount: number;
+    commentsCount: number;
+    createdAt: string;
+    updatedAt: string;
+    type: string;
+    // Legacy fields for backward compatibility
+    user?: {
         name: string;
         avatar: string;
         role: string;
     };
-    content: string;
-    timestamp: string;
-    likes: number;
-    comments: {
-        id: number;
+    timestamp?: string;
+    likes?: number;
+    comments?: {
+        id: string | number;
         user: {
             name: string;
-            avatar: string;
+            avatar: string | null;
         };
         date: string;
         content: string;
@@ -24,10 +38,8 @@ interface TimelinePost {
         showLike: boolean;
         showHeart: boolean;
     }[];
-    shares: number;
+    shares?: number;
     image?: string;
-    images?: string[];
-    type: string;
 }
 
 interface PostBodyProps {
@@ -58,6 +70,9 @@ const PostBody: React.FC<PostBodyProps> = ({
         : post.image 
             ? [post.image] 
             : [];
+
+    // Use commentsCount from API, fallback to comments array length
+    const commentCount = post.commentsCount ?? post.comments?.length ?? 0;
 
     return (
         <>
@@ -93,9 +108,9 @@ const PostBody: React.FC<PostBodyProps> = ({
                         <span className="">{likeCount >= 1000 ? `${(likeCount / 1000).toFixed(1)}k` : likeCount}</span>
                         <span>+</span>
                         <span className="">
-                            {post.comments.length >= 1000
-                                ? `${(post.comments.length / 1000).toFixed(1)}k`
-                                : post.comments.length}
+                            {commentCount >= 1000
+                                ? `${(commentCount / 1000).toFixed(1)}k`
+                                : commentCount}
                         </span>
                         <span>Comments</span>
                     </div>
@@ -146,7 +161,7 @@ const PostBody: React.FC<PostBodyProps> = ({
                             Comment
                         </button>
 
-                        <button className="flex items-center justify-center flex-1 py-2 px-4 rounded-full text-sm bg-[#e6f1fe] transition-all duration-200">
+                        {/* <button className="flex items-center justify-center flex-1 py-2 px-4 rounded-full text-sm bg-[#e6f1fe] transition-all duration-200">
                             <svg
                                 className="w-5 h-5 mr-2"
                                 fill="none"
@@ -178,7 +193,7 @@ const PostBody: React.FC<PostBodyProps> = ({
                                 />
                             </svg>
                             Share
-                        </button>
+                        </button> */}
                     </div>
                 </div>
             </div>

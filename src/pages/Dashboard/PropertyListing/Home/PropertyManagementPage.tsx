@@ -22,7 +22,7 @@ const PropertyManagementPage: React.FC = () => {
     const [onboardingOpen, setOnboardingOpen] = useState(false);
     const [onboardingStep, setOnboardingStep] = useState(0);
     const [verificationInProgressOpen, setVerificationInProgressOpen] = useState(false);
-    
+
     // Debounce search to avoid hitting server on every keystroke
     const debouncedSearch = useDebounce(search, 500);
 
@@ -33,54 +33,54 @@ const PropertyManagementPage: React.FC = () => {
     );
     */
     const {
-  data: agentProfiles,
-  isLoading: isLoadingProfile,
-  isError,
-  error,
-} = useGetAgentProfileQuery();
+        data: agentProfiles,
+        isLoading: isLoadingProfile,
+        isError,
+        error,
+    } = useGetAgentProfileQuery();
 
-const {
-    data: propertyListingsResponse,
-    isLoading: isLoadingPropertyListings,
-} = useGetAllPropertyListingsQuery();
-const {data: filtercount} = useGetPropertyListingsFilterCountQuery();
+    const {
+        data: propertyListingsResponse,
+        isLoading: isLoadingPropertyListings,
+    } = useGetAllPropertyListingsQuery();
+    const { data: filtercount } = useGetPropertyListingsFilterCountQuery();
 
-const filteredListings = useMemo(() => {
-    const listings = propertyListingsResponse?.data || [];
-    if (!Array.isArray(listings)) return [];
-    
-    if (!debouncedSearch) return listings;
+    const filteredListings = useMemo(() => {
+        const listings = propertyListingsResponse?.data || [];
+        if (!Array.isArray(listings)) return [];
 
-    const lowerSearch = debouncedSearch.toLowerCase();
-    return listings.filter((p) => 
-        p.title.toLowerCase().includes(lowerSearch) ||
-        p.location?.toLowerCase().includes(lowerSearch) ||
-        p.propertyType.toLowerCase().includes(lowerSearch)
-    );
-}, [propertyListingsResponse, debouncedSearch]);
+        if (!debouncedSearch) return listings;
 
-const agentProfile = agentProfiles?.data
-const profileNotFound =
-  isError &&
-  'status' in (error as any) &&
-  (error as any).status === 404;
+        const lowerSearch = debouncedSearch.toLowerCase();
+        return listings.filter((p) =>
+            p.title.toLowerCase().includes(lowerSearch) ||
+            p.location?.toLowerCase().includes(lowerSearch) ||
+            p.propertyType.toLowerCase().includes(lowerSearch)
+        );
+    }, [propertyListingsResponse, debouncedSearch]);
 
-const profileError =
-  isError && !profileNotFound
-    ? 'Unable to load agent profile. Please try again later.'
-    : null;
+    const agentProfile = agentProfiles?.data
+    const profileNotFound =
+        isError &&
+        'status' in (error as any) &&
+        (error as any).status === 404;
 
-    const normalizedStatus = useMemo (() => {
+    const profileError =
+        isError && !profileNotFound
+            ? 'Unable to load agent profile. Please try again later.'
+            : null;
+
+    const normalizedStatus = useMemo(() => {
         const status = agentProfile?.status;
-        if(!status || typeof status !== 'string') return null;
+        if (!status || typeof status !== 'string') return null;
         const upperStatus = status.toUpperCase();
-        if(upperStatus === 'PENDING' || upperStatus === 'APPROVED' || upperStatus === 'REJECTED'){
+        if (upperStatus === 'PENDING' || upperStatus === 'APPROVED' || upperStatus === 'REJECTED') {
             return upperStatus
         }
-        if(upperStatus === "UNDER_REVIEW"){
+        if (upperStatus === "UNDER_REVIEW") {
             return 'PENDING'
         }
-            return null
+        return null
     }, [agentProfile?.status])
 
     const hasUploadedDocs = useMemo(() => {
@@ -89,12 +89,12 @@ const profileError =
         return (
             (docs.governmentId && docs.governmentId.length > 0) ||
             (docs.businessCertificate && docs.businessCertificate.length > 0) ||
-            (docs.proofOdAddress && docs.proofOdAddress.length > 0) 
+            (docs.proofOdAddress && docs.proofOdAddress.length > 0)
         )
     }, [agentProfile?.documents]);
 
     const normalizedProfileStatus = useMemo(() => {
-        const raw = agentProfile?.status 
+        const raw = agentProfile?.status
         return typeof raw === 'string' ? raw.trim().toLowerCase() : null;
     }, [agentProfile?.status]);
 
@@ -102,7 +102,7 @@ const profileError =
 
     // const isAgentVerified = agentProfile?.isVerified ?? normalizedStatus === 'APPROVED';
     const isAgentVerified = useMemo(() => {
-        if(agentProfile?.isVerified === true) return true;
+        if (agentProfile?.isVerified === true) return true;
         const status = agentProfile?.status?.toUpperCase()
         return status === 'APPROVED';
     }, [agentProfile])
@@ -111,21 +111,21 @@ const profileError =
         if (!agentProfile) {
             return 0;
         }
-        if(isAgentVerified){
+        if (isAgentVerified) {
             return 0;
         }
-         if (isUnderReview || (normalizedStatus === 'PENDING' && hasUploadedDocs)) {
-        return 0; 
+        if (isUnderReview || (normalizedStatus === 'PENDING' && hasUploadedDocs)) {
+            return 0;
         }
         const hasProfessionalDetails = Boolean(
-            agentProfile.agencyCompanyName && 
-            agentProfile.position && 
+            agentProfile.agencyCompanyName &&
+            agentProfile.position &&
             agentProfile.registrationLicenseNumber
         )
-        if(!hasProfessionalDetails){
+        if (!hasProfessionalDetails) {
             return 1
         }
-        if(!hasUploadedDocs){
+        if (!hasUploadedDocs) {
             return 2
         }
         return 0;
@@ -202,9 +202,9 @@ const profileError =
         }));
     }, [filteredListings]);
 
-      if (isLoadingPropertyListings) {
+    if (isLoadingPropertyListings) {
         return (
-             <div className="flex items-center justify-center py-20">
+            <div className="flex items-center justify-center py-20">
                 <div className="h-10 w-10 animate-spin rounded-full border-2 border-gray-300 border-t-[#002E62]" />
             </div>
         );
@@ -232,7 +232,17 @@ const profileError =
                         className={`${verificationToneClasses[verificationCopy.tone]} font-semibold flex items-center gap-2`}
                     >
                         <img src="/assets/icons/info.svg" alt="Info" className="h-6 w-6" />
-                        <span aria-live="polite">{verificationCopy.message}</span>
+                        {verificationCopy.message === 'Complete your agent profile to unlock property listing tools.' ? (
+                            <button
+                                onClick={openOnboardingFlow}
+                                className="underline hover:opacity-80 transition-opacity cursor-pointer"
+                                aria-live="polite"
+                            >
+                                {verificationCopy.message}
+                            </button>
+                        ) : (
+                            <span aria-live="polite">{verificationCopy.message}</span>
+                        )}
                     </div>
                 </div>
                 <div className="grid gap-6 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2">
@@ -344,43 +354,43 @@ const profileError =
                         ))}
                     </div> */}
                     <div className="grid lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-2 gap-6">
-  {productCards.length === 0 ? (
-    <EmptyState
-      title={
-        debouncedSearch
-          ? 'No properties match your search'
-          : 'No properties available yet'
-      }
-      description={
-        debouncedSearch
-          ? 'Try adjusting your search terms or clearing filters to see more results.'
-          : 'Properties listed by other users will appear here once available.'
-      }
-      actionLabel={debouncedSearch ? 'Clear search' : undefined}
-      onAction={
-        debouncedSearch
-          ? () => setSearch('')
-          : undefined
-      }
-      icon={
-        <svg
-          className="h-6 w-6"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.8}
-        >
-          <circle cx="11" cy="11" r="7" />
-          <path d="M21 21l-4.3-4.3" />
-        </svg>
-      }
-    />
-  ) : (
-    productCards.map((p) => (
-      <ProductCard key={p.id} property={p} />
-    ))
-  )}
-</div>
+                        {productCards.length === 0 ? (
+                            <EmptyState
+                                title={
+                                    debouncedSearch
+                                        ? 'No properties match your search'
+                                        : 'No properties available yet'
+                                }
+                                description={
+                                    debouncedSearch
+                                        ? 'Try adjusting your search terms or clearing filters to see more results.'
+                                        : 'Properties listed by other users will appear here once available.'
+                                }
+                                actionLabel={debouncedSearch ? 'Clear search' : undefined}
+                                onAction={
+                                    debouncedSearch
+                                        ? () => setSearch('')
+                                        : undefined
+                                }
+                                icon={
+                                    <svg
+                                        className="h-6 w-6"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth={1.8}
+                                    >
+                                        <circle cx="11" cy="11" r="7" />
+                                        <path d="M21 21l-4.3-4.3" />
+                                    </svg>
+                                }
+                            />
+                        ) : (
+                            productCards.map((p) => (
+                                <ProductCard key={p.id} property={p} />
+                            ))
+                        )}
+                    </div>
 
                 </div>
             </section>

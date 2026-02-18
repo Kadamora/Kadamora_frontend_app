@@ -4,17 +4,35 @@ import LandingPageContainer from '@components/container/LandingPage/LandingPageC
 import { fakeDb } from '@components/fakeDB/fakeDb';
 import { TimelineSEO } from '@components/SEO/SEO';
 import React, { useState } from 'react';
+import { useGetPostsQuery } from '@store/api/timeline.api';
 
 const Timeline: React.FC = () => {
-    const [posts, setPosts] = useState(fakeDb.timelinePosts);
+    // const [posts, setPosts] = useState(fakeDb.timelinePosts); // Replaced by API
+    const { data: postsData, isLoading } = useGetPostsQuery({});
+    const posts = postsData?.data || [];
+    
     const filterType: string = 'all';
     const searchTerm: string = '';
 
+    // Note: Deleting posts locally might not be persistent or applicable if fetching from API. 
+    // For now, I'll remove the local delete functionality or implement it via API if needed.
+    // The original code had `handleClose` which filtered the local state. 
+    // I will keep a local state initialized with API data? No, that's complex with RTK Query.
+    // I'll just rely on the API data. If "closing" a post is a UI-only thing (hiding it), I can use a local set of hidden IDs.
+    
+    const [hiddenPostIds, setHiddenPostIds] = useState<Set<number>>(new Set());
+
     const handleClose = (id: number) => {
-        setPosts((prev) => prev.filter((post) => post.id !== id));
+        setHiddenPostIds(prev => {
+            const next = new Set(prev);
+            next.add(id);
+            return next;
+        });
     };
 
-    const filteredPosts = posts.filter((post) => {
+    const filteredPosts = posts.filter((post: any) => {
+        if (hiddenPostIds.has(post.id)) return false;
+
         const matchesFilter = filterType === 'all' || post.type === filterType;
         const matchesSearch =
             searchTerm === '' ||
@@ -36,7 +54,9 @@ const Timeline: React.FC = () => {
                             {/* Left: Posts */}
                             <div className="w-full lg:col-span-2">
                                 {/* Posts */}
-                                {filteredPosts.length > 0 ? (
+                                {isLoading ? (
+                                    <div className="text-center py-12">Loading...</div>
+                                ) : filteredPosts.length > 0 ? (
                                     filteredPosts.map((post:any) => (
                                         <TimelineCard key={post.id} post={post} onClose={() => handleClose(post.id)} />
                                     ))

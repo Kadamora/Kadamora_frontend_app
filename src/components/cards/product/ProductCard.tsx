@@ -53,6 +53,7 @@ export default function ProductCard({
             className="group relative bg-white h-fit rounded-xl border border-[#CCE3FD] overflow-hidden shadow-sm transition-all duration-300 ease-out hover:-translate-y-1 focus-visible:ring-2 focus-visible:ring-primary/40 block"
         >
             {/* Heart Icon */}
+            {!landingPage && (
             <button
                 aria-label={isFavorite ? "Remove from favourites" : "Add to favourites"}
                 onClick={handleFavorite}
@@ -72,7 +73,7 @@ export default function ProductCard({
                         d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                     />
                 </svg>
-            </button>
+            </button>)}
 
             <div className="h-48 relative overflow-hidden">
                 <img

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Modal from '@components/cards/timeline/Modal';
+import { useCreatePostMutation } from '../../../../store/api/timeline.api';
 
 interface CreatePostModalProps {
     isOpen: boolean;
@@ -17,6 +18,58 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose }) =>
         }, 200);
     };
 
+    const [createPost, { isLoading }] = useCreatePostMutation();
+    const [title, setTitle] = useState('');
+    const [content, setContent] = useState('');
+    const [images, setImages] = useState<File[]>([]);
+    const [previews, setPreviews] = useState<string[]>([]);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            const newFiles = Array.from(e.target.files);
+            setImages((prev) => [...prev, ...newFiles]);
+            
+            const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+            setPreviews((prev) => [...prev, ...newPreviews]);
+        }
+    };
+
+    const removeImage = (index: number) => {
+        setImages((prev) => prev.filter((_, i) => i !== index));
+        setPreviews((prev) => {
+            URL.revokeObjectURL(prev[index]);
+            return prev.filter((_, i) => i !== index);
+        });
+    };
+
+    const handleSubmit = async () => {
+        if (!title || !content) return;
+
+        try {
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('content', content);
+            images.forEach((image) => {
+                formData.append('images', image);
+            });
+
+            await createPost(formData).unwrap();
+            
+            // cleanup previews
+            previews.forEach(url => URL.revokeObjectURL(url));
+            
+            handleClose();
+            // Reset state
+            setTitle('');
+            setContent('');
+            setImages([]);
+            setPreviews([]);
+        } catch (error) {
+            console.error('Failed to create post:', error);
+        }
+    };
+
     return (
         <Modal
             isOpen={isOpen}
@@ -24,44 +77,25 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose }) =>
             onClose={handleClose}
             title="New Post"
             maxWidth="max-w-3xl"
-            height="h-auto"
+            height="max-h-[90vh]"
         >
             <div className="p-6 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Post Type */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-semibold text-[#172B4D]">Post Type</label>
-                        <select className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-[#F9FAFB] text-gray-500 outline-none focus:border-blue-500 transition-colors appearance-none">
-                            <option>Select post type</option>
-                            <option>General</option>
-                            <option>Update</option>
-                        </select>
-                    </div>
-
-                    {/* Module */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-semibold text-[#172B4D]">Module</label>
-                        <select className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-[#F9FAFB] text-gray-500 outline-none focus:border-blue-500 transition-colors appearance-none">
-                            <option>Select post module</option>
-                            <option>Property</option>
-                            <option>Community</option>
-                        </select>
-                    </div>
-                </div>
-
+                
                 {/* Title */}
                 <div className="space-y-2">
-                    <label className="text-sm font-semibold text-[#172B4D]">Title</label>
+                    <label className="text-sm font-semibold text-[#172B4D]">Title <span className="text-red-500">*</span></label>
                     <input
                         type="text"
-                        placeholder="Enter ticket title"
+                        placeholder="Enter post title"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
                         className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-[#F9FAFB] text-gray-900 placeholder:text-gray-500 outline-none focus:border-blue-500 transition-colors"
                     />
                 </div>
 
                 {/* Content */}
                 <div className="space-y-2">
-                    <label className="text-sm font-semibold text-[#172B4D]">Content</label>
+                    <label className="text-sm font-semibold text-[#172B4D]">Content <span className="text-red-500">*</span></label>
                     <div className="border border-gray-200 rounded-xl overflow-hidden">
                         {/* Toolbar */}
                         <div className="border-b border-gray-200 bg-white p-2 flex gap-4">
@@ -70,15 +104,11 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose }) =>
                             <button className="p-1 hover:bg-gray-100 rounded text-gray-600 underline font-serif">U</button>
                             <div className="w-px h-6 bg-gray-200 my-auto"></div>
                             <button className="p-1 hover:bg-gray-100 rounded text-gray-600">Aa</button>
-                            <button className="p-1 hover:bg-gray-100 rounded text-gray-600">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-                            </button>
-                             <button className="p-1 hover:bg-gray-100 rounded text-gray-600">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-                            </button>
                         </div>
                         <textarea
                             placeholder="Enter Message Here"
+                            value={content}
+                            onChange={(e) => setContent(e.target.value)}
                             className="w-full h-32 p-4 bg-[#F9FAFB] placeholder:text-gray-500 outline-none resize-none"
                         ></textarea>
                     </div>
@@ -88,25 +118,47 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose }) =>
                  <div className="space-y-2">
                     <label className="text-sm font-semibold text-[#172B4D]">Upload Media</label>
                     <div className="grid grid-cols-3 gap-4">
-                        {[1, 2, 3].map((i) => (
+                        {previews.map((src, i) => (
                              <div key={i} className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden group border border-gray-200">
                                 <img 
-                                    src={`https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=400`} 
+                                    src={src} 
                                     className="w-full h-full object-cover" 
                                     alt="preview"
                                 />
-                                <button className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-sm hover:bg-gray-100">
+                                <button 
+                                    onClick={() => removeImage(i)}
+                                    className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-sm hover:bg-gray-100 cursor-pointer"
+                                >
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                                 </button>
                              </div>
                         ))}
+                        <div 
+                            className="aspect-video bg-[#F9FAFB] rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 mb-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                            <span className="text-xs text-gray-500">Add Image</span>
+                        </div>
                     </div>
-                    <p className="text-xs text-gray-500 mt-2">You can rearrange the images by dragging them. The image in the first position will appear as the thumbnail.</p>
+                    <input 
+                        type="file" 
+                        ref={fileInputRef} 
+                        className="hidden" 
+                        multiple 
+                        accept="image/*"
+                        onChange={handleFileChange}
+                    />
+                    <p className="text-xs text-gray-500 mt-2">Upload up to 10 images.</p>
                 </div>
 
                 <div className="pt-4">
-                    <button className="px-6 py-3 bg-[#091E42] text-white rounded-lg font-medium hover:bg-[#172B4D] transition-colors">
-                        Add Post
+                    <button 
+                        onClick={handleSubmit}
+                        disabled={isLoading || !title || !content}
+                        className="px-6 py-3 bg-[#091E42] text-white rounded-lg font-medium hover:bg-[#172B4D] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isLoading ? 'Posting...' : 'Add Post'}
                     </button>
                 </div>
             </div>
