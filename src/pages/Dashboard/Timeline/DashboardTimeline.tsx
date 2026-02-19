@@ -189,10 +189,8 @@ const DashboardTimeline: React.FC = () => {
                                 <TimelineCard
                                     key={post.id}
                                     post={post}
+                                    activeTab={activeTab}
                                     onLike={(id: any) => console.log('Like', id)}
-                                    // onDelete={(id: any) => console.log('Delete', id)} onComment={function (id: number): void {
-                                    //     throw new Error('Function not implemented.');
-                                    // } }                                
                                 />
                             ))
                             ) : (

@@ -47,9 +47,10 @@ interface PostBodyProps {
     liked: boolean;
     likeCount: number;
     onLike: () => void;
-    onOpenModal?: () => void; // if provided, engagement stats becomes clickable
-    onImageClick?: (imageIndex: number) => void; // if provided, images become clickable
-    paddingX?: boolean; // add horizontal padding when rendered in the main card
+    onOpenModal?: () => void; 
+    onImageClick?: (imageIndex: number) => void; 
+    paddingX?: boolean; 
+    showInteractions?: boolean; 
 }
 
 // Reusable body of the post used both in the card and inside the modal
@@ -61,6 +62,7 @@ const PostBody: React.FC<PostBodyProps> = ({
     onOpenModal,
     onImageClick,
     paddingX = true,
+    showInteractions = true,
 }) => {
     const px = paddingX ? 'px-6' : '';
 
@@ -73,7 +75,7 @@ const PostBody: React.FC<PostBodyProps> = ({
 
     // Use commentsCount from API, fallback to comments array length
     const commentCount = post.commentsCount ?? post.comments?.length ?? 0;
-
+      console.log("post", post.type)
     return (
         <>
             {/* Content */}
@@ -86,7 +88,8 @@ const PostBody: React.FC<PostBodyProps> = ({
                 </div>
             )}
 
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            {showInteractions && (
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                 {/* Engagement Stats */}
                 <div
                     className={`${px} md:flex-1 mb-[10px] md:mb-0 ${onOpenModal ? 'cursor-pointer' : ''}`}
@@ -196,7 +199,9 @@ const PostBody: React.FC<PostBodyProps> = ({
                         </button> */}
                     </div>
                 </div>
+
             </div>
+ )}
         </>
     );
 };
