@@ -66,6 +66,7 @@ export const subscriptionApi = baseApi.injectEndpoints({
             query: ({postId, data}: {postId: string, data: any}) => ({
                 url: `/api/v1/timeline/posts/${postId}/comment`,
                 method: "POST",
+                body: data
             }),
             invalidatesTags: ["Timeline"],
         }),
