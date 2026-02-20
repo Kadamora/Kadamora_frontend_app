@@ -43,8 +43,10 @@ export interface ForgotPasswordResponse {
 }
 
 export interface ResetPasswordPayload {
+    email: string;
     newPassword: string;
-    resetToken: string;
+    confirmPassword: string;
+    otp: string;
 }
 export interface ResetPasswordResponse {
     message?: string;
