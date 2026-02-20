@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import CommentCard from './CommentCard';
 import ImageViewer from './ImageViewer';
 import PostBody from './PostBody';
@@ -65,6 +66,7 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose, activeTab })
     const [isImageViewerClosing, setIsImageViewerClosing] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const menuRef = React.useRef<HTMLDivElement>(null);
+    const { user: authUser } = useSelector((state: any) => state.auth);
     const [createLikeUnlikePost] = useCreateLikeUnlikePostMutation();
     const [createComment, { isLoading: isCommenting }] = useCreateCommentMutation();
     const { data: commentsData} = useGetCommentsByPostIdQuery(
@@ -72,23 +74,26 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose, activeTab })
         { skip: !showModal }
     );
 
-    // Map API comments to UI format
+    // Map API comments to UI format recursively
+    const mapComment = React.useCallback((c: any): any => ({
+        id: c.id,
+        user: {
+            name: `${c.user.firstName} ${c.user.lastName}`,
+            avatar: c.user.imgUrl,
+        },
+        date: c.createdAt,
+        content: c.content,
+        likes: 0,
+        replies: c.replies?.length || 0,
+        showLike: false,
+        showHeart: false,
+        repliesData: c.replies ? c.replies.map(mapComment) : [],
+    }), []);
+
     const comments = React.useMemo(() => {
         if (!commentsData?.data) return [];
-        return commentsData.data.map((c: any) => ({
-            id: c.id,
-            user: {
-                name: `${c.user.firstName} ${c.user.lastName}`,
-                avatar: c.user.imgUrl,
-            },
-            date: c.createdAt,
-            content: c.content,
-            likes: 0, // content doesn't have likes count yet
-            replies: c.replies?.length || 0,
-            showLike: false,
-            showHeart: false,
-        }));
-    }, [commentsData]);
+        return commentsData.data.map(mapComment);
+    }, [commentsData, mapComment]);
 
     const showInteractions = activeTab === 'Activity Feed';
 
@@ -136,6 +141,23 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose, activeTab })
             setIsImageViewerClosing(false);
         }, 200);
     };
+
+    const handleCommentReplySubmit = async (content: string, parentId: string | number) => {
+        try {
+            await createComment({
+                postId: post.id,
+                data: { 
+                    content: content.trim(),
+                    parentCommentId: parentId 
+                },
+            }).unwrap();
+        } catch (error) {
+            console.error('Failed to post reply:', error);
+            throw error;
+        }
+    };
+
+
 
     const handleImageClick = (imageIndex: number) => {
         setCurrentImageIndex(imageIndex);
@@ -212,10 +234,10 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose, activeTab })
         console.log('Like comment', commentId);
     };
 
-    const handleCommentReply = (commentId: string | number) => {
-        console.log(`Reply to comment ${commentId}`);
-        // Handle comment reply here
-    };
+    // const handleCommentReply = (commentId: string | number) => {
+    //     console.log(`Reply to comment ${commentId}`);
+    //     // Handle comment reply here
+    // };
 
     return (
         <div
@@ -463,7 +485,6 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose, activeTab })
                     {/* Recent Comments */}
                     {
                         showInteractions && (
-
                     <div className="mt-6">
                         <h3 className="text-sm font-semibold text-gray-800 mb-3">Recent Comment</h3>
                         <div className="space-y-6">
@@ -473,8 +494,9 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose, activeTab })
                                     comment={comment}
                                     onMenuClick={handleCommentMenuClick}
                                     onLike={handleCommentLike}
-                                    onReply={handleCommentReply}
+                                    onReplySubmit={handleCommentReplySubmit}
                                     formatDate={formatDate}
+                                    currentUserAvatar={authUser?.imgUrl}
                                 />
                             ))}
                         </div>
