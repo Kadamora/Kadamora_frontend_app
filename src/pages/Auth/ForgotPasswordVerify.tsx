@@ -41,9 +41,8 @@ export default function ForgotPasswordVerify() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const verificationCode = code.join('');
-        const email = sessionStorage.getItem('resetEmail');
-        // Navigate to reset password page with email and code
-        navigate('/auth/reset-password', { state: { email, code: verificationCode } });
+        // Navigate to reset password page with the code in the URL
+        navigate(`/auth/reset-password/${verificationCode}`);
     };
 
     const mm = String(Math.floor(seconds / 60)).padStart(2, '0');

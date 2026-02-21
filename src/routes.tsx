@@ -9,6 +9,7 @@ import AuthLayout from './components/container/Auth/AuthLayout'
 import DashboardLayout from './components/container/DashboardLayout'
 import AdminAuthLayout from './components/container/Auth/AdminAuthLayout'
 import AdminDashboardLayout from '@components/container/AdminDashboardLayout';
+import ForgotPasswordVerify from '@pages/Auth/ForgotPasswordVerify';
 
 
 // lazy load all pages
@@ -87,6 +88,7 @@ export default function AppRoutes(){
                         <Route path="signup/verify" element={<SignupVerify />} />
                         <Route path="signup/verified" element={<SignupVerified />} />
                         <Route path="forgot-password" element={<ForgotPassword />} />
+                        <Route path="forgot-password/verify" element={<ForgotPasswordVerify />} />
                         <Route path="reset-password/:code" element={<ResetPassword />} />
                     </Route>
                      <Route

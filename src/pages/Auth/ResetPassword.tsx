@@ -24,6 +24,12 @@ export default function ResetPassword() {
         const formData = new FormData(form);
         const password = String(formData.get('password') ?? '');
         const confirm = String(formData.get('confirm') ?? '');
+        const email = sessionStorage.getItem('resetEmail') || '';
+
+        if (!email) {
+            setErrorMessage('Email is missing. Please start the password reset process again.');
+            return;
+        }
 
         if (!password || !confirm) {
             setErrorMessage('Password and confirmation are required.');
@@ -49,15 +55,21 @@ export default function ResetPassword() {
         setErrorMessage(null);
 
         try {
-            const response = await triggerResetPassword({ newPassword: password, resetToken: code as string }).unwrap();
+            const response = await triggerResetPassword({ 
+                email,
+                newPassword: password, 
+                confirmPassword: confirm,
+                otp: code as string 
+            }).unwrap();
             setSuccessMessage(response.message || 'Password reset successful. You can now sign in.');
             form.reset();
+            sessionStorage.removeItem('resetEmail');
             setTimeout(() => navigate('/auth/login'), 2000);
         } catch (err: any) {
             const message =
             err?.data?.message ||
             err?.error || 
-            'Unable to log you in with those details. Please try again.';
+            'Unable to reset your password. Please try again.';
 
         setErrorMessage(message);
         } finally {
@@ -75,7 +87,7 @@ export default function ResetPassword() {
         <div className="w-full max-w-md">
             <h1 className="text-[30px] sm:text-3xl lg:text-[50px] font-semibold text-secondary">Reset Password</h1>
             <p className="text-gray-600 mt-2">
-                Lorem ipsum dolor sit amet consectetur. Diam platea consequat libero mattis rhoncus interdum neque.
+                Please enter your new password below. Ensure it is at least 8 characters long and matches the confirmation field to keep your account secure.
             </p>
 
             <form onSubmit={handleSubmit} className="mt-8 space-y-5">
