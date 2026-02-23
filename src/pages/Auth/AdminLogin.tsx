@@ -128,19 +128,19 @@ export default function AdminLogin() {
                             </button>
                         </div>
 
-                        <div className="flex justify-end">
+                        {/* <div className="flex justify-end">
                             <a
                                 href="/admin/auth/forgot-password"
                                 className="text-sm text-green-600 hover:underline"
                             >
                                 Forget Password?
                             </a>
-                        </div>
+                        </div> */}
 
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full bg-secondary text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 hover:opacity-95 transition disabled:opacity-70"
+                            className="w-full bg-secondary text-white py-3 mt-6 rounded-lg font-medium flex items-center justify-center gap-2 hover:opacity-95 transition disabled:opacity-70"
                         >
                             {isSubmitting ? (
                                 <span className="h-4 w-4 rounded-full border-2 border-white/70 border-t-white animate-spin" />
