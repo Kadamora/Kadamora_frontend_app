@@ -26,6 +26,16 @@ export default function Gallery({ media = [] }: GalleryProps) {
 
     const currentMedia = galleryMedia[currentIndex];
 
+    // Helper to generate a thumbnail from a Cloudinary video URL
+    const getVideoThumbnail = (url: string) => {
+        if (!url) return '/assets/images/placeholder.png';
+        // If it's a cloudinary video URL, we can get a thumbnail by changing /video/upload/ to /video/upload/so_0/ and extension to .jpg
+        if (url.includes('cloudinary.com') && url.includes('/video/upload/')) {
+            return url.replace('/video/upload/', '/video/upload/so_0/').replace(/\.[^/.]+$/, '.jpg');
+        }
+        return url;
+    };
+
     // Scroll thumbnail into view when currentIndex changes
     useEffect(() => {
         if (thumbRefs.current[currentIndex]) {
@@ -61,14 +71,14 @@ export default function Gallery({ media = [] }: GalleryProps) {
                     {currentMedia.mediaType === 'video' && !showVideo ? (
                         <div className="relative w-full h-full">
                             <img
-                                src={currentMedia.thumbnail || currentMedia.url}
+                                src={currentMedia.thumbnail || getVideoThumbnail(currentMedia.url)}
                                 alt={currentMedia.altText || 'Video thumbnail'}
                                 className="w-full h-full object-cover rounded-lg"
                             />
-                            <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/10 rounded-lg">
                                 <button
                                     onClick={() => setShowVideo(true)}
-                                    className="bg-white/80 rounded-full p-4 hover:bg-white shadow"
+                                    className="bg-white/90 rounded-full p-4 hover:bg-white shadow-lg transition-transform hover:scale-110 active:scale-95"
                                     aria-label="Play property video"
                                     title="Play video"
                                 >
@@ -90,7 +100,7 @@ export default function Gallery({ media = [] }: GalleryProps) {
                             key={currentMedia.id}
                             controls
                             autoPlay
-                            poster={currentMedia.thumbnail || currentMedia.url}
+                            poster={currentMedia.thumbnail || getVideoThumbnail(currentMedia.url)}
                             onEnded={() => setShowVideo(false)}
                             className="w-full h-full object-cover rounded-lg"
                         >
@@ -181,14 +191,14 @@ export default function Gallery({ media = [] }: GalleryProps) {
                         style={{ zIndex: idx === currentIndex ? 2 : 1 }}
                     >
                         <img
-                            src={m.thumbnail || m.url}
+                            src={m.mediaType === 'video' ? getVideoThumbnail(m.url) : m.url}
                             alt={m.mediaType === 'video' ? m.altText || 'Video' : 'Image'}
                             className="w-full h-full object-cover transition-transform duration-300"
                         />
                         {/* Show play overlay on video thumbnails only if not currently playing that video */}
                         {m.mediaType === 'video' && !(currentMedia.id === m.id && showVideo) && (
-                            <span className="absolute inset-0 flex items-center justify-center">
-                                <span className="bg-white/80 rounded-full p-2 group-hover:bg-white">
+                            <span className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 transition-colors">
+                                <span className="bg-white/80 rounded-full p-2 group-hover:bg-white transition-transform group-hover:scale-110">
                                     <svg
                                         width="20"
                                         height="20"
