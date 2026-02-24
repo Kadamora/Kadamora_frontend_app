@@ -15,8 +15,8 @@ interface PropertyCardProps {
 
 const PropertyCard: React.FC<PropertyCardProps> = ({ property, onView }) => {
   return (
-    <div className="flex items-center gap-4 rounded-xl border border-[#E4E7EC] bg-card p-3 transition-all hover:shadow-sm">
-      <div className="h-16 w-20 overflow-hidden rounded-lg bg-muted">
+    <div className="flex items-center gap-4 rounded-2xl bg-white p-4 transition-all hover:bg-slate-50">
+      <div className="h-20 w-20 overflow-hidden rounded-2xl">
         <img
           src={property.image}
           alt={property.name}
@@ -24,13 +24,13 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onView }) => {
         />
       </div>
       <div className="flex-1 min-w-0">
-        <h4 className="font-semibold text-navy truncate">{property.name}</h4>
-        <p className="text-sm text-muted-foreground">
-          {property.price} • <span className="text-navy-light">{property.type}</span>
+        <h4 className="text-lg font-bold text-[#091E42] mb-0.5">{property.name}</h4>
+        <p className="text-sm font-medium text-[#505F79]">
+          {property.price} · <span className="text-[#505F79]">{property.type}</span>
         </p>
       </div>
       <button
-        className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+        className="px-6 py-2.5 rounded-xl bg-[#E5F1FF] text-[#0061FF] font-bold text-sm transition-colors hover:bg-[#D0E5FF]"
         onClick={() => onView?.(property.id)}
       >
         View

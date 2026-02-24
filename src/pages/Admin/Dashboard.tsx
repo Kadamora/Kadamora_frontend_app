@@ -1,9 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Wallet, Calendar, Users } from 'lucide-react';
 import PropertyCard, { type Property } from './DashboardHomeComp/PropertyCard';
 import SubscriberCard, { type Subscriber } from './DashboardHomeComp/SubscriberCard';
 import SectionHeader from './DashboardHomeComp/SectionHeader';
 import StatCard from './DashboardHomeComp/StatCard';
+import PropertyDetailedView from './DashboardHomeComp/PropertyDetailedView';
 
 import property1 from './DashboardHomeComp/assets/property-1.jpg';
 import property2 from './DashboardHomeComp/assets/property-2.jpg';
@@ -17,16 +18,19 @@ const stats = [
     title: 'Total Earning',
     value: 'NGN 98,370.80',
     icon: Wallet,
+    iconBg: 'bg-[#E5F1FF]'
   },
   {
     title: 'Total Bookings',
     value: '435',
     icon: Calendar,
+    iconBg: 'bg-[#E5FFF1]'
   },
   {
     title: 'Total Agents/ Realtors',
     value: '015',
     icon: Users,
+    iconBg: 'bg-[#E5F1FF]'
   },
 ];
 
@@ -75,29 +79,47 @@ const recentSubscribers: Subscriber[] = [
 
 const AdminDashboard: React.FC = () => {
   const account = useAppSelector((s) => s.auth.user);
-  const fallbackName = 'Charles'
+  const [selectedPropId, setSelectedPropId] = useState<number | null>(null);
+
+  const fallbackName = 'User'
   const firstName = useMemo(() => {
     if(!account) return fallbackName;
      const fName = `${account.firstName ?? ''}`.trim();
      return fName || fallbackName;
   }, [account, fallbackName])
+
+  const selectedProperty = useMemo(() => {
+    return recentProperties.find(p => p.id === selectedPropId) || null;
+  }, [selectedPropId]);
     
   const handleViewProperty = (id: number) => {
-    console.log('View property:', id);
+    setSelectedPropId(id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  if (selectedProperty) {
+    return (
+      <div className="px-4 py-6 animate-fade-in">
+        <PropertyDetailedView 
+          property={selectedProperty} 
+          onBack={() => setSelectedPropId(null)} 
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className="px-4 py-6 space-y-6 animate-fade-in">
+    <div className="px-4 py-8 space-y-12 animate-fade-in">
       {/* Welcome Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-navy">Welcome, {firstName}!</h1>
-        <p className="text-muted-foreground mt-1">
+      <div>
+        <h1 className="text-[32px] font-bold text-[#091E42] mb-1">Welcome, {firstName}!</h1>
+        <p className="text-[17px] font-medium text-[#505F79]">
           Here's what's happening with your business today
         </p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {stats.map((stat, index) => (
           <div 
             key={stat.title} 
@@ -108,21 +130,22 @@ const AdminDashboard: React.FC = () => {
               title={stat.title}
               value={stat.value}
               icon={stat.icon}
+              iconBgClass={stat.iconBg}
             />
           </div>
         ))}
       </div>
 
       {/* Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start">
         {/* Recent Properties */}
-        <div className="rounded-xl border border-[#E4E7EC] bg-card p-5 shadow-sm">
+        <div className="rounded-3xl border border-[#E9EEF2] bg-white p-6 shadow-[0px_1px_2px_rgba(16,24,40,0.05)]">
           <SectionHeader
             title="Recent Properties"
             subtitle="Nibo odio egestas tortor lorem laoreet eu volutpat."
             seeMoreLink="/admin/properties"
           />
-          <div className="space-y-3">
+          <div className="space-y-4">
             {recentProperties.map((property, index) => (
               <div 
                 key={property.id}
@@ -139,13 +162,13 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         {/* Recent Subscribers */}
-        <div className="rounded-xl border border-[#E4E7EC] bg-card p-5 shadow-sm">
+        <div className="rounded-3xl border border-[#E9EEF2] bg-white p-6 shadow-[0px_1px_2px_rgba(16,24,40,0.05)]">
           <SectionHeader
             title="Recent Subscriber"
             subtitle="Nibo odio egestas tortor lorem laoreet eu volutpat."
             seeMoreLink="/admin/subscription"
           />
-          <div className="divide-y divide-[#E4E7EC]">
+          <div className="divide-y divide-[#E9EEF2]">
             {recentSubscribers.map((subscriber, index) => (
               <div 
                 key={subscriber.id}

@@ -144,7 +144,7 @@ const ListPropertyFlowModal: React.FC<Props> = ({ open, onClose }) => {
     const [showSuccessPrompt, setShowSuccessPrompt] = useState(false);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const navigate = useNavigate();
-    const token = useSelector((state: any) => state.auth.token);
+    const token = useSelector((state: any) => state.auth.accessToken);
     const [videoUploadProgress, setVideoUploadProgress] = useState(0);
 
     const handleClose = useCallback(() => {
@@ -307,7 +307,8 @@ const ListingFormContent: React.FC<ListingFormContentProps> = ({
                         setVideoUploadProgress(percent);
                     },
                 });
-                return response.data.data.urls[0];
+                const resultData = response.data.data;
+                return resultData.url || resultData.urls?.[0];
             };
 
 
@@ -379,7 +380,14 @@ const ListingFormContent: React.FC<ListingFormContentProps> = ({
                     )}
 
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                        {submitError && <p className="text-sm text-red-500 font-medium md:mr-auto">{submitError}</p>}
+                        {submitError && (
+                            <div
+                                role="alert"
+                                className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 md:mr-auto"
+                            >
+                                {submitError}
+                            </div>
+                        )}
                         <div className="flex items-center justify-between md:justify-end gap-3">
                             <button
                                 type="button"
@@ -495,17 +503,29 @@ async function buildCreatePropertyPayload(
 //     };
 
 function mapFacilities(facilities: FacilitySelection[]): PropertyFacilitiesPayload {
-    const payload: PropertyFacilitiesPayload = {};
-    
+    const payload: PropertyFacilitiesPayload = {
+        livingRooms: 0,
+        bedrooms: 0,
+        bathrooms: 0,
+        kitchens: 0,
+        stores: 0
+    };
+
+    const mapping: Record<string, string> = {
+        'living_room': 'livingRooms',
+        'bedroom': 'bedrooms',
+        'bathroom': 'bathrooms',
+        'kitchen': 'kitchens',
+        'store': 'stores'
+    };
+
     facilities.forEach((facility) => {
-        if (facility.units > 0) {
-            // Convert the facility value to the expected key format
-            // e.g., "Living Rooms" -> "livingRooms"
-            const key = facility.value;
-            payload[key] = facility.units;
+        const key = mapping[facility.value];
+        if (key) {
+            payload[key] = Number(facility.units) || 0;
         }
     });
-    
+
     return payload;
 }
 
