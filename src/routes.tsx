@@ -43,6 +43,8 @@ const NotFound = lazy(() => import('@pages/Misc/NotFound'));
 const MySaved = lazy(() => import('@pages/Dashboard/PropertyListing/SavedProperty/MyListing'));
 const Subscription = lazy(() => import('@pages/Dashboard/subscription/SubscriptionPage'));
 const DashboardTimelinePage = lazy(() => import('@pages/Dashboard/Timeline/DashboardTimeline'));
+const ChatListPage = lazy(() => import('@pages/Dashboard/Chat/ChatListPage'));
+const ChatDetailPage = lazy(() => import('@pages/Dashboard/Chat/ChatDetailPage'));
 
 // admin dashboard
 const AdminDashboard = lazy(() => import('@pages/Admin/Dashboard'));
@@ -121,6 +123,8 @@ export default function AppRoutes(){
                         <Route path="saved" element={<MySaved />} />
                         <Route path="subscription" element={<Subscription />} />
                         <Route path="timeline" element={<DashboardTimelinePage />} />
+                        <Route path="chat" element={<ChatListPage />} />
+                        <Route path="chat/:userId" element={<ChatDetailPage />} />
                     </Route>
                      <Route
                         path="admin"

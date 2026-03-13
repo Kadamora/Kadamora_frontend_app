@@ -223,9 +223,28 @@ export default function PropertyView() {
                                 </div>
                                 <button
                                     type="button"
+                                    onClick={() => {
+                                        const agentUserId = property.agent?.user?.id;
+                                        if (!agentUserId) return;
+                                        navigate(`/dashboard/chat/${agentUserId}`, {
+                                            state: {
+                                                chat: {
+                                                    userId: agentUserId,
+                                                    userName: `${property.agent?.user?.firstName ?? ''} ${property.agent?.user?.lastName ?? ''}`.trim(),
+                                                    userAvatar: property.agent?.user?.imgUrl,
+                                                    propertyId: property.id,
+                                                    propertyName: property.title,
+                                                    propertyImage: property.media?.[0]?.url,
+                                                    lastMessage: '',
+                                                    lastMessageAt: '',
+                                                    unreadCount: 0,
+                                                },
+                                            },
+                                        });
+                                    }}
                                     className="rounded-full bg-[#002E62] px-5 py-2 text-[13px] font-semibold text-white transition hover:bg-[#072968] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#04194E]/50"
                                 >
-                                    Message Agent
+                                    Message Now
                                 </button>
                             </div>
                         </div>
