@@ -10,7 +10,10 @@ import {
     useGetNotificationsQuery,
     useGetUnreadNotificationCountQuery,
     useMarkAllNotificationsReadMutation,
+    notificationApi,
 } from '@store/api/notification.api';
+import { useNotificationSocket } from '@hooks/useNotificationSocket';
+import type { Notification } from '@store/api/notification.api';
 
 export interface DashboardLayoutProps {
     children?: React.ReactNode;
@@ -115,13 +118,48 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     // Sidebar slides over content (overlay style) on all breakpoints; start closed.
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    // Notification API Integration
+    // Notification API Integration — WebSocket handles real-time; REST is initial load only
     const { data: notificationsData, refetch: refetchNotifications } = useGetNotificationsQuery(
-      { page: 1, limit: 20 },
-      { pollingInterval: 30000 } // Poll every 30 seconds
+      { page: 1, limit: 20 }
     );
-    const { data: unreadCountData, refetch: refetchUnreadCount } = useGetUnreadNotificationCountQuery(undefined, { pollingInterval: 30000 });
+    const { data: unreadCountData, refetch: refetchUnreadCount } = useGetUnreadNotificationCountQuery();
+
     const [markAllReadMutation] = useMarkAllNotificationsReadMutation();
+
+    // Real-time notification updates via WebSocket
+    useNotificationSocket({
+        onNotification: useCallback(
+            (incoming: Notification) => {
+                // Prepend the new notification into the RTK Query cache instantly
+                dispatch(
+                    notificationApi.util.updateQueryData('getNotifications', { page: 1, limit: 20 }, (draft) => {
+                        const alreadyExists = draft.data?.some((n) => n.id === incoming.id);
+                        if (!alreadyExists) {
+                            draft.data = [incoming, ...(draft.data ?? [])];
+                            draft.total = (draft.total ?? 0) + 1;
+                        }
+                    }),
+                );
+                // Bump the unread count cache
+                dispatch(
+                    notificationApi.util.updateQueryData('getUnreadNotificationCount', undefined, (draft) => {
+                        if (draft.data) draft.data.unreadCount += 1;
+                    }),
+                );
+            },
+            [dispatch],
+        ),
+        onUnreadCountUpdate: useCallback(
+            (payload: { unreadCount: number }) => {
+                dispatch(
+                    notificationApi.util.updateQueryData('getUnreadNotificationCount', undefined, (draft) => {
+                        if (draft.data) draft.data.unreadCount = payload.unreadCount;
+                    }),
+                );
+            },
+            [dispatch],
+        ),
+    });
 
     // Map API data to UI model
     const notifications: NotificationItem[] = useMemo(() => {
