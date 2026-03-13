@@ -58,9 +58,9 @@
       "@components/*": ["src/components/*"],
       "@pages/*": ["src/pages/*"],
       "@utils/*": ["src/utils/*"],
-      "@store/*": ["src/store/*"]
-
-    }
+      "@store/*": ["src/store/*"],
+      "@hooks/*": ["src/hooks/*"]
+}
   },
   "include": ["src"]
 }

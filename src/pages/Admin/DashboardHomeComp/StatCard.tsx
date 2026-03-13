@@ -12,22 +12,22 @@ const StatCard: React.FC<StatCardProps> = ({
   title, 
   value, 
   icon: Icon,
-  iconBgClass = "bg-emerald-light"
+  iconBgClass = "bg-[#E5F1FF]" // Default to light blue for Total Earning
 }) => {
   return (
-    <div className="flex items-center gap-4 rounded-xl border border-[#E4E7EC] bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
-      <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${iconBgClass}`}>
-        <Icon className="h-5 w-5 text-primary" />
+    <div className="flex items-center gap-4 rounded-3xl border border-[#E9EEF2] bg-white p-6 shadow-[0px_1px_2px_rgba(16,24,40,0.05)] transition-all hover:shadow-md relative overflow-hidden group">
+      <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${iconBgClass}`}>
+        <Icon className="h-6 w-6 text-[#0061FF]" />
       </div>
       <div className="flex-1">
-        <p className="text-sm text-muted-foreground">{title}</p>
-        <p className="text-2xl font-bold text-navy">{value}</p>
+        <p className="text-[15px] font-medium text-[#505F79] mb-1">{title}</p>
+        <p className="text-3xl font-bold text-[#091E42]">{value}</p>
       </div>
-      <button className="text-muted-foreground hover:text-primary transition-colors">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" transform="rotate(-45 10 10)"/>
+      <div className="absolute top-5 right-5 text-[#98A2B3] group-hover:text-[#0061FF] transition-colors">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 17L17 7M17 7H7M17 7V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
-      </button>
+      </div>
     </div>
   );
 };

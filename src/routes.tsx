@@ -9,6 +9,7 @@ import AuthLayout from './components/container/Auth/AuthLayout'
 import DashboardLayout from './components/container/DashboardLayout'
 import AdminAuthLayout from './components/container/Auth/AdminAuthLayout'
 import AdminDashboardLayout from '@components/container/AdminDashboardLayout';
+import ForgotPasswordVerify from '@pages/Auth/ForgotPasswordVerify';
 
 
 // lazy load all pages
@@ -42,6 +43,8 @@ const NotFound = lazy(() => import('@pages/Misc/NotFound'));
 const MySaved = lazy(() => import('@pages/Dashboard/PropertyListing/SavedProperty/MyListing'));
 const Subscription = lazy(() => import('@pages/Dashboard/subscription/SubscriptionPage'));
 const DashboardTimelinePage = lazy(() => import('@pages/Dashboard/Timeline/DashboardTimeline'));
+const ChatListPage = lazy(() => import('@pages/Dashboard/Chat/ChatListPage'));
+const ChatDetailPage = lazy(() => import('@pages/Dashboard/Chat/ChatDetailPage'));
 
 // admin dashboard
 const AdminDashboard = lazy(() => import('@pages/Admin/Dashboard'));
@@ -87,6 +90,7 @@ export default function AppRoutes(){
                         <Route path="signup/verify" element={<SignupVerify />} />
                         <Route path="signup/verified" element={<SignupVerified />} />
                         <Route path="forgot-password" element={<ForgotPassword />} />
+                        <Route path="forgot-password/verify" element={<ForgotPasswordVerify />} />
                         <Route path="reset-password/:code" element={<ResetPassword />} />
                     </Route>
                      <Route
@@ -119,6 +123,8 @@ export default function AppRoutes(){
                         <Route path="saved" element={<MySaved />} />
                         <Route path="subscription" element={<Subscription />} />
                         <Route path="timeline" element={<DashboardTimelinePage />} />
+                        <Route path="chat" element={<ChatListPage />} />
+                        <Route path="chat/:userId" element={<ChatDetailPage />} />
                     </Route>
                      <Route
                         path="admin"

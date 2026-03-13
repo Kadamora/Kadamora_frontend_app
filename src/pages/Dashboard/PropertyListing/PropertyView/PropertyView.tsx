@@ -3,10 +3,9 @@ import CategoryCard from './components/CategoryCard';
 import { MdOutlineLocationOn } from 'react-icons/md';
 import { LuShieldCheck } from 'react-icons/lu';
 import Gallery from '../../../../components/cards/gallery/Gallery';
-import { fakeDb } from '../../../../components/fakeDB/fakeDb';
-import ProductCard from '../../../../components/cards/product/ProductCard';
 import { useNavigate, useParams } from 'react-router';
-import { useGetAgentPropertyListingsByIdQuery } from '@store/api/propertyListings.api';
+import { useGetAgentPropertyListingsByIdQuery, useGetAllPropertyListingsQuery } from '@store/api/propertyListings.api';
+import ProductCard from '@components/cards/product/ProductCard';
 
 export default function PropertyView() {
     const navigate = useNavigate();
@@ -14,6 +13,7 @@ export default function PropertyView() {
     const {data: propertyListings} = useGetAgentPropertyListingsByIdQuery(agentId!, {
         skip: !agentId,
     });
+    const {data: allProperties} = useGetAllPropertyListingsQuery();
     const property = propertyListings?.data;
     const formatCurrency = (amount: string | number | null | undefined) => {
         if (!amount) return 'N/A';
@@ -223,9 +223,28 @@ export default function PropertyView() {
                                 </div>
                                 <button
                                     type="button"
+                                    onClick={() => {
+                                        const agentUserId = property.agent?.user?.id;
+                                        if (!agentUserId) return;
+                                        navigate(`/dashboard/chat/${agentUserId}`, {
+                                            state: {
+                                                chat: {
+                                                    userId: agentUserId,
+                                                    userName: `${property.agent?.user?.firstName ?? ''} ${property.agent?.user?.lastName ?? ''}`.trim(),
+                                                    userAvatar: property.agent?.user?.imgUrl,
+                                                    propertyId: property.id,
+                                                    propertyName: property.title,
+                                                    propertyImage: property.media?.[0]?.url,
+                                                    lastMessage: '',
+                                                    lastMessageAt: '',
+                                                    unreadCount: 0,
+                                                },
+                                            },
+                                        });
+                                    }}
                                     className="rounded-full bg-[#002E62] px-5 py-2 text-[13px] font-semibold text-white transition hover:bg-[#072968] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#04194E]/50"
                                 >
-                                    Message Agent
+                                    Message Now
                                 </button>
                             </div>
                         </div>
@@ -238,18 +257,23 @@ export default function PropertyView() {
                 <div className="max-w-7xl mx-auto">
                     <h2 className="text-3xl md:text-[40px] font-bold text-secondary mb-8">Similar Properties</h2>
 
-                    {/* First Row */}
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        {fakeDb.listings.slice(0, 4).map((property) => (
-                            <ProductCard key={property.id} property={property} />
-                        ))}
-                    </div>
-
-                    {/* Second Row */}
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {fakeDb.listings.slice(4, 8).map((property) => (
-                            <ProductCard key={property.id} property={property} />
-                        ))}
+                        {allProperties?.data
+                            ?.filter((p: any) => p.id !== property.id)
+                            .slice(0, 8)
+                            .map((p: any) => {
+                                // Map API structure to ProductCard props
+                                const mappedProperty = {
+                                    id: p.id,
+                                    name: p.title,
+                                    price: formatCurrency(p.price),
+                                    description: p.description?.slice(0, 100) + (p.description?.length > 100 ? '...' : ''),
+                                    category: humanize(p.propertyType), // e.g., "Rent", "Sell"
+                                    subCategory: humanize(p.propertySubType || p.propertyType),
+                                    image: p.media?.[0]?.url || '/assets/images/placeholder.png',
+                                };
+                                return <ProductCard key={p.id} property={mappedProperty} />;
+                            })}
                     </div>
                 </div>
             </section>

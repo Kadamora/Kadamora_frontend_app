@@ -7,102 +7,119 @@ import { CircleCheckBig, Fence } from 'lucide-react';
 import type { PricingTier } from './component/pricing';
 import SubscriptionServiceCard from './component/SubscriptionServiceCard';
 import PropertyPricingAccordion from './component/PropertyPricingAccordion';
+import { useGetAllSubscriptionPlansQuery, useSubscribeToPlanMutation } from '@store/api/subscription.api';
+import type { SubscriptionPlan } from '@store/api/subscription.api';
 
-export const PROPERTY_PRICING: PricingTier[] = [
-    {
-        id: "basic",
-        name: "Basics",
-        tierLabel: "Tier 1",
-        targetUsers: "Owner/Agent 1–5 units",
-        features: "Admin panel, tenant directory, maintenance",
-        prices: {
-            monthly: 3000,
-            quarterly: 10000,
-            annually: 25000,
+/* -------------------------------------------------------
+   Helper: map API plan → PricingTier used by accordion
+-------------------------------------------------------- */
+function mapPlanToTier(plan: SubscriptionPlan, index: number): PricingTier {
+    return {
+        id: plan.id,
+        name: plan.name,
+        tierLabel: plan.tierLabel ?? `Tier ${index + 1}`,
+        targetUsers: plan.targetUsers ?? plan.description ?? '—',
+        features: plan.features ?? '—',
+        prices: plan.prices ?? {
+            monthly: plan.monthlyPrice ?? 0,
+            quarterly: plan.quarterlyPrice ?? 0,
+            annually: plan.annualPrice ?? 0,
         },
-    },
-    {
-        id: "commercial",
-        name: "Commercial Basic",
-        tierLabel: "Tier 2",
-        targetUsers: "Small buildings (5–15 offices/shops)",
-        features: "Admin panel, tenant directory, maintenance",
-        prices: {
-            monthly: 20000,
-            quarterly: 45000,
-            annually: 165000,
-        },
-    },
-    {
-        id: "commercial-premium",
-        name: "Commercial Premium",
-        tierLabel: "Tier 3",
-        targetUsers: "Developers/Construction companies/ Large buildings (15+ offices/shops)",
-        features: "All features + service contracts + analytics",
-        prices: {
-            monthly: 50000,
-            quarterly: 140000,
-            annually: 520000,
-        },
-    },
-];
+    };
+}
+
+/* -------------------------------------------------------
+   Skeleton loader for the pricing accordion area
+-------------------------------------------------------- */
+function PricingSkeletonLoader() {
+    return (
+        <div className="animate-pulse mt-6 border border-gray-200 rounded-xl overflow-hidden">
+            <div className="bg-gray-100 p-4 grid grid-cols-4 gap-4">
+                <div className="h-5 bg-gray-200 rounded" />
+                {[0, 1, 2].map((i) => (
+                    <div key={i} className="h-5 bg-gray-200 rounded" />
+                ))}
+            </div>
+            {[0, 1, 2].map((row) => (
+                <div key={row} className="p-4 grid grid-cols-4 gap-4 border-t border-gray-100">
+                    <div className="h-4 bg-gray-100 rounded" />
+                    {[0, 1, 2].map((col) => (
+                        <div key={col} className="h-4 bg-gray-100 rounded" />
+                    ))}
+                </div>
+            ))}
+        </div>
+    );
+}
+
+/* -------------------------------------------------------
+   Skeleton loader for the whole services section
+-------------------------------------------------------- */
+function ServiceCardSkeletonLoader() {
+    return (
+        <div className="animate-pulse bg-white rounded-xl p-4 border border-gray-200">
+            <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-gray-200 shrink-0" />
+                <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-1/3" />
+                    <div className="h-3 bg-gray-100 rounded w-2/3" />
+                </div>
+                <div className="w-11 h-5 rounded-full bg-gray-200" />
+            </div>
+        </div>
+    );
+}
 
 const SubscriptionPage = () => {
     const [modalStep, setModalStep] = useState<'none' | 'info' | 'method' | 'bank_transfer' | 'credit_card'>('none');
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'quarterly' | 'annually'>('monthly');
     const [activeService, setActiveService] = useState<string | null>(null);
     const [selectedPropertyTier, setSelectedPropertyTier] = useState<string | null>(null);
+    const [subscribeError, setSubscribeError] = useState<string | null>(null);
+    const [subscribeSuccess, setSubscribeSuccess] = useState(false);
+
+    /* ---- API ---- */
+    const { data: plansData, isLoading: plansLoading, isError: plansError } = useGetAllSubscriptionPlansQuery();
+    const [subscribeToPlan, { isLoading: subscribing }] = useSubscribeToPlanMutation();
+
+    const rawPlans: SubscriptionPlan[] = Array.isArray(plansData?.data) ? plansData.data : [];
+    const mappedPricing: PricingTier[] = rawPlans.map(mapPlanToTier);
+
+    /* ---- Computed total ---- */
     const totalAmount = (() => {
-        let total = 0;
-
-        if (activeService === "property" && selectedPropertyTier) {
-            const tier = PROPERTY_PRICING.find(
-                (t) => t.id === selectedPropertyTier
-            );
-            if (tier) {
-                total += tier.prices[billingCycle];
-            }
-        }
-
-        return total;
+        if (!selectedPropertyTier) return 0;
+        const tier = mappedPricing.find((t) => t.id === selectedPropertyTier);
+        return tier ? tier.prices[billingCycle] : 0;
     })();
-    
+
+    /* ---- Handle final payment confirm ---- */
+    const handleConfirmPayment = async () => {
+        if (!selectedPropertyTier) return;
+        setSubscribeError(null);
+        try {
+            await subscribeToPlan({
+                planId: selectedPropertyTier,
+                billingCycle,
+            }).unwrap();
+            setSubscribeSuccess(true);
+            setModalStep('none');
+            setSelectedPropertyTier(null);
+            setActiveService(null);
+        } catch (err: any) {
+            const msg =
+                err?.data?.message ?? err?.message ?? 'Subscription failed. Please try again.';
+            setSubscribeError(msg);
+        }
+    };
+
     const services = [
-        // {
-        //     id: 'facility',
-        //     title: 'Facility Management',
-        //     description: 'Subscribe to exactly what you need. Manage your space, book services, or build projects—all in one place',
-        //     icon: <Home size={20} />,
-        //     active: false
-        // },
         {
             id: 'property',
             title: 'Property Management',
             description: 'Subscribe to exactly what you need. Manage your space, book services, or build projects—all in one place',
             icon: <Fence size={20} />,
-            active: false
+            active: false,
         },
-        // {
-        //     id: 'project',
-        //     title: 'Project and Construction Management',
-        //     description: 'Subscribe to exactly what you need. Manage your space, book services, or build projects—all in one place',
-        //     icon: <HardHat size={20} />,
-        //     active: false
-        // },
-        // {
-        //     id: 'upto2',
-        //     title: 'Up to 2 Services from 3',
-        //     description: 'Subscribe to exactly what you need. Manage your space, book services, or build projects—all in one place',
-        //     icon: <Layers size={20} />,
-        //     active: false
-        // },
-        // {
-        //     id: 'premium',
-        //     title: 'Premium access(All 3 services)',
-        //     description: 'Subscribe to exactly what you need. Manage your space, book services, or build projects—all in one place',
-        //     icon: <Star size={20} />,
-        //     active: false
-        // }
     ];
 
     return (
@@ -117,29 +134,32 @@ const SubscriptionPage = () => {
 
                     {/* Billing Cycle Toggle */}
                     <div className="flex items-center gap-4 mt-4 md:mt-0">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${billingCycle === 'monthly' ? 'border-[var(--color-primary)]' : 'border-gray-300'}`}>
-                                {billingCycle === 'monthly' && <div className="w-2 h-2 rounded-full bg-[var(--color-primary)]" />}
-                            </div>
-                            <span className={`text-sm ${billingCycle === 'monthly' ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>Monthly</span>
-                            <input type="radio" name="billing" className="hidden" checked={billingCycle === 'monthly'} onChange={() => setBillingCycle('monthly')} />
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${billingCycle === 'quarterly' ? 'border-[var(--color-primary)]' : 'border-gray-300'}`}>
-                                {billingCycle === 'quarterly' && <div className="w-2 h-2 rounded-full bg-[var(--color-primary)]" />}
-                            </div>
-                            <span className={`text-sm ${billingCycle === 'quarterly' ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>Quarterly</span>
-                            <input type="radio" name="billing" className="hidden" checked={billingCycle === 'quarterly'} onChange={() => setBillingCycle('quarterly')} />
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${billingCycle === 'annually' ? 'border-[var(--color-primary)]' : 'border-gray-300'}`}>
-                                {billingCycle === 'annually' && <div className="w-2 h-2 rounded-full bg-[var(--color-primary)]" />}
-                            </div>
-                            <span className={`text-sm ${billingCycle === 'annually' ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>Annually</span>
-                            <input type="radio" name="billing" className="hidden" checked={billingCycle === 'annually'} onChange={() => setBillingCycle('annually')} />
-                        </label>
+                        {(['monthly', 'quarterly', 'annually'] as const).map((cycle) => (
+                            <label key={cycle} className="flex items-center gap-2 cursor-pointer">
+                                <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${billingCycle === cycle ? 'border-[var(--color-primary)]' : 'border-gray-300'}`}>
+                                    {billingCycle === cycle && <div className="w-2 h-2 rounded-full bg-[var(--color-primary)]" />}
+                                </div>
+                                <span className={`text-sm capitalize ${billingCycle === cycle ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>{cycle}</span>
+                                <input type="radio" name="billing" className="hidden" checked={billingCycle === cycle} onChange={() => setBillingCycle(cycle)} />
+                            </label>
+                        ))}
                     </div>
                 </div>
+
+                {/* Success banner */}
+                {subscribeSuccess && (
+                    <div className="mb-6 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 flex items-center gap-2">
+                        <CircleCheckBig size={18} className="shrink-0" />
+                        You have successfully subscribed! Your plan is now active.
+                    </div>
+                )}
+
+                {/* Error banner */}
+                {subscribeError && (
+                    <div role="alert" className="mb-6 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+                        {subscribeError}
+                    </div>
+                )}
 
                 {/* Free Services Card */}
                 <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-8 relative overflow-hidden">
@@ -164,36 +184,53 @@ const SubscriptionPage = () => {
                     </div>
                 </div>
 
+                {/* API error state */}
+                {plansError && (
+                    <div role="alert" className="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+                        Failed to load subscription plans. Please refresh and try again.
+                    </div>
+                )}
+
                 {/* Paid Services List */}
                 <div className="space-y-4">
-                    {services.map((service) => {
-                        const isOpen = activeService === service.id;
-
-                        return (
-                            <SubscriptionServiceCard
-                                title={service.title}
-                                description={service.description}
-                                icon={service.icon}
-                                active={isOpen}
-                                onToggle={() => setActiveService(isOpen ? null : service.id)}
-                            >
-                                {service.id === "property" && (
-                                    <PropertyPricingAccordion
-                                        open={isOpen}
-                                        pricing={PROPERTY_PRICING}
-                                        billingCycle={billingCycle}
-                                        selectedTierId={selectedPropertyTier ?? undefined}
-                                        onSelectTier={(tierId) =>
-                                            setSelectedPropertyTier((prev) =>
-                                                prev === tierId ? null : tierId
-                                            )
-                                        }
-                                    />
-                                )}
-                            </SubscriptionServiceCard>
-
-                        );
-                    })}
+                    {plansLoading ? (
+                        <>
+                            <ServiceCardSkeletonLoader />
+                            <ServiceCardSkeletonLoader />
+                        </>
+                    ) : (
+                        services.map((service) => {
+                            const isOpen = activeService === service.id;
+                            return (
+                                <SubscriptionServiceCard
+                                    key={service.id}
+                                    title={service.title}
+                                    description={service.description}
+                                    icon={service.icon}
+                                    active={isOpen}
+                                    onToggle={() => setActiveService(isOpen ? null : service.id)}
+                                >
+                                    {service.id === 'property' && (
+                                        plansLoading ? (
+                                            <PricingSkeletonLoader />
+                                        ) : (
+                                            <PropertyPricingAccordion
+                                                open={isOpen}
+                                                pricing={mappedPricing}
+                                                billingCycle={billingCycle}
+                                                selectedTierId={selectedPropertyTier ?? undefined}
+                                                onSelectTier={(tierId) =>
+                                                    setSelectedPropertyTier((prev) =>
+                                                        prev === tierId ? null : tierId
+                                                    )
+                                                }
+                                            />
+                                        )
+                                    )}
+                                </SubscriptionServiceCard>
+                            );
+                        })
+                    )}
                 </div>
 
                 {/* Bottom Bar */}
@@ -201,7 +238,7 @@ const SubscriptionPage = () => {
                     <div className="max-w-6xl mx-auto flex justify-end items-center gap-6 pr-8">
                         <button
                             onClick={() => setModalStep('info')}
-                            disabled={!totalAmount}
+                            disabled={!totalAmount || subscribing}
                             className="bg-[var(--color-secondary)] disabled:opacity-50 text-white px-8 py-3 rounded-lg font-semibold"
                         >
                             Proceed to Pay{" "}
@@ -223,11 +260,11 @@ const SubscriptionPage = () => {
                     onClose={() => setModalStep('none')}
                     amount={totalAmount}
                     onNext={(method) => {
-                         if (method === 'bank_transfer') {
-                             setModalStep('bank_transfer');
-                         } else if (method === 'credit_card') {
-                             setModalStep('credit_card');
-                         }
+                        if (method === 'bank_transfer') {
+                            setModalStep('bank_transfer');
+                        } else if (method === 'credit_card') {
+                            setModalStep('credit_card');
+                        }
                     }}
                 />
 
@@ -235,20 +272,14 @@ const SubscriptionPage = () => {
                     isOpen={modalStep === 'bank_transfer'}
                     onClose={() => setModalStep('none')}
                     amount={totalAmount}
-                    onConfirm={() => {
-                        // Handle confirmation
-                        setModalStep('none');
-                    }}
+                    onConfirm={handleConfirmPayment}
                 />
 
                 <CreditCardModal
                     isOpen={modalStep === 'credit_card'}
                     onClose={() => setModalStep('none')}
                     amount={totalAmount}
-                    onPay={() => {
-                        // Handle payment
-                        setModalStep('none');
-                    }}
+                    onPay={handleConfirmPayment}
                 />
             </div>
         </div>

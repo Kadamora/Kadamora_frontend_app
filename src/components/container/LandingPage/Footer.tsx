@@ -90,7 +90,8 @@ export default function Footer() {
                             <ul className="space-y-2 text-sm text-white">
                                 <li>contact@Kadamora.com</li>
                                 <li>+234 8101735245</li>
-                                <li>123 Opebi Allen Avenue, Ikeja Lagos, Nigeria</li>
+                                {/* <li>123 Opebi Allen Avenue, Ikeja Lagos, Nigeria</li> */}
+                                <li>11a Olu akerele street Ikeja Lagos, Nigeria</li>
                             </ul>
                         </div>
                     </div>

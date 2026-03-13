@@ -1,10 +1,10 @@
 import type { NotificationItem } from '@components/widgets/NotificationPanel';
 import NotificationPanel from '@components/widgets/NotificationPanel';
-import {  useAppSelector } from '@store/hooks';
-// import { logout } from '@store/slices/auth.slice';
-import React, { useCallback, useMemo, useState } from 'react';
+import { useAppDispatch, useAppSelector } from '@store/hooks';
+import { logout } from '@store/slices/auth.slice';
+import React, { useCallback, useMemo, useState, useRef, useEffect } from 'react';
 import { FaRegBell } from 'react-icons/fa';
-import { Link, Outlet, useLocation } from 'react-router';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router';
 
 const adminNav = [
     { label: 'Dashboard', to: '/admin', icon: '/assets/icons/grid.svg', iconClass: 'icon-home' },
@@ -41,8 +41,8 @@ const notificationsSample: NotificationItem[] = [
 
 const AdminDashboardLayout: React.FC = () => {
     const location = useLocation();
-    // const navigate = useNavigate();
-    // const dispatch = useAppDispatch();
+    const navigate = useNavigate();
+    const dispatch = useAppDispatch();
     const account = useAppSelector((s) => s.auth.user);
 
     const fallbackInitials = "CJ"
@@ -81,6 +81,19 @@ const AdminDashboardLayout: React.FC = () => {
         setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     }, []);
 
+    const [userMenuOpen, setUserMenuOpen] = useState(false);
+    const userMenuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+                setUserMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
    const activeNav = useMemo(() => {
     const currentPath = location.pathname.replace(/\/+$/, ''); 
 
@@ -99,11 +112,11 @@ const AdminDashboardLayout: React.FC = () => {
 }, [location.pathname, adminNav]);
 
 
-    // const handleLogout = () => {
-    //     dispatch(logout());
-    //     navigate('/admin/auth/login', { replace: true });
-    // };
-    // console.log(handleLogout)
+    const handleLogout = () => {
+        dispatch(logout());
+        navigate('/admin/auth/login', { replace: true });
+    };
+    console.log(handleLogout)
     return (
         <div className="min-h-screen flex bg-gradient-to-b from-[#f2fcf7] via-[#fcfcfc] to-white text-[#101828] relative">
             {/* navigation sidebar */}
@@ -167,15 +180,58 @@ const AdminDashboardLayout: React.FC = () => {
                             </button>
 
 
-                            <div className="flex items-center gap-3">
-                                <span className="flex h-12 w-12 items-center justify-center rounded-full border border-[#CCD5DD] bg-white text-sm font-semibold text-[#093154] overflow-hidden">
+
+                            <div className="relative" ref={userMenuRef}>
+                                <button
+                                    type="button"
+                                    onClick={() => setUserMenuOpen((o) => !o)}
+                                    className="flex items-center gap-3 rounded-full px-1 md:px-2 py-1 hover:bg-emerald-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 transition"
+                                    aria-haspopup="menu"
+                                >
+                                    <span className="flex h-12 w-12 items-center justify-center rounded-full border border-[#CCD5DD] bg-white text-sm font-semibold text-[#093154] overflow-hidden">
                                         {/* Fallback initials if no avatar image */}
                                         {derivedInitials}
                                     </span>
-                                <div className="hidden sm:block leading-tight">
-                                    <p className="text-sm font-semibold">{derivedName}</p>
-                                    <p className="text-xs text-[#667085]">{derivedRole}</p>
-                                </div>
+                                    <span className="hidden md:flex flex-col text-left leading-tight">
+                                        <span className="text-sm font-bold text-[#091E42]">{derivedName}</span>
+                                        <span className="text-[12px] text-[#505F79]">{derivedRole}</span>
+                                    </span>
+                                    <svg
+                                        className={`hidden md:block h-4 w-4 text-primary transition-transform ${userMenuOpen ? 'rotate-180' : ''}`}
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth={2}
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                {userMenuOpen && (
+                                    <div
+                                        role="menu"
+                                        aria-label="User menu"
+                                        className="absolute right-0 mt-3 w-56 origin-top-right rounded-xl border border-[#E4E7EC] bg-white shadow-lg ring-1 ring-black/5 p-2 animate-[fadeIn_.18s_ease-out]"
+                                    >
+                                        <div
+                                            role="menuitem"
+                                            onClick={() => {
+                                                setUserMenuOpen(false);
+                                                handleLogout();
+                                            }}
+                                            className="w-full flex items-center gap-3 rounded-lg px-3 py-2 font-medium transition cursor-pointer text-[#52525B] hover:bg-[#F1FCF7] hover:text-[#359F6A] focus:outline-none focus:bg-[#F1FCF7]"
+                                        >
+                                            <div className="mr-[5px]">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                                                    <polyline points="16 17 21 12 16 7" />
+                                                    <line x1="21" y1="12" x2="9" y2="12" />
+                                                </svg>
+                                            </div>
+                                            <span>Logout</span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

@@ -154,16 +154,43 @@ const DashboardTimeline: React.FC = () => {
                         {/* Feed Stream */}
                         <div className="space-y-6">
                             {isLoading ? (
-                                <div className="text-center py-10">Loading...</div>
+                                <div className="space-y-6">
+                                    {[1, 2, 3].map((i) => (
+                                        <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 p-6 animate-pulse">
+                                            {/* Header */}
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <div className="w-12 h-12 rounded-full bg-gray-200 shrink-0" />
+                                                <div className="flex-1 space-y-2">
+                                                    <div className="h-4 bg-gray-200 rounded w-32" />
+                                                    <div className="h-3 bg-gray-200 rounded w-20" />
+                                                </div>
+                                            </div>
+                                            {/* Title */}
+                                            <div className="h-4 bg-gray-200 rounded w-3/4 mb-3" />
+                                            {/* Body lines */}
+                                            <div className="space-y-2 mb-4">
+                                                <div className="h-3 bg-gray-200 rounded w-full" />
+                                                <div className="h-3 bg-gray-200 rounded w-full" />
+                                                <div className="h-3 bg-gray-200 rounded w-5/6" />
+                                            </div>
+                                            {/* Image placeholder */}
+                                            <div className="h-48 bg-gray-200 rounded-xl mb-4" />
+                                            {/* Action bar */}
+                                            <div className="flex items-center gap-6 pt-3 border-t border-gray-100">
+                                                <div className="h-4 bg-gray-200 rounded w-16" />
+                                                <div className="h-4 bg-gray-200 rounded w-16" />
+                                                <div className="h-4 bg-gray-200 rounded w-16" />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             ) : displayData.length > 0 ? (
                                 displayData.map((post: any) => (
                                 <TimelineCard
                                     key={post.id}
                                     post={post}
+                                    activeTab={activeTab}
                                     onLike={(id: any) => console.log('Like', id)}
-                                    // onDelete={(id: any) => console.log('Delete', id)} onComment={function (id: number): void {
-                                    //     throw new Error('Function not implemented.');
-                                    // } }                                
                                 />
                             ))
                             ) : (

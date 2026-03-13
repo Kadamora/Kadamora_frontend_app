@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import CommentCard from './CommentCard';
 import ImageViewer from './ImageViewer';
 import PostBody from './PostBody';
@@ -50,9 +51,10 @@ interface TimelineCardProps {
     post: TimelinePost;
     onClose?: () => void;
     onLike?: (id: number) => void;
+    activeTab?: string;
 }
 
-const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose }) => {
+const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose, activeTab }) => {
     
     const [liked, setLiked] = useState(false);
     const [commentText, setCommentText] = useState('');
@@ -64,6 +66,7 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose }) => {
     const [isImageViewerClosing, setIsImageViewerClosing] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const menuRef = React.useRef<HTMLDivElement>(null);
+    const { user: authUser } = useSelector((state: any) => state.auth);
     const [createLikeUnlikePost] = useCreateLikeUnlikePostMutation();
     const [createComment, { isLoading: isCommenting }] = useCreateCommentMutation();
     const { data: commentsData} = useGetCommentsByPostIdQuery(
@@ -71,23 +74,28 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose }) => {
         { skip: !showModal }
     );
 
-    // Map API comments to UI format
+    // Map API comments to UI format recursively
+    const mapComment = React.useCallback((c: any): any => ({
+        id: c.id,
+        user: {
+            name: `${c.user.firstName} ${c.user.lastName}`,
+            avatar: c.user.imgUrl,
+        },
+        date: c.createdAt,
+        content: c.content,
+        likes: 0,
+        replies: c.replies?.length || 0,
+        showLike: false,
+        showHeart: false,
+        repliesData: c.replies ? c.replies.map(mapComment) : [],
+    }), []);
+
     const comments = React.useMemo(() => {
         if (!commentsData?.data) return [];
-        return commentsData.data.map((c: any) => ({
-            id: c.id,
-            user: {
-                name: `${c.user.firstName} ${c.user.lastName}`,
-                avatar: c.user.imgUrl,
-            },
-            date: c.createdAt,
-            content: c.content,
-            likes: 0, // content doesn't have likes count yet
-            replies: c.replies?.length || 0,
-            showLike: false,
-            showHeart: false,
-        }));
-    }, [commentsData]);
+        return commentsData.data.map(mapComment);
+    }, [commentsData, mapComment]);
+
+    const showInteractions = activeTab === 'Activity Feed';
 
     // Computed values with fallbacks
     const user = post.createdBy ?? post.user;
@@ -133,6 +141,23 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose }) => {
             setIsImageViewerClosing(false);
         }, 200);
     };
+
+    const handleCommentReplySubmit = async (content: string, parentId: string | number) => {
+        try {
+            await createComment({
+                postId: post.id,
+                data: { 
+                    content: content.trim(),
+                    parentCommentId: parentId 
+                },
+            }).unwrap();
+        } catch (error) {
+            console.error('Failed to post reply:', error);
+            throw error;
+        }
+    };
+
+
 
     const handleImageClick = (imageIndex: number) => {
         setCurrentImageIndex(imageIndex);
@@ -209,10 +234,10 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose }) => {
         console.log('Like comment', commentId);
     };
 
-    const handleCommentReply = (commentId: string | number) => {
-        console.log(`Reply to comment ${commentId}`);
-        // Handle comment reply here
-    };
+    // const handleCommentReply = (commentId: string | number) => {
+    //     console.log(`Reply to comment ${commentId}`);
+    //     // Handle comment reply here
+    // };
 
     return (
         <div
@@ -324,6 +349,7 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose }) => {
                 onOpenModal={() => setShowModal(true)}
                 onImageClick={handleImageClick}
                 paddingX
+                showInteractions={showInteractions}
             />
 
             {/* Modal for post details and comments */}
@@ -333,137 +359,77 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose }) => {
                 title={post?.title || userName}
                 onClose={handleCloseModal}
                 footer={
-                    <div className="p-4">
-                        <div className="flex gap-3">
-                            <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center flex-shrink-0">
-                                {userAvatar ? (
-                                    <img
-                                        src={userAvatar}
-                                        alt={userName}
-                                        className="w-full h-full object-cover"
-                                        onError={(e) => {
-                                            e.currentTarget.style.display = 'none';
-                                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                    showInteractions ? (
+                        <div className="p-4">
+                            <div className="flex gap-3">
+                                <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center flex-shrink-0">
+                                    {userAvatar ? (
+                                        <img
+                                            src={userAvatar}
+                                            alt={userName}
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                                e.currentTarget.style.display = 'none';
+                                                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                            }}
+                                        />
+                                    ) : (
+                                        <span className="text-base font-semibold text-gray-600">
+                                            {userName
+                                                .split(' ')
+                                                .map((n: string) => n[0])
+                                                .join('')
+                                                .toUpperCase()
+                                                .slice(0, 2)}
+                                        </span>
+                                    )}
+                                    <span className="hidden text-base font-semibold text-gray-600">
+                                            {userName
+                                                .split(' ')
+                                                .map((n: string) => n[0])
+                                                .join('')
+                                                .toUpperCase()
+                                                .slice(0, 2)}
+                                    </span>
+                                </div>
+                                <div className="flex-1 bg-gray-50 rounded-2xl p-4 border border-[#E4E4E7]">
+                                    <textarea
+                                        placeholder="Comment here ..."
+                                        rows={2}
+                                        value={commentText}
+                                        onChange={(e) => setCommentText(e.target.value)}
+                                        className="w-full bg-transparent placeholder:text-gray-400 outline-none resize-none text-base"
+                                        onInput={(e) => {
+                                            const target = e.target as HTMLTextAreaElement;
+                                            target.style.height = 'auto';
+                                            target.style.height = `${target.scrollHeight}px`;
                                         }}
                                     />
-                                ) : (
-                                    <span className="text-base font-semibold text-gray-600">
-                                         {userName
-                                            .split(' ')
-                                            .map((n: string) => n[0])
-                                            .join('')
-                                            .toUpperCase()
-                                            .slice(0, 2)}
-                                    </span>
-                                )}
-                                <span className="hidden text-base font-semibold text-gray-600">
-                                         {userName
-                                            .split(' ')
-                                            .map((n: string) => n[0])
-                                            .join('')
-                                            .toUpperCase()
-                                            .slice(0, 2)}
-                                </span>
-                            </div>
-                            <div className="flex-1 bg-gray-50 rounded-2xl p-4 border border-[#E4E4E7]">
-                                <textarea
-                                    placeholder="Comment here ..."
-                                    rows={2}
-                                    value={commentText}
-                                    onChange={(e) => setCommentText(e.target.value)}
-                                    className="w-full bg-transparent placeholder:text-gray-400 outline-none resize-none text-base"
-                                    onInput={(e) => {
-                                        const target = e.target as HTMLTextAreaElement;
-                                        target.style.height = 'auto';
-                                        target.style.height = `${target.scrollHeight}px`;
-                                    }}
-                                />
 
-                                <div className="flex items-center justify-between mt-3">
-                                    {/* <div className="flex items-center gap-4">
+                                    <div className="flex items-center justify-between mt-3">
+                                        <div></div>
                                         <button
-                                            title="Add"
-                                            aria-label="Add attachment"
-                                            className="p-2 hover:text-gray-600 transition-colors bg-[#F4F4F4] "
+                                            className={`h-10 px-6 rounded-full flex items-center gap-2 text-white font-medium transition-colors ${
+                                                !commentText.trim() || isCommenting
+                                                    ? 'bg-gray-400 cursor-not-allowed'
+                                                    : 'bg-[#43CC88] hover:bg-green-600'
+                                            }`}
+                                            title="Send comment"
+                                            aria-label="Send comment"
+                                            onClick={handleCreateComment}
+                                            disabled={!commentText.trim() || isCommenting}
                                         >
-                                            <img src="/assets/icons/plus.svg" alt="Add" width="20" height="20" className="" />
+                                            {isCommenting ? (
+                                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                            ) : (
+                                                <span>Send</span>
+                                            )}
                                         </button>
-                                        <button
-                                            title="Emoji"
-                                            aria-label="Insert emoji"
-                                            className="p-1 hover:text-gray-600 transition-colors"
-                                        >
-                                            <img src="/assets/icons/emoji.png" alt="Emoji" width="20" height="20" className="" />
-                                        </button>
-                                        <button
-                                            title="Mention"
-                                            aria-label="Mention someone"
-                                            className="p-1 hover:text-gray-600 transition-colors"
-                                        >
-                                            <img
-                                                src="/assets/icons/mention.png"
-                                                alt="Mention"
-                                                width="20"
-                                                height="20"
-                                                className=""
-                                            />
-                                        </button>
-                                        <button
-                                            title="Video"
-                                            aria-label="Add video"
-                                            className="p-1 hover:text-gray-600 transition-colors"
-                                        >
-                                            <img src="/assets/icons/video.png" alt="Video" width="20" height="20" className="" />
-                                        </button>
-                                        <button
-                                            title="Voice"
-                                            aria-label="Add voice message"
-                                            className="p-1 hover:text-gray-600 transition-colors"
-                                        >
-                                            <img
-                                                src="/assets/icons/microphone.png"
-                                                alt="Microphone"
-                                                width="20"
-                                                height="20"
-                                                className=""
-                                            />
-                                        </button>
-                                        <button
-                                            title="Document"
-                                            aria-label="Add document"
-                                            className="p-1 hover:text-gray-600 transition-colors"
-                                        >
-                                            <img
-                                                src="/assets/icons/document.png"
-                                                alt="Document"
-                                                width="20"
-                                                height="20"
-                                                className=""
-                                            />
-                                        </button>
-                                    </div> */}
-                                    <div></div>
-                                    <button
-                                        className={`h-10 px-6 rounded-full flex items-center gap-2 text-white font-medium transition-colors ${
-                                            !commentText.trim() || isCommenting
-                                                ? 'bg-gray-400 cursor-not-allowed'
-                                                : 'bg-[#43CC88] hover:bg-green-600'
-                                        }`}
-                                        title="Send comment"
-                                        aria-label="Send comment"
-                                        onClick={handleCreateComment}
-                                        disabled={!commentText.trim() || isCommenting}
-                                    >
-                                        {isCommenting ? (
-                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                        ) : (
-                                            <span>Send</span>
-                                        )}
-                                    </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    ) : null
                 }
             >
                 <div className="p-8">
@@ -513,9 +479,12 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose }) => {
                         onLike={handleLike}
                         onImageClick={handleImageClick}
                         paddingX={false}
+                        showInteractions={showInteractions}
                     />
 
                     {/* Recent Comments */}
+                    {
+                        showInteractions && (
                     <div className="mt-6">
                         <h3 className="text-sm font-semibold text-gray-800 mb-3">Recent Comment</h3>
                         <div className="space-y-6">
@@ -525,12 +494,15 @@ const TimelineCard: React.FC<TimelineCardProps> = ({ post, onClose }) => {
                                     comment={comment}
                                     onMenuClick={handleCommentMenuClick}
                                     onLike={handleCommentLike}
-                                    onReply={handleCommentReply}
+                                    onReplySubmit={handleCommentReplySubmit}
                                     formatDate={formatDate}
+                                    currentUserAvatar={authUser?.imgUrl}
                                 />
                             ))}
                         </div>
                     </div>
+                        )
+                    }
                 </div>
             </Modal>
 

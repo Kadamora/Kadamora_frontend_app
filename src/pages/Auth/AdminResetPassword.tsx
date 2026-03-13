@@ -26,7 +26,12 @@ export default function AdminResetPassword() {
         const formData = new FormData(form);
         const password = String(formData.get('password') ?? '');
         const confirm = String(formData.get('confirm') ?? '');
+        const email = sessionStorage.getItem('resetEmail') || '';
 
+         if (!email) {
+            setErrorMessage('Email is missing. Please start the password reset process again.');
+            return;
+        }
         if (!password || !confirm) {
             setErrorMessage('Password and confirmation are required.');
             return;
@@ -51,9 +56,15 @@ export default function AdminResetPassword() {
         setErrorMessage(null);
 
         try {
-            const response = await triggerResetPassword({ newPassword: password, resetToken: code as string }).unwrap();
+            const response = await triggerResetPassword({ 
+                 email,
+                newPassword: password, 
+                confirmPassword: confirm,
+                otp: code as string 
+             }).unwrap();
             setSuccessMessage(response.message || 'Password reset successful. You can now sign in.');
             form.reset();
+            sessionStorage.removeItem('resetEmail');
             setTimeout(() => navigate('/admin/auth/login'), 2000);
         } catch (err: any) {
             const message =

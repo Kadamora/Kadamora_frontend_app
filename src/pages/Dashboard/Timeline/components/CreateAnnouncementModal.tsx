@@ -9,7 +9,7 @@ interface CreateAnnouncementModalProps {
 
 const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ isOpen, onClose }) => {
     const [createAnnouncement, { isLoading }] = useCreateAnnouncementMutation();
-    const [priority, setPriority] = useState('High');
+    const [priority, setPriority] = useState('high');
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [images, setImages] = useState<File[]>([]);
@@ -63,7 +63,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ isOpe
             // Reset state
             setTitle('');
             setContent('');
-            setPriority('High');
+            setPriority('high');
             setImages([]);
             setPreviews([]);
             
@@ -91,9 +91,10 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ isOpe
                         onChange={(e) => setPriority(e.target.value)}
                         className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-[#F9FAFB] text-gray-500 outline-none focus:border-blue-500 transition-colors appearance-none"
                     >
-                        <option value="High">High</option>
-                        <option value="Medium">Medium</option>
-                        <option value="Low">Low</option>
+                        <option value="urgent">Urgent</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
                     </select>
                 </div>
 
