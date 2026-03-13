@@ -1,6 +1,6 @@
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react'
 import type {RootState} from '../index'
-const BASE_URL = 'https://kadamora-test-app-38pdp.ondigitalocean.app';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://kadamora-test-app-38pdp.ondigitalocean.app';
 
 export const baseApi = createApi({
     reducerPath: 'api',
@@ -16,7 +16,7 @@ export const baseApi = createApi({
         }
     }),
     tagTypes: [
-        'Account', 'AdminAgent', 'AgentProfile', 'Property', 'Location', 'Notification', 'PropertyMgt', 'Favorites', 'Subscription', 'ServiceMarket', 'Timeline'
+        'Account', 'AdminAgent', 'AgentProfile', 'Property', 'Location', 'Notification', 'PropertyMgt', 'Favorites', 'Subscription', 'ServiceMarket', 'Timeline', 'Messages'
     ],
     endpoints: () => ({})
 })
