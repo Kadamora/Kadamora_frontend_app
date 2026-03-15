@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router';
 import { MdClose } from 'react-icons/md';
+import { useAppSelector } from '@store/hooks';
 
 interface HeaderProps {
     isSticky: boolean;
@@ -11,6 +12,7 @@ export default function Header({ isSticky, hasHero = true }: HeaderProps) {
     const [mobileOpen, setMobileOpen] = useState(false); // slide state
     const [menuVisible, setMenuVisible] = useState(false); // mount state
     const location = useLocation();
+    const isAuthenticated = useAppSelector((s) => !!s.auth.accessToken);
 
     // Helper function to check if a path is active
     const isActivePath = (path: string) => {
@@ -106,12 +108,20 @@ export default function Header({ isSticky, hasHero = true }: HeaderProps) {
                         </Link>
                     </div>
                     <div className="hidden lg:flex items-center space-x-4">
-                        <Link to="/auth/login" className={buttonStyles.login}>
-                            Login
-                        </Link>
-                        <Link to="/auth/signup" className={buttonStyles.getStarted}>
-                            Get Started
-                        </Link>
+                        {isAuthenticated ? (
+                            <Link to="/dashboard/property-listing" className={buttonStyles.getStarted}>
+                                Dashboard
+                            </Link>
+                        ) : (
+                            <>
+                                <Link to="/auth/login" className={buttonStyles.login}>
+                                    Login
+                                </Link>
+                                <Link to="/auth/signup" className={buttonStyles.getStarted}>
+                                    Get Started
+                                </Link>
+                            </>
+                        )}
                     </div>
                     {/* Mobile hamburger */}
                     <div
@@ -172,20 +182,32 @@ export default function Header({ isSticky, hasHero = true }: HeaderProps) {
 
                         {/* Auth Links */}
                         <div className="pt-8 border-t border-gray-600 space-y-6">
-                            <Link
-                                to="/auth/login"
-                                onClick={closeMenu}
-                                className="block text-[35px] font-medium text-gray-300 hover:text-white transition-colors"
-                            >
-                                Login
-                            </Link>
-                            <Link
-                                to="/auth/signup"
-                                onClick={closeMenu}
-                                className="block text-2xl font-medium bg-primary text-secondary px-6 py-3 rounded-full hover:bg-primary/90 transition-colors w-fit"
-                            >
-                                Get Started
-                            </Link>
+                            {isAuthenticated ? (
+                                <Link
+                                    to="/dashboard/property-listing"
+                                    onClick={closeMenu}
+                                    className="block text-2xl font-medium bg-primary text-secondary px-6 py-3 rounded-full hover:bg-primary/90 transition-colors w-fit"
+                                >
+                                    Dashboard
+                                </Link>
+                            ) : (
+                                <>
+                                    <Link
+                                        to="/auth/login"
+                                        onClick={closeMenu}
+                                        className="block text-[35px] font-medium text-gray-300 hover:text-white transition-colors"
+                                    >
+                                        Login
+                                    </Link>
+                                    <Link
+                                        to="/auth/signup"
+                                        onClick={closeMenu}
+                                        className="block text-2xl font-medium bg-primary text-secondary px-6 py-3 rounded-full hover:bg-primary/90 transition-colors w-fit"
+                                    >
+                                        Get Started
+                                    </Link>
+                                </>
+                            )}
                         </div>
                     </nav>
 

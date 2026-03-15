@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router';
+import { useNavigate } from 'react-router';
 
 import Select from '@components/forms/Select';
 import Input from '@components/forms/Input';
@@ -16,6 +16,7 @@ export default function MyListing() {
     const [categoryFilter, setCategoryFilter] = useState('all');
     const [typeFilter, setTypeFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
+    const navigate = useNavigate();
 
     /* ========================
        Fetch Agent Listings
@@ -175,12 +176,19 @@ export default function MyListing() {
                     <h1 className="text-[25px] font-semibold text-[#002E62]">
                         My Listing
                     </h1>
-                    <nav className="text-[13px] flex items-center gap-1">
+                    {/* <nav className="text-[13px] flex items-center gap-1">
                         <Link to="/dashboard/home" className="hover:underline">
                             Home
                         </Link>
                         <span>{'>'}</span>
                         <span className="text-primary">My Listing</span>
+                    </nav> */}
+                     <nav className="flex">
+                        <span onClick={() => navigate('/')} className="cursor-pointer text-sm">Home</span>
+                        <span className="mx-2 text-sm">›</span>
+                        <span onClick={() => navigate(-1)} className="cursor-pointer text-sm">Listings</span>
+                        <span className="mx-2 text-sm">›</span>
+                        <span className="text-primary text-sm">My Listing</span>
                     </nav>
                 </div>
 

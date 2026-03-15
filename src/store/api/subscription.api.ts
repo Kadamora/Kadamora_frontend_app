@@ -12,15 +12,30 @@ export interface SubscriptionPlanPrice {
 
 export interface SubscriptionPlan {
     id: string;
+    createdAt?: string;
+    updatedAt?: string;
+    deletedAt?: string | null;
+    isDeleted?: boolean;
     name: string;
+    displayName?: string;
+    description?: string;
+    maxProperties?: number;
+    maxTenants?: number;
+    canCreateRentListings?: boolean;
+    canCreateLeaseListings?: boolean;
+    canCreateSaleListings?: boolean;
+    canCreateShortLetListings?: boolean;
+    canUsePremiumFeatures?: boolean;
+    canUseAnalytics?: boolean;
+    canUsePrioritySupport?: boolean;
+    monthlyPrice?: number | string;
+    yearlyPrice?: number | string;
+    quarterlyPrice?: number | string;
+    sortOrder?: number;
     tierLabel?: string;
     targetUsers?: string;
-    description?: string;
-    features?: string;
+    features?: string | string[];
     prices?: SubscriptionPlanPrice;
-    // Fallback flat price fields if the API returns individual fields
-    monthlyPrice?: number;
-    quarterlyPrice?: number;
     annualPrice?: number;
 }
 

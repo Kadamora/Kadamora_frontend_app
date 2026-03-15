@@ -14,16 +14,34 @@ import type { SubscriptionPlan } from '@store/api/subscription.api';
    Helper: map API plan → PricingTier used by accordion
 -------------------------------------------------------- */
 function mapPlanToTier(plan: SubscriptionPlan, index: number): PricingTier {
+    const featureList: string[] = [];
+    if (plan.maxProperties !== undefined) featureList.push(`${plan.maxProperties === 1000000 ? 'Unlimited' : plan.maxProperties} Max Properties`);
+    if (plan.maxTenants !== undefined) featureList.push(`${plan.maxTenants} Max Tenants`);
+    if (plan.canCreateRentListings) featureList.push(`Create Rent Listings`);
+    if (plan.canCreateLeaseListings) featureList.push(`Create Lease Listings`);
+    if (plan.canCreateSaleListings) featureList.push(`Create Sale Listings`);
+    if (plan.canCreateShortLetListings) featureList.push(`Create Short Let Listings`);
+    if (plan.canUsePremiumFeatures) featureList.push(`Premium Features`);
+    if (plan.canUseAnalytics) featureList.push(`Analytics`);
+    if (plan.canUsePrioritySupport) featureList.push(`Priority Support`);
+
+    // Fallback if the API ever provides a raw string array in `features` or simple string
+    if (Array.isArray(plan.features)) {
+        featureList.push(...plan.features);
+    } else if (typeof plan.features === 'string') {
+        featureList.push(plan.features);
+    }
+
     return {
         id: plan.id,
-        name: plan.name,
-        tierLabel: plan.tierLabel ?? `Tier ${index + 1}`,
+        name: plan.displayName || plan.name,
+        tierLabel: plan.tierLabel ?? ((plan.displayName?.includes('Plan') || plan.displayName?.includes('Commercial')) ? 'Tier' : `Tier ${index + 1}`),
         targetUsers: plan.targetUsers ?? plan.description ?? '—',
-        features: plan.features ?? '—',
+        features: featureList.length > 0 ? featureList : ['—'],
         prices: plan.prices ?? {
-            monthly: plan.monthlyPrice ?? 0,
-            quarterly: plan.quarterlyPrice ?? 0,
-            annually: plan.annualPrice ?? 0,
+            monthly: Number(plan.monthlyPrice ?? 0),
+            quarterly: Number(plan.quarterlyPrice ?? 0),
+            annually: Number(plan.yearlyPrice ?? plan.annualPrice ?? 0),
         },
     };
 }
@@ -82,7 +100,9 @@ const SubscriptionPage = () => {
     const { data: plansData, isLoading: plansLoading, isError: plansError } = useGetAllSubscriptionPlansQuery();
     const [subscribeToPlan, { isLoading: subscribing }] = useSubscribeToPlanMutation();
 
-    const rawPlans: SubscriptionPlan[] = Array.isArray(plansData?.data) ? plansData.data : [];
+    const rawPlans: SubscriptionPlan[] = Array.isArray(plansData?.data)
+        ? plansData.data.filter((plan) => plan.name?.toLowerCase() !== 'free' && plan.displayName !== 'Free Plan')
+        : [];
     const mappedPricing: PricingTier[] = rawPlans.map(mapPlanToTier);
 
     /* ---- Computed total ---- */
@@ -162,7 +182,7 @@ const SubscriptionPage = () => {
                 )}
 
                 {/* Free Services Card */}
-                <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-8 relative overflow-hidden">
+                {/* <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-8 relative overflow-hidden">
                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--color-primary)] rounded-r-full"></div>
                     <h2 className="text-lg font-bold text-[var(--color-secondary)] mb-2">Free Services</h2>
                     <p className="text-gray-500 text-sm mb-6">Subscribe to exactly what you need. Manage your space, book services, or build projects—all in one place</p>
@@ -182,7 +202,7 @@ const SubscriptionPage = () => {
                             </div>
                         ))}
                     </div>
-                </div>
+                </div> */}
 
                 {/* API error state */}
                 {plansError && (
@@ -234,8 +254,8 @@ const SubscriptionPage = () => {
                 </div>
 
                 {/* Bottom Bar */}
-                <div className="fixed bottom-0 right-0 left-0 md:left-[300px] bg-white border-t border-gray-100 p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-20">
-                    <div className="max-w-6xl mx-auto flex justify-end items-center gap-6 pr-8">
+                <div className="fixed bottom-0 right-0 left-0  bg-white border-t border-gray-100 p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-20">
+                    <div className="max-w-6xl mx-auto flex justify-end items-center">
                         <button
                             onClick={() => setModalStep('info')}
                             disabled={!totalAmount || subscribing}

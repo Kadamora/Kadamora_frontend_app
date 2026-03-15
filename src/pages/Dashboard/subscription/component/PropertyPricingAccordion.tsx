@@ -72,11 +72,15 @@ export default function PropertyPricingAccordion({
                             </td>
                             {pricing.map((tier) => (
                                 <td key={tier.id} className="p-4 border-l border-[#A2E9C1]">
-                                    <div className="flex items-start gap-3">
-                                        <div className="size-5">
-                                            <CircleCheckBig className="text-[var(--color-primary)]" size={20}  />
-                                        </div>
-                                        <span className="text-foreground">{tier.features}</span>
+                                    <div className="flex flex-col gap-3">
+                                        {tier.features.map((feature, idx) => (
+                                            <div key={idx} className="flex items-start gap-3">
+                                                <div className="size-5 shrink-0">
+                                                    <CircleCheckBig className="text-[var(--color-primary)]" size={20}  />
+                                                </div>
+                                                <span className="text-foreground">{feature}</span>
+                                            </div>
+                                        ))}
                                     </div>
                                 </td>
                             ))}

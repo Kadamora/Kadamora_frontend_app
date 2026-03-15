@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import Select from '@components/forms/Select';
 import ProductCard from '@components/cards/product/ProductCard';
 import Input from '@components/forms/Input';
@@ -27,6 +27,7 @@ export default function MyListing() {
     const [categoryFilter, setCategoryFilter] = useState<string>('all');
     const [typeFilter, setTypeFilter] = useState<string>('all');
     const [searchTerm, setSearchTerm] = useState<string>('');
+    const navigate = useNavigate()
 
     const {
         data,
@@ -155,12 +156,19 @@ export default function MyListing() {
             <header className="mb-10 flex flex-col gap-6">
                 <div className="mb-1 mt-4">
                     <h1 className="text-[25px] font-semibold text-[#002E62] leading-snug">My Saved</h1>
-                    <nav className="mb-2 text-[13px] flex items-center gap-1">
+                    {/* <nav className="mb-2 text-[13px] flex items-center gap-1">
                         <Link to="/dashboard/home" className="hover:underline">
                             Home
                         </Link>
                         <span>{'>'}</span>
                         <span className="text-primary">My Saved</span>
+                    </nav> */}
+                     <nav className="flex">
+                        <span onClick={() => navigate('/')} className="cursor-pointer text-sm">Home</span>
+                        <span className="mx-2 text-sm">›</span>
+                        <span onClick={() => navigate(-1)} className="cursor-pointer text-sm">Listings</span>
+                        <span className="mx-2 text-sm">›</span>
+                        <span className="text-primary text-sm">My Saved</span>
                     </nav>
                 </div>
 
