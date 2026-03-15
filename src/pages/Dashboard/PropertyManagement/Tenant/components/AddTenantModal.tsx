@@ -1,12 +1,13 @@
 import Input from '@components/forms/Input';
 import Select from '@components/forms/Select';
 import React, { useState } from 'react';
-
-
+import { useGetManagedPropertiesQuery } from '@store/api/propertyMgt.api';
+import { useInviteTenantMutation } from '@store/api/tenant.api';
 
 interface AddTenantModalProps {
     open: boolean;
     onClose: () => void;
+    defaultPropertyId?: string; // Optional if opened from a specific context
 }
 
 const typeOptions = [
@@ -15,9 +16,51 @@ const typeOptions = [
     { label: 'Guarantor', value: 'guarantor' },
 ];
 
-const AddTenantModal: React.FC<AddTenantModalProps> = ({ open, onClose }) => {
+const AddTenantModal: React.FC<AddTenantModalProps> = ({ open, onClose, defaultPropertyId }) => {
+    const [propertyId, setPropertyId] = useState(defaultPropertyId || '');
+    const [tenantEmail, setTenantEmail] = useState('');
+    const [unit, setUnit] = useState('');
+    const [rentPrice, setRentPrice] = useState('');
     const [type, setType] = useState('');
     const [rentDueDate, setRentDueDate] = useState('');
+
+    const { data: propertiesData } = useGetManagedPropertiesQuery(undefined, { skip: !open });
+    const [inviteTenant, { isLoading }] = useInviteTenantMutation();
+
+    const propertiesOptions = propertiesData?.data?.map((p: any) => ({
+        label: p.name,
+        value: p.id
+    })) || [];
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!propertyId) {
+            console.error("Property must be selected");
+            return;
+        }
+
+        try {
+            await inviteTenant({
+                propertyId,
+                email: tenantEmail,
+                unit,
+                rentPrice,
+                rentDueDate,
+                type,
+            }).unwrap();
+
+            // Clear form and close on success
+            setTenantEmail('');
+            setUnit('');
+            setRentPrice('');
+            setType('');
+            setRentDueDate('');
+            setPropertyId(defaultPropertyId || '');
+            onClose();
+        } catch (error) {
+            console.error('Failed to invite tenant:', error);
+        }
+    };
 
     if (!open) return null;
 
@@ -49,15 +92,26 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ open, onClose }) => {
                         The tenant you added will receive a welcome email with a temporary password to log in.
                     </span>
                 </div>
-                <form className="space-y-4">
+                <form className="space-y-4" onSubmit={handleSubmit}>
+                    <Select
+                        title="Property"
+                        name="propertyId"
+                        placeholder="Select property"
+                        options={propertiesOptions}
+                        value={propertyId}
+                        onChange={setPropertyId}
+                        required
+                    />
                     <Input
                         title="Tenant Email"
                         name="tenantEmail"
                         placeholder="Enter tenant email"
                         type="email"
+                        value={tenantEmail}
+                        onChange={(e) => setTenantEmail(e.target.value)}
                         required
                     />
-                    <Input title="Unit" name="unit" placeholder="Enter unit" required />
+                    <Input title="Unit" name="unit" placeholder="Enter unit" value={unit} onChange={(e) => setUnit(e.target.value)} required />
                     <div className="flex gap-4">
                         <Input
                             title="Rent Price"
@@ -66,6 +120,8 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ open, onClose }) => {
                             type="number"
                             required
                             className="flex-1"
+                            value={rentPrice}
+                            onChange={(e) => setRentPrice(e.target.value)}
                         />
                         <Input
                             title="Rent Due Date"
@@ -89,9 +145,10 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ open, onClose }) => {
                     />
                     <button
                         type="submit"
-                        className="mt-4 w-full py-3 rounded-lg bg-[#002E62] text-white font-semibold text-[15px] hover:bg-[#002E62]/90 transition-colors"
+                        disabled={isLoading}
+                        className="mt-4 w-full py-3 rounded-lg bg-[#002E62] text-white font-semibold text-[15px] hover:bg-[#002E62]/90 transition-colors disabled:opacity-50"
                     >
-                        Save Changes
+                        {isLoading ? 'Sending...' : 'Save Changes'}
                     </button>
                 </form>
             </div>

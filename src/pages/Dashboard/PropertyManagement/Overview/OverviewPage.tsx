@@ -6,31 +6,46 @@ import activeTenantsIcon from './components/icons/active_tenants.svg';
 import maintenanceRequestIcon from './components/icons/maintenance_request.svg';
 import ActiveRequests from './components/ActiveRequests';
 import RecentActivities from './components/RecentActivities';
+import { useGetDashboardSummaryQuery } from '@store/api/propertyMgt.api';
 
 const OverviewPage: React.FC = () => {
+    const { data: dashboardSummaryData, isLoading } = useGetDashboardSummaryQuery();
+
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
+    };
+
+    const summary = dashboardSummaryData?.data;
+
+    // Check if totalRevenue is a number, if it's an empty object, default to 0
+    let revenueAmount = 0;
+    if (typeof summary?.totalRevenue === 'number') {
+        revenueAmount = summary.totalRevenue;
+    }
+
     const stats = [
         {
             id: 1,
             title: 'Total Expected Revenue',
-            value: 'NGN 2,450,000',
+            value: isLoading ? '...' : formatCurrency(revenueAmount),
             icon: <img src={totalRevenueIcon} alt="Total Revenue" className="h-12 w-12" />,
         },
         {
             id: 2,
             title: 'Total Properties',
-            value: '04',
+            value: isLoading ? '...' : String(summary?.totalProperties || 0).padStart(2, '0'),
             icon: <img src={totalPropertiesIcon} alt="Total Properties" className="h-12 w-12" />,
         },
         {
             id: 3,
             title: 'Active Tenants',
-            value: '03',
+            value: isLoading ? '...' : String(summary?.activeTenants || 0).padStart(2, '0'),
             icon: <img src={activeTenantsIcon} alt="Active Tenants" className="h-12 w-12" />,
         },
         {
             id: 4,
             title: 'Maintenance Requests',
-            value: '03',
+            value: isLoading ? '...' : String(summary?.maintenanceRequests || 0).padStart(2, '0'),
             icon: <img src={maintenanceRequestIcon} alt="Maintenance Requests" className="h-12 w-12" />,
         },
     ];

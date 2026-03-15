@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { useNavigate, Link } from 'react-router';
+import { useNavigate } from 'react-router';
 // import { mockProperties } from './fakedb'; // Removing mock import, checking if file needs to be deleted later or just unused.
 import { useDebounce } from '../../../../hooks/useDebounce';
 import FilterBlocks, { MobileFilterModal } from './FilterBlocks';
@@ -215,13 +215,13 @@ const PropertyManagementPage: React.FC = () => {
                 <h1 className="text-[25px] font-semibold text-[#002E62] leading-snug">
                     Property listing, Management and Investment
                 </h1>
-                <nav className="mb-2 text-[13px] flex items-center gap-1">
-                    <Link to="/dashboard/property-listing" className="hover:underline">
-                        Home
-                    </Link>
-                    <span>/</span>
-                    <span className="text-primary">Property listing</span>
-                </nav>
+                 <nav className="flex">
+                        <span onClick={() => navigate('/')} className="cursor-pointer text-sm">Home</span>
+                        <span className="mx-2 text-sm">›</span>
+                        {/* <span onClick={() => navigate(-1)} className="cursor-pointer text-sm">Listings</span> */}
+                        {/* <span className="mx-2 text-sm">›</span> */}
+                        <span className="text-primary text-sm">Property listing</span>
+                    </nav>
             </div>
 
             {/* Quick Actions */}
@@ -353,7 +353,7 @@ const PropertyManagementPage: React.FC = () => {
                             <ProductCard key={p.id} property={p} />
                         ))}
                     </div> */}
-                    <div className="grid lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-2 gap-6">
+                    <div className="grid lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-2 gap-6 h-fit">
                         {productCards.length === 0 ? (
                             <EmptyState
                                 title={

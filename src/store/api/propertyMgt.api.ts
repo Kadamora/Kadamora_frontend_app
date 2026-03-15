@@ -27,10 +27,10 @@ export interface CreatePropertyResponse {
 export interface DashboardSummaryResponse {
     message: string;
     data: {
+        totalRevenue: any;
+        activeTenants: number;
+        maintenanceRequests: number;
         totalProperties: number;
-        totalTenants: number;
-        totalRevenue?: number;
-        occupancyRate?: number;
     };
 }
 

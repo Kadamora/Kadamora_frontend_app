@@ -6,9 +6,11 @@ import Gallery from '../../../../components/cards/gallery/Gallery';
 import { useNavigate, useParams } from 'react-router';
 import { useGetAgentPropertyListingsByIdQuery, useGetAllPropertyListingsQuery } from '@store/api/propertyListings.api';
 import ProductCard from '@components/cards/product/ProductCard';
+import { useAppSelector } from '@store/hooks';
 
 export default function PropertyView() {
     const navigate = useNavigate();
+    const currentUserId = useAppSelector((s) => s.auth.user?.id);
     const {agentId} = useParams<{agentId: string}>();
     const {data: propertyListings} = useGetAgentPropertyListingsByIdQuery(agentId!, {
         skip: !agentId,
@@ -72,7 +74,7 @@ export default function PropertyView() {
             <div className="py-6">
                 <div className="max-w-7xl mx-auto">
                     <nav className="flex">
-                        <span onClick={() => navigate('/dashboard/property-listing')} className="cursor-pointer text-sm">Home</span>
+                        <span onClick={() => navigate('/')} className="cursor-pointer text-sm">Home</span>
                         <span className="mx-2 text-sm">›</span>
                         <span onClick={() => navigate(-1)} className="cursor-pointer text-sm">Listings</span>
                         <span className="mx-2 text-sm">›</span>
@@ -198,56 +200,58 @@ export default function PropertyView() {
                             </ul>
                         </div>
 
-                        <div className="rounded-[18px] border border-[#E2E8F0] bg-white flex items-center">
-                            <div className="flex items-center justify-between w-full p-3.75">
-                                <div>
-                                    <p className="text-[15px] font-semibold text-[#002E62]">
-                                        Are you interested in this Property?
-                                    </p>
-                                    <div className="mt-4 flex items-center gap-3">
-                                        <img
-                                            src={
-                                                property.agent?.user?.imgUrl ||
-                                                `https://api.dicebear.com/7.x/avataaars/svg?seed=${property.agent?.user?.firstName || 'User'}`
-                                            }
-                                            alt={`${property.agent?.user?.firstName} ${property.agent?.user?.lastName}`}
-                                            className="h-12 w-12 rounded-full border border-[#CCE3FD]"
-                                        />
-                                        <div>
-                                            <p className="text-[14px] font-semibold text-[#002E62]">
-                                                {property.agent?.user?.firstName} {property.agent?.user?.lastName}
-                                            </p>
-                                            <p className="text-[13px] text-[#52525B]">{property.agent?.user?.email}</p>
+                        {currentUserId !== property.agent?.user?.id && (
+                            <div className="rounded-[18px] border border-[#E2E8F0] bg-white flex items-center">
+                                <div className="flex items-center justify-between w-full p-3.75">
+                                    <div>
+                                        <p className="text-[15px] font-semibold text-[#002E62]">
+                                            Are you interested in this Property?
+                                        </p>
+                                        <div className="mt-4 flex items-center gap-3">
+                                            <img
+                                                src={
+                                                    property.agent?.user?.imgUrl ||
+                                                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${property.agent?.user?.firstName || 'User'}`
+                                                }
+                                                alt={`${property.agent?.user?.firstName} ${property.agent?.user?.lastName}`}
+                                                className="h-12 w-12 rounded-full border border-[#CCE3FD]"
+                                            />
+                                            <div>
+                                                <p className="text-[14px] font-semibold text-[#002E62]">
+                                                    {property.agent?.user?.firstName} {property.agent?.user?.lastName}
+                                                </p>
+                                                <p className="text-[13px] text-[#52525B]">{property.agent?.user?.email}</p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        const agentUserId = property.agent?.user?.id;
-                                        if (!agentUserId) return;
-                                        navigate(`/dashboard/chat/${agentUserId}`, {
-                                            state: {
-                                                chat: {
-                                                    userId: agentUserId,
-                                                    userName: `${property.agent?.user?.firstName ?? ''} ${property.agent?.user?.lastName ?? ''}`.trim(),
-                                                    userAvatar: property.agent?.user?.imgUrl,
-                                                    propertyId: property.id,
-                                                    propertyName: property.title,
-                                                    propertyImage: property.media?.[0]?.url,
-                                                    lastMessage: '',
-                                                    lastMessageAt: '',
-                                                    unreadCount: 0,
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const agentUserId = property.agent?.user?.id;
+                                            if (!agentUserId) return;
+                                            navigate(`/dashboard/chat/${agentUserId}`, {
+                                                state: {
+                                                    chat: {
+                                                        userId: agentUserId,
+                                                        userName: `${property.agent?.user?.firstName ?? ''} ${property.agent?.user?.lastName ?? ''}`.trim(),
+                                                        userAvatar: property.agent?.user?.imgUrl,
+                                                        propertyId: property.id,
+                                                        propertyName: property.title,
+                                                        propertyImage: property.media?.[0]?.url,
+                                                        lastMessage: '',
+                                                        lastMessageAt: '',
+                                                        unreadCount: 0,
+                                                    },
                                                 },
-                                            },
-                                        });
-                                    }}
-                                    className="rounded-full bg-[#002E62] px-5 py-2 text-[13px] font-semibold text-white transition hover:bg-[#072968] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#04194E]/50"
-                                >
-                                    Message Now
-                                </button>
+                                            });
+                                        }}
+                                        className="rounded-full bg-[#002E62] px-5 py-2 text-[13px] font-semibold text-white transition hover:bg-[#072968] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#04194E]/50"
+                                    >
+                                        Message Now
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             </section>
