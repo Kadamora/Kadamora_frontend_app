@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Route, Routes, NavLink, useLocation } from 'react-router';
+import { Route, Routes, NavLink, useLocation, useNavigate } from 'react-router';
 import AddPropertyFlowModal from './Properties/components/AddPropertyFlowModal';
 import CreateAnnouncementModal from './Communication/components/CreateAnnouncementModal';
 import OverviewPage from './Overview/OverviewPage';
@@ -38,7 +38,7 @@ const modalActions: Record<string, string> = {
 
 const PropertyManagementRoot: React.FC = () => {
     const tabRefs = React.useRef<(HTMLAnchorElement | null)[]>([]);
-
+    const navigate = useNavigate();
     const handleTabClick = (idx: number) => {
         const ref = tabRefs.current[idx];
         if (ref) {
@@ -93,13 +93,20 @@ const PropertyManagementRoot: React.FC = () => {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-[25px] font-semibold text-[#002E62] leading-snug">Property Management</h1>
-                        <nav className="mb-2 text-[13px] flex items-center gap-1 text-[#475467]">
+                        {/* <nav className="mb-2 text-[13px] flex items-center gap-1 text-[#475467]">
                             <a href="/dashboard/home" className="hover:underline">
                                 Home
                             </a>
                             <span>/</span>
                             <span className="text-[#0A66B2]">Manage My Property</span>
-                        </nav>
+                        </nav> */}
+                        <nav className="flex">
+                        <span onClick={() => navigate('/dashboard/home')} className="cursor-pointer text-sm">Home</span>
+                        <span className="mx-2 text-sm">›</span>
+                        <span onClick={() => navigate(-1)} className="cursor-pointer text-sm">Listings</span>
+                        <span className="mx-2 text-sm">›</span>
+                        <span className="text-primary text-sm">Manage My Property</span>
+                    </nav>
                     </div>
                 </div>
 

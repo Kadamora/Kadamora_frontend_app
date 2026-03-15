@@ -5,7 +5,7 @@ export interface PricingTier {
   name: string;
   tierLabel: string;
   targetUsers: string;
-  features: string;
+  features: string[];
   prices: {
     monthly: number;
     quarterly: number;
