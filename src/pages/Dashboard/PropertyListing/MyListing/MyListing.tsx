@@ -7,8 +7,13 @@ import PropertyCard from '@components/cards/property/PropertyCard';
 
 import {
     useGetAgentPropertyListingsQuery,
+    useDeletePropertyListingMutation,
+    useDisablePropertyListingMutation,
     type AgentPropertyListing,
 } from '@store/api/propertyListings.api';
+import { Search } from 'lucide-react';
+import DeleteConfirmationModal from '@components/cards/card/DeleteConfirmationModal';
+import ListPropertyFlowModal from '../Home/components/ListPropertyFlow/ListPropertyFlowModal';
 
 const normalize = (value?: string | null) => value?.trim().toLowerCase() ?? '';
 
@@ -17,6 +22,17 @@ export default function MyListing() {
     const [typeFilter, setTypeFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
     const navigate = useNavigate();
+
+    // Modal States
+    const [propertyToDelete, setPropertyToDelete] = useState<AgentPropertyListing | null>(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    
+    const [propertyToEdit, setPropertyToEdit] = useState<AgentPropertyListing | null>(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    
+    const [deleteProperty] = useDeletePropertyListingMutation();
+    const [disableProperty, { isLoading: isDisabling }] = useDisablePropertyListingMutation();
+    const [togglingId, setTogglingId] = useState<string | null>(null);
 
     /* ========================
        Fetch Agent Listings
@@ -94,9 +110,43 @@ export default function MyListing() {
        UI States
     ======================== */
     const backendErrorMessage =
-  (error as any)?.data?.message ||
-  (error as any)?.error ||
-  'Something went wrong while loading listings';
+        (error as any)?.data?.message ||
+        (error as any)?.error ||
+        'Something went wrong while loading listings';
+
+    const handleDeleteClick = (property: AgentPropertyListing) => {
+        setPropertyToDelete(property);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!propertyToDelete) return;
+        try {
+            await deleteProperty(propertyToDelete.id).unwrap();
+            setIsDeleteModalOpen(false);
+            setPropertyToDelete(null);
+        } catch (err: any) {
+            console.error('Failed to delete listing:', err);
+            alert(err?.data?.message || 'Failed to delete listing');
+        }
+    };
+
+    const handleEditClick = (property: AgentPropertyListing) => {
+        setPropertyToEdit(property);
+        setIsEditModalOpen(true);
+    };
+
+    const handleToggleAvailability = async (id: string) => {
+        setTogglingId(id);
+        try {
+            await disableProperty(id).unwrap();
+        } catch (err: any) {
+            console.error('Failed to toggle availability:', err);
+            alert(err?.data?.message || 'Failed to update availability');
+        } finally {
+            setTogglingId(null);
+        }
+    };
 
     if (isLoading) {
         return (
@@ -176,13 +226,6 @@ export default function MyListing() {
                     <h1 className="text-[25px] font-semibold text-[#002E62]">
                         My Listing
                     </h1>
-                    {/* <nav className="text-[13px] flex items-center gap-1">
-                        <Link to="/dashboard/home" className="hover:underline">
-                            Home
-                        </Link>
-                        <span>{'>'}</span>
-                        <span className="text-primary">My Listing</span>
-                    </nav> */}
                      <nav className="flex">
                         <span onClick={() => navigate('/')} className="cursor-pointer text-sm">Home</span>
                         <span className="mx-2 text-sm">›</span>
@@ -191,8 +234,10 @@ export default function MyListing() {
                         <span className="text-primary text-sm">My Listing</span>
                     </nav>
                 </div>
-
-                <div className="grid gap-4 sm:grid-cols-3">
+                
+                <div className="flex gap-4 items-center justify-between">
+                    <h1 className="text-[23px] font-semibold text-[#002E62]">All Listing</h1>
+                <div className="flex gap-4">
                     <Select
                         value={categoryFilter}
                         onChange={setCategoryFilter}
@@ -203,22 +248,24 @@ export default function MyListing() {
                     />
 
                     <Select
-                        containerClassName="relative"
-                        placeholder="Category (All)"
+                        containerClassName="relative w-24"
+                        placeholder="Type"
                         value={typeFilter}
                         onChange={setTypeFilter}
                         options={types.map((t) => ({
-                            label: t === 'all' ? 'Type (All)' : formatOptionLabel(t),
+                            label: t === 'all' ? 'Type' : formatOptionLabel(t),
                             value: t,
                         }))}
                     />
 
                     <Input
                         type="search"
-                        placeholder="Search listings..."
+                        placeholder="Search ..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
+                        leftIcon={<Search size={18} />}
                     />
+                </div>
                 </div>
             </header>
 
@@ -233,10 +280,34 @@ export default function MyListing() {
                             key={listing.id}
                             property={listing}
                             showAvailabilityToggle
+                            isTogglingAvailability={isDisabling && togglingId === listing.id}
+                            onToggleAvailability={() => handleToggleAvailability(listing.id)}
+                            onEdit={handleEditClick}
+                            onDelete={handleDeleteClick}
                         />
                     ))}
                 </div>
             )}
+
+            <DeleteConfirmationModal
+                isOpen={isDeleteModalOpen}
+                title="Delete Listing"
+                message="Are you sure you want to delete this property? This action is permanent and cannot be undone."
+                onConfirm={handleDeleteConfirm}
+                onClose={() => {
+                    setIsDeleteModalOpen(false);
+                    setPropertyToDelete(null);
+                }}
+            />
+
+            <ListPropertyFlowModal
+                open={isEditModalOpen}
+                editingProperty={propertyToEdit}
+                onClose={() => {
+                    setIsEditModalOpen(false);
+                    setPropertyToEdit(null);
+                }}
+            />
         </div>
     );
 }

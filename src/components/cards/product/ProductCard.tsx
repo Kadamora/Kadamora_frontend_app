@@ -99,17 +99,17 @@ export default function ProductCard({
                 </p>
                 <div className="flex gap-2 transition-transform duration-300 group-hover:-translate-y-0.5">
                     <span
-                        className={`px-2 py-1 text-xs rounded-full ${
+                        className={`px-2 py-1 text-xs rounded-sm ${
                             property.category === 'Sell'
-                                ? 'bg-red-100 text-red-600'
+                                ? 'bg-red-100 text-red-600 border border-red-200'
                                 : property.category === 'Rent'
-                                  ? 'bg-blue-100 text-blue-600'
-                                  : 'bg-green-100 text-green-600'
+                                  ? 'bg-blue-100 text-blue-600 border border-blue-200'
+                                  : 'bg-green-100 text-green-600 border border-green-200'
                         }`}
                     >
                         {property.category}
                     </span>
-                    <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">
+                    <span className="px-2 py-1 text-xs rounded-sm bg-gray-100 text-gray-600 border border-gray-200">
                         {property.subCategory}
                     </span>
                 </div>

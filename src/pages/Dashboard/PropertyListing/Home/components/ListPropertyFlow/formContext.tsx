@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ListingType } from './ListPropertyFlowModal';
+import { type AgentPropertyListing, type AgentPropertyMedia } from '@store/api/propertyListings.api';
 // import type { ListingType } from '.';
 
 export interface FacilitySelection {
@@ -12,7 +13,8 @@ export type MediaType = 'image' | 'video';
 
 export interface MediaItem {
     id: string;
-    file: File;
+    file?: File;
+    url?: string;
     previewUrl: string;
     mediaType: MediaType;
 }
@@ -110,10 +112,11 @@ const revokeMediaPreviews = (media: { photos: MediaItem[]; video: MediaItem | nu
 
 interface ProviderProps {
     listingType: ListingType;
+    initialData?: AgentPropertyListing | null;
     children: React.ReactNode;
 }
 
-export const PropertyListingFormProvider: React.FC<ProviderProps> = ({ listingType, children }) => {
+export const PropertyListingFormProvider: React.FC<ProviderProps> = ({ listingType, initialData, children }) => {
     const [state, setState] = useState<PropertyListingFormState>(() => createInitialState());
     const mediaRef = useRef<{ photos: MediaItem[]; video: MediaItem | null }>({ photos: [], video: null });
 
@@ -128,9 +131,65 @@ export const PropertyListingFormProvider: React.FC<ProviderProps> = ({ listingTy
     }, []);
 
     useEffect(() => {
-        revokeMediaPreviews(mediaRef.current);
-        setState(createInitialState());
-    }, [listingType]);
+        if (initialData) {
+            setState({
+                propertyCategory: (initialData.propertyCategory as any) || 'affordable',
+                categoryType: initialData.categoryType || '',
+                propertySubType: initialData.propertySubType || '',
+                furnishingStatus: initialData.furnishingStatus || 'furnished',
+                title: initialData.title || '',
+                location: initialData.location || '',
+                size: initialData.size || '',
+                description: initialData.description || '',
+                countryId: initialData.country?.id || '',
+                stateId: initialData.state?.id || '',
+                amenities: initialData.amenities || [],
+                facilities: [
+                    { label: 'Living Room', value: 'living_room', units: initialData.livingRooms || 0 },
+                    { label: 'Bedroom', value: 'bedroom', units: initialData.bedrooms || 0 },
+                    { label: 'Bathroom', value: 'bathroom', units: initialData.bathrooms || 0 },
+                    { label: 'Kitchen', value: 'kitchen', units: initialData.kitchens || 0 },
+                    { label: 'Store', value: 'store', units: initialData.stores || 0 },
+                ],
+                price: initialData.price ? String(initialData.price) : '',
+                serviceCharge: initialData.serviceCharge ? String(initialData.serviceCharge) : '',
+                additionalCharges: initialData.additionalCharges || '',
+                paymentTerm: initialData.paymentTerm || 'monthly',
+                weeklyRate: initialData.weeklyRate ? String(initialData.weeklyRate) : '',
+                monthlyRate: initialData.monthlyRate ? String(initialData.monthlyRate) : '',
+                minimumNightsStay: initialData.minimumNightsStay ? String(initialData.minimumNightsStay) : '',
+                houseRule: initialData.houseRule || '',
+                leaseDuration: initialData.leaseDuration ? String(initialData.leaseDuration) : '',
+                renewalOption: initialData.renewalOption ?? true,
+                maintenanceCharge: initialData.maintenanceCharge || '',
+                maintenanceResponsibility: initialData.maintenanceResponsibility || 'landlord',
+                securityDeposit: initialData.securityDeposit || '',
+                availablePropertyDocuments: initialData.availablePropertyDocuments || [],
+                propertyConditions: initialData.propertyConditions || 'new',
+                otherCharges: initialData.otherCharges || '',
+                negotiable: initialData.negotiable ?? false,
+                photos: (initialData.media || [])
+                    .filter((m: AgentPropertyMedia) => m.mediaType === 'image')
+                    .map((m: AgentPropertyMedia) => ({
+                        id: m.id,
+                        url: m.url,
+                        previewUrl: m.url,
+                        mediaType: 'image'
+                    })),
+                video: (initialData.media || []).find((m: AgentPropertyMedia) => m.mediaType === 'video') 
+                    ? {
+                        id: (initialData.media || []).find((m: AgentPropertyMedia) => m.mediaType === 'video')!.id,
+                        url: (initialData.media || []).find((m: AgentPropertyMedia) => m.mediaType === 'video')!.url,
+                        previewUrl: (initialData.media || []).find((m: AgentPropertyMedia) => m.mediaType === 'video')!.url,
+                        mediaType: 'video'
+                    } 
+                    : null
+            });
+        } else {
+            revokeMediaPreviews(mediaRef.current);
+            setState(createInitialState());
+        }
+    }, [listingType, initialData]);
 
     const updateField = useCallback(
         <K extends keyof PropertyListingFormState>(key: K, value: PropertyListingFormState[K]) => {
