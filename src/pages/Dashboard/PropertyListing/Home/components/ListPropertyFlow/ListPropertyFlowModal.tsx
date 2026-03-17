@@ -19,7 +19,7 @@ import ListingSuccessPrompt from './components/ListingSuccessPrompt.tsx';
 
 import CloseButton from '../OnboardingAgent/components/CloseButton.tsx';
 import { PropertyListingFormProvider, usePropertyListingForm, type FacilitySelection, type PropertyListingFormState } from './formContext.tsx';
-import { type CreatePropertyListingPayload, type PropertyFacilitiesPayload, type PropertyMediaPayload, useCreatePropertyListingMutation } from '@store/api/propertyListings.api.ts';
+import { type CreatePropertyListingPayload, type PropertyFacilitiesPayload, type PropertyMediaPayload, useCreatePropertyListingMutation, useUpdatePropertyListingMutation, type AgentPropertyListing } from '@store/api/propertyListings.api.ts';
 import { useUploadFilesMutation } from '@store/api/upload.api';
 
 // Listing types
@@ -52,6 +52,7 @@ export type ListingType = 'rent' | 'lease' | 'short_let' | 'sell';
 interface Props {
     open: boolean;
     step?: number;
+    editingProperty?: AgentPropertyListing | null;
     onClose: () => void;
     goTo?: (s: number) => void;
 }
@@ -138,14 +139,22 @@ const getStepsForType = (type: ListingType): StepDef[] => {
     }
 };
 
-const ListPropertyFlowModal: React.FC<Props> = ({ open, onClose }) => {
+const ListPropertyFlowModal: React.FC<Props> = ({ open, editingProperty, onClose }) => {
     const [listingType, setListingType] = useState<ListingType | null>(null);
     const [currentIdx, setCurrentIdx] = useState(0);
     const [showSuccessPrompt, setShowSuccessPrompt] = useState(false);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (editingProperty) {
+            setListingType(editingProperty.propertyType as ListingType);
+            setCurrentIdx(0);
+        }
+    }, [editingProperty]);
     const token = useSelector((state: any) => state.auth.accessToken);
     const [videoUploadProgress, setVideoUploadProgress] = useState(0);
+
 
     const handleClose = useCallback(() => {
         onClose();
@@ -206,9 +215,10 @@ const ListPropertyFlowModal: React.FC<Props> = ({ open, onClose }) => {
             )}
 
             {!showSuccessPrompt && listingType && (
-                <PropertyListingFormProvider key={listingType} listingType={listingType}>
+                <PropertyListingFormProvider key={editingProperty ? `edit-${editingProperty.id}` : listingType} listingType={listingType} initialData={editingProperty}>
                     <ListingFormContent
                         listingType={listingType}
+                        editingProperty={editingProperty}
                         steps={steps}
                         currentIdx={currentIdx}
                         setCurrentIdx={setCurrentIdx}
@@ -230,6 +240,7 @@ const ListPropertyFlowModal: React.FC<Props> = ({ open, onClose }) => {
 
 interface ListingFormContentProps {
     listingType: ListingType;
+    editingProperty?: AgentPropertyListing | null;
     steps: StepDef[];
     currentIdx: number;
     setCurrentIdx: React.Dispatch<React.SetStateAction<number>>;
@@ -242,6 +253,7 @@ interface ListingFormContentProps {
 
 const ListingFormContent: React.FC<ListingFormContentProps> = ({
     listingType,
+    editingProperty,
     steps,
     currentIdx,
     setCurrentIdx,
@@ -255,6 +267,7 @@ const ListingFormContent: React.FC<ListingFormContentProps> = ({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [createPropertyListing] = useCreatePropertyListingMutation();
+    const [updatePropertyListing] = useUpdatePropertyListingMutation();
     const [uploadFiles] = useUploadFilesMutation();
 
     const activeStep = steps[currentIdx];
@@ -313,12 +326,16 @@ const ListingFormContent: React.FC<ListingFormContentProps> = ({
 
 
             const payload = await buildCreatePropertyPayload(listingType, state, uploadFile, uploadVideoWithProgress);
-            // console.log('payload', payload);
-            const response = await createPropertyListing(payload).unwrap();
-            resetForm();
-            console.log("response", response)
-            const successMessage = response?.message || 'Property listed successfully';
-            onSuccess(successMessage);
+            
+            if (editingProperty) {
+                const response = await updatePropertyListing({ id: editingProperty.id, payload }).unwrap();
+                resetForm();
+                onSuccess(response?.message || 'Property updated successfully');
+            } else {
+                const response = await createPropertyListing(payload).unwrap();
+                resetForm();
+                onSuccess(response?.message || 'Property listed successfully');
+            }
         } catch (error) {
             setSubmitError(resolveCreateError(error));
         } finally {
@@ -439,7 +456,7 @@ async function buildCreatePropertyPayload(
     uploadVideo: Uploader,
 ): Promise<CreatePropertyListingPayload> {
     const facilities = mapFacilities(state.facilities);
-    const media = await prepareMediaPayload(listingType, state, uploadFile, uploadVideo);
+    const media = await prepareEditMediaPayload(state, uploadFile, uploadVideo);
     // ... payload construction
      const payload: CreatePropertyListingPayload = {
         title: state.title.trim(),
@@ -529,35 +546,54 @@ function mapFacilities(facilities: FacilitySelection[]): PropertyFacilitiesPaylo
     return payload;
 }
 
-async function prepareMediaPayload(
-    listingType: ListingType,
+async function prepareEditMediaPayload(
     state: PropertyListingFormState,
     uploadFile: Uploader,
     uploadVideo: Uploader,
 ): Promise<PropertyMediaPayload[]> {
-    const photoUploads = await Promise.all(
-        state.photos.map((photo, index) => {
-            return uploadFile(photo.file).then((url): PropertyMediaPayload => ({
+    const media: PropertyMediaPayload[] = [];
+    
+    // Handle Photos
+    for (let i = 0; i < state.photos.length; i++) {
+        const item = state.photos[i];
+        if (item.file) {
+            // New upload
+            const url = await uploadFile(item.file);
+            media.push({
                 url,
-                altText: photo.file.name || `${state.title || 'property'}-${index + 1}`,
+                altText: item.file.name || `property-photo-${i + 1}`,
                 mediaType: 'image',
-                sortOrder: index + 1,
-            }));
-        }),
-    );
+                sortOrder: i + 1,
+            });
+        } else if (item.url) {
+            // Existing photo
+            media.push({
+                url: item.url,
+                altText: `property-photo-${i + 1}`,
+                mediaType: 'image',
+                sortOrder: i + 1,
+            });
+        }
+    }
 
-    console.log(listingType)
-    const media: PropertyMediaPayload[] = [...photoUploads];
-
+    // Handle Video
     if (state.video) {
-        // Use uploadVideo for video
-        const videoUrl = await uploadVideo(state.video.file);
-        media.push({
-            url: videoUrl,
-            altText: state.video.file.name || `${state.title || 'property'}-video`,
-            mediaType: 'video',
-            sortOrder: media.length + 1,
-        });
+        if (state.video.file) {
+            const videoUrl = await uploadVideo(state.video.file);
+            media.push({
+                url: videoUrl,
+                altText: state.video.file.name || `property-video`,
+                mediaType: 'video',
+                sortOrder: media.length + 1,
+            });
+        } else if (state.video.url) {
+            media.push({
+                url: state.video.url,
+                altText: `property-video`,
+                mediaType: 'video',
+                sortOrder: media.length + 1,
+            });
+        }
     }
 
     return media;

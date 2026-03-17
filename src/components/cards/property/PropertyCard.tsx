@@ -1,23 +1,43 @@
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router';
+import { MoreHorizontal, Edit2, Trash2 } from 'lucide-react';
 import type { AgentPropertyListing, AgentPropertyMedia } from '@store/api/propertyListings.api';
 
 export interface PropertyCardProps {
     property: AgentPropertyListing;
     landingPage?: boolean;
     showAvailabilityToggle?: boolean;
+    isTogglingAvailability?: boolean;
     availabilityLabel?: string;
     onToggleAvailability?: () => void;
+    onEdit?: (property: AgentPropertyListing) => void;
+    onDelete?: (property: AgentPropertyListing) => void;
 }
 
 export default function PropertyCard({
     property,
     landingPage,
     showAvailabilityToggle = false,
-    availabilityLabel,
+    isTogglingAvailability = false,
+    // availabilityLabel,
     onToggleAvailability,
+    onEdit,
+    onDelete,
 }: PropertyCardProps) {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setIsMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
     const available = property.isAvailable ?? true;
-    const availabilityText = availabilityLabel ?? (available ? 'Visible to clients' : 'Hidden from clients');
+    // const availabilityText = availabilityLabel ?? (available ? 'Visible to clients' : 'Hidden from clients');
     const coverMedia = selectPrimaryMedia(property.media);
     const coverImage = coverMedia?.url ?? '';
     const priceLabel = formatCurrency(property.price);
@@ -31,23 +51,71 @@ export default function PropertyCard({
             to={landingPage ? `/property-view/${property.id}` : `/dashboard/property-view/${property.id}`}
             className="group relative bg-white rounded-xl border border-[#CCE3FD] overflow-hidden shadow-sm transition-all duration-300 ease-out hover:-translate-y-1 focus-visible:ring-2 focus-visible:ring-primary/40 block"
         >
-            <button
-                aria-label="Add to favourites"
-                onClick={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }}
-                className="absolute top-3 right-3 z-10 w-9 h-9 bg-white/70 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm transition-transform duration-150 hover:scale-105 active:scale-95"
-            >
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                    />
-                </svg>
-            </button>
+            {/* Action Menu (Ellipsis) */}
+            {!landingPage && (
+                <div className="absolute top-3 right-3 z-20" ref={menuRef}>
+                    <button
+                        aria-label="Actions"
+                        onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            setIsMenuOpen(!isMenuOpen);
+                        }}
+                        className="w-9 h-9 bg-white/70 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm transition-all duration-150 hover:bg-white hover:scale-105 active:scale-95"
+                    >
+                        <MoreHorizontal size={20} className="text-[#002E62]" />
+                    </button>
+
+                    {isMenuOpen && (
+                        <div className="absolute right-0 mt-1 w-28 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-30 animate-in fade-in zoom-in duration-200">
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setIsMenuOpen(false);
+                                    onEdit?.(property);
+                                }}
+                                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 text-left transition-colors"
+                            >
+                                <Edit2 size={14} />
+                                <span>Edit</span>
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setIsMenuOpen(false);
+                                    onDelete?.(property);
+                                }}
+                                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 text-left transition-colors font-medium"
+                            >
+                                <Trash2 size={14} />
+                                <span>Delete</span>
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {landingPage && (
+                <button
+                    aria-label="Add to favourites"
+                    onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }}
+                    className="absolute top-3 right-3 z-10 w-9 h-9 bg-white/70 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm transition-transform duration-150 hover:scale-105 active:scale-95"
+                >
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                        />
+                    </svg>
+                </button>
+            )}
 
             <div className="h-48 relative overflow-hidden bg-slate-100">
                 {coverImage ? (
@@ -76,13 +144,13 @@ export default function PropertyCard({
                 <p className="text-gray-500 text-xs mb-3 transition-colors duration-300 group-hover:text-gray-600 line-clamp-2">
                     {description}
                 </p>
-                <div className="flex flex-wrap gap-2 transition-transform duration-300 group-hover:-translate-y-0.5">
-                    <span className={`px-2 py-1 text-xs rounded-full ${getTypePillClass()}`}>{typeLabel}</span>
+                <div className="flex flex-wrap gap-2">
+                    <span className={`px-2 py-1 text-xs font-medium rounded-sm ${getTypePillClass()}`}>{typeLabel}</span>
                     {categoryLabel && (
-                        <span className={`px-2 py-1 text-xs rounded-full ${getTypePillClass()}`}>{categoryLabel}</span>
+                        <span className={`px-2 py-1 text-xs font-medium rounded-sm ${getTypePillClass()}`}>{categoryLabel}</span>
                     )}
                     {subCategoryLabel && subCategoryLabel !== categoryLabel && (
-                        <span className={`px-2 py-1 text-xs rounded-full ${getTypePillClass()}`}>
+                        <span className={`px-2 py-1 text-xs font-medium rounded-sm ${getTypePillClass()}`}>
                             {subCategoryLabel}
                         </span>
                     )}
@@ -90,14 +158,15 @@ export default function PropertyCard({
                 {showAvailabilityToggle && (
                     <div className="mt-5 flex items-center justify-between border-t border-[#E2E8F0] pt-4">
                         <div className="flex flex-col">
-                            <span className="text-[11px] font-medium text-[#94A3B8] uppercase tracking-wide">
+                            <span className="text-[14px] font-medium text-gray-800">
                                 Availability
                             </span>
-                            <span className="text-[12px] font-semibold text-[#0F172A]">{availabilityText}</span>
+                            {/* <span className="text-[12px] font-semibold text-[#0F172A]">{availabilityText}</span> */}
                         </div>
                         <button
                             type="button"
                             role="switch"
+                            disabled={isTogglingAvailability}
                             aria-checked={available}
                             aria-label={available ? 'Disable availability' : 'Enable availability'}
                             onClick={(event) => {
@@ -105,9 +174,9 @@ export default function PropertyCard({
                                 event.stopPropagation();
                                 onToggleAvailability?.();
                             }}
-                            className={`relative inline-flex h-[20px] w-[44px] items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-secondary ${
+                            className={`relative inline-flex h-[20px] w-[44px] items-center rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-secondary ${
                                 available ? 'bg-[#43CC88]' : 'bg-[#CBD5E1]'
-                            }`}
+                            } ${isTogglingAvailability ? 'opacity-60 cursor-not-allowed' : ''}`}
                         >
                             <span
                                 className={`absolute left-[2px] top-1/2 h-[16px] w-[16px] -translate-y-1/2 rounded-full bg-white shadow transition-transform duration-200 ease-out ${
@@ -185,19 +254,19 @@ function deriveDescription(property: AgentPropertyListing): string {
 }
 
 const TYPE_PILL_CLASSES = [
-    'bg-blue-100 text-blue-600',
-    'bg-green-100 text-green-600',
-    'bg-amber-100 text-amber-600',
-    'bg-purple-100 text-purple-600',
-    'bg-teal-100 text-teal-600',
-    'bg-indigo-100 text-indigo-600',
-    'bg-slate-100 text-slate-600',
-    'bg-cyan-100 text-cyan-600',
+    'bg-blue-100 text-[#002E62] border border-blue-200',
+    'bg-green-100 text-[#002E62] border border-green-200',
+    'bg-amber-100 text-[#002E62] border border-amber-200',
+    'bg-purple-100 text-[#002E62] border border-purple-200',
+    'bg-teal-100 text-[#002E62] border border-teal-200',
+    'bg-indigo-100 text-[#002E62] border border-indigo-200',
+    'bg-slate-100 text-[#002E62] border border-slate-200',
+    'bg-cyan-100 text-[#002E62] border border-cyan-200',
 ];
 
 function getTypePillClass(): string {
     if (TYPE_PILL_CLASSES.length === 0) {
-        return 'bg-gray-100 text-gray-600';
+        return 'bg-gray-100 text-gray-900 border border-gray-200';
     }
 
     const randomIndex = Math.floor(Math.random() * TYPE_PILL_CLASSES.length);
