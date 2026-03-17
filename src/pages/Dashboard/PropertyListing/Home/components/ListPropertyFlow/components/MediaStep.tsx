@@ -128,9 +128,9 @@ const MediaStep: React.FC<Props> = ({ includeDocs }) => {
                             onDragStart={handleDragStart(photo.id)}
                             onDragOver={handleDragOver(photo.id)}
                             className="relative group h-28 w-44 overflow-hidden rounded-md border border-[#E2E8F0] bg-white cursor-move"
-                            title={photo.file.name}
+                            title={photo.file?.name}
                         >
-                            <img src={photo.previewUrl} alt={photo.file.name} className="h-full w-full object-cover" />
+                            <img src={photo.previewUrl} alt={photo.file?.name} className="h-full w-full object-cover" />
                             <button
                                 type="button"
                                 onClick={(event) => {
@@ -181,7 +181,7 @@ const MediaStep: React.FC<Props> = ({ includeDocs }) => {
                     {state.video ? (
                         <div className="flex flex-col items-center gap-1">
                             <span className="font-medium text-[#0A2D50] truncate max-w-50">
-                                {state.video.file.name}
+                                {state.video.file?.name}
                             </span>
                             <button
                                 type="button"
