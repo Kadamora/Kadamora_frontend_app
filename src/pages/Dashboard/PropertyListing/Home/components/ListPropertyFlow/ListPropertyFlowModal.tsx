@@ -325,7 +325,7 @@ const ListingFormContent: React.FC<ListingFormContentProps> = ({
             };
 
 
-            const payload = await buildCreatePropertyPayload(listingType, state, uploadFile, uploadVideoWithProgress);
+            const payload = await buildCreatePropertyPayload(listingType, state, uploadFile, uploadVideoWithProgress, !!editingProperty);
             
             if (editingProperty) {
                 const response = await updatePropertyListing({ id: editingProperty.id, payload }).unwrap();
@@ -348,7 +348,7 @@ const ListingFormContent: React.FC<ListingFormContentProps> = ({
         <div className="w-full md:w-295 lg:w-310 max-w-[96vw] rounded-xl overflow-hidden flex bg-white shadow-[0_4px_32px_-4px_rgba(15,23,42,0.12)] md:flex-row flex-col md:h-175">
             {/* ... sidebar ... */}
             <div className="hidden md:block w-[35%]">
-                <StepsSidebar steps={steps} currentIdx={currentIdx} listingType={listingType} />
+                <StepsSidebar steps={steps} currentIdx={currentIdx} listingType={listingType} isEditMode={!!editingProperty} />
             </div>
 
             {/* ... mobile header ... */}
@@ -454,11 +454,12 @@ async function buildCreatePropertyPayload(
     state: PropertyListingFormState,
     uploadFile: Uploader,
     uploadVideo: Uploader,
+    isEditMode = false,
 ): Promise<CreatePropertyListingPayload> {
     const facilities = mapFacilities(state.facilities);
     const media = await prepareEditMediaPayload(state, uploadFile, uploadVideo);
-    // ... payload construction
-     const payload: CreatePropertyListingPayload = {
+    // Base payload - always included
+    const payload: CreatePropertyListingPayload = {
         title: state.title.trim(),
         description: state.description.trim(),
         location: state.location.trim(),
@@ -471,28 +472,32 @@ async function buildCreatePropertyPayload(
         furnishingStatus: state.furnishingStatus || 'furnished',
         facilities,
         price: toNumber(state.price),
-        renewalOption: state.renewalOption,
         negotiable: state.negotiable,
         amenities: state.amenities,
         media,
     };
     
-     if (state.paymentTerm) payload.paymentTerm = state.paymentTerm;
+    // Fields NOT allowed by the update endpoint - skip them when editing
+    if (!isEditMode) {
+        if (state.renewalOption !== undefined) payload.renewalOption = state.renewalOption;
+        if (state.size?.trim()) payload.size = state.size.trim();
+        if (state.availablePropertyDocuments?.length > 0)
+            payload.availablePropertyDocuments = state.availablePropertyDocuments;
+        if (state.maintenanceResponsibility) payload.maintenanceResponsibility = state.maintenanceResponsibility;
+        if (state.propertyConditions) payload.propertyConditions = state.propertyConditions;
+        if (state.otherCharges?.trim()) payload.otherCharges = state.otherCharges.trim();
+    }
+
+    if (state.paymentTerm) payload.paymentTerm = state.paymentTerm;
     if (state.serviceCharge) payload.serviceCharge = toNumber(state.serviceCharge);
-    if (state.additionalCharges.trim()) payload.additionalCharges = state.additionalCharges.trim();
+    if (state.additionalCharges?.trim()) payload.additionalCharges = state.additionalCharges.trim();
     if (state.weeklyRate) payload.weeklyRate = toNumber(state.weeklyRate);
     if (state.monthlyRate) payload.monthlyRate = toNumber(state.monthlyRate);
     if (state.minimumNightsStay) payload.minimumNightsStay = toNumber(state.minimumNightsStay);
-    if (state.houseRule.trim()) payload.houseRule = state.houseRule.trim();
-    if (state.size.trim()) payload.size = state.size.trim();
+    if (state.houseRule?.trim()) payload.houseRule = state.houseRule.trim();
     if (state.leaseDuration) payload.leaseDuration = toNumber(state.leaseDuration);
-    if (state.maintenanceCharge.trim()) payload.maintenanceCharge = state.maintenanceCharge.trim();
-    if (state.availablePropertyDocuments.length > 0)
-        payload.availablePropertyDocuments = state.availablePropertyDocuments;
-    if (state.maintenanceResponsibility) payload.maintenanceResponsibility = state.maintenanceResponsibility;
-    if (state.securityDeposit.trim()) payload.securityDeposit = state.securityDeposit.trim();
-    if (state.propertyConditions) payload.propertyConditions = state.propertyConditions;
-    if (state.otherCharges.trim()) payload.otherCharges = state.otherCharges.trim();
+    if (state.maintenanceCharge?.trim()) payload.maintenanceCharge = state.maintenanceCharge.trim();
+    if (state.securityDeposit?.trim()) payload.securityDeposit = state.securityDeposit.trim();
 
     return payload;
 }
@@ -606,7 +611,9 @@ function toNumber(value: string | number | undefined, defaultValue = 0): number 
     if (value === undefined || value === null || value === '') {
         return defaultValue;
     }
-    const parsed = Number(value);
+    // Strip formatting characters like commas (e.g. "100,000,000" → "100000000")
+    const cleaned = typeof value === 'string' ? value.replace(/,/g, '').trim() : value;
+    const parsed = Number(cleaned);
     return Number.isNaN(parsed) ? defaultValue : parsed;
 }
 
