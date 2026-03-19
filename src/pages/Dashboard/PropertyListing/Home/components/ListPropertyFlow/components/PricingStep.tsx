@@ -38,8 +38,8 @@ const PricingStep: React.FC = () => {
                         // { value: 'outright', label: 'Outright Payment (Full Payment)' },
                         // { value: 'installment', label: 'Installment Payment Plan' },
                         // { value: 'flexible', label: 'Flexible Payment Plan' },
-                         { label: 'Outright Payment (Full Payment)', value: 'bi_annually' },
-                        { label: 'Installment Payment Plan', value: 'bi_annually' },
+                         { label: 'Outright Payment (Full Payment)', value: 'biannually' },
+                        { label: 'Installment Payment Plan', value: 'quarterly' },
                         { label: 'Flexible Payment Plan', value: 'annually' },
                     ]}
                 />

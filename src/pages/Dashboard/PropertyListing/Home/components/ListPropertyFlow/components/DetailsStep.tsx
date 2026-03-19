@@ -392,9 +392,9 @@ const states = useMemo(() => {
                         { label: 'Select property type', value: '' },
                         { label: 'Apartment', value: 'apartment' },
                         { label: 'Duplex', value: 'duplex' },
-                        { label: 'Terrace', value: 'terrace' },
-                        { label: 'Land', value: 'land' },
-                        { label: 'Office Space', value: 'office_space' },
+                        { label: 'Bungalow', value: 'bungalow' },
+                        // { label: 'Land', value: 'land' },
+                        // { label: 'Office Space', value: 'office_space' },
                     ]}
                 />
                 <Input
