@@ -3,6 +3,7 @@ import { X, ShieldCheck, Lock, FileText, Info } from 'lucide-react';
 
 interface PaymentModalProps {
     isOpen: boolean;
+    isLoading?: boolean;
     onClose: () => void;
     onProceed: () => void;
 }
@@ -34,7 +35,7 @@ export const paymentInfoSections = [
   },
 ];
 
-const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onProceed }) => {
+const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, isLoading, onClose, onProceed }) => {
     if (!isOpen) return null;
 
     return (
@@ -89,9 +90,17 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onProceed 
                     </button>
                     <button 
                         onClick={onProceed}
-                        className="px-6 py-2.5 bg-[var(--color-secondary)] text-white rounded-lg font-medium hover:opacity-90 transition-all shadow-lg shadow-blue-900/20 active:scale-95"
+                        disabled={isLoading}
+                        className="px-6 py-2.5 bg-[var(--color-secondary)] disabled:opacity-50 text-white rounded-lg font-medium hover:opacity-90 transition-all shadow-lg shadow-blue-900/20 active:scale-95 flex items-center justify-center gap-2"
                     >
-                        Proceed to Payment
+                        {isLoading ? (
+                            <>
+                                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                Processing...
+                            </>
+                        ) : (
+                            "Proceed to Payment"
+                        )}
                     </button>
                 </div>
             </div>

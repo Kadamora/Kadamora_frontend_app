@@ -161,7 +161,6 @@ export default function PropertyCard({
                             <span className="text-[14px] font-medium text-gray-800">
                                 Availability
                             </span>
-                            {/* <span className="text-[12px] font-semibold text-[#0F172A]">{availabilityText}</span> */}
                         </div>
                         <button
                             type="button"
