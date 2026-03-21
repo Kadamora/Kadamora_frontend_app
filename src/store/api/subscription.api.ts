@@ -44,6 +44,11 @@ export interface SubscribeToPlanInput {
     billingCycle: "monthly" | "quarterly" | "annually";
 }
 
+export interface InitializeSubscriptionInput {
+    planId: string;
+    frequency: "MONTHLY" | "QUARTERLY" | "ANNUALLY";
+}
+
 export interface CreateSubscriptionPlanInput {
     name: string;
     description?: string;
@@ -89,6 +94,21 @@ export const subscriptionApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["Subscription"],
         }),
+        initializeSubscription: builder.mutation<{ data: any }, InitializeSubscriptionInput>({
+            query: (body) => ({
+                url: `/api/v1/subscriptions/initialize-payment`,
+                method: "POST",
+                body,
+            }),
+            invalidatesTags: ["Subscription"],
+        }),
+        verifySubscription: builder.query<{ data: any }, { reference: string }>({
+            query: (params) => ({
+                url: `/api/v1/subscriptions/verify-payment`,
+                method: "GET",
+                params,
+            })
+        }),
         updateSubscriptionAdmin: builder.mutation<{ data: SubscriptionPlan }, { id: string; body: Partial<CreateSubscriptionPlanInput> }>({
             query: ({ id, body }) => ({
                 url: `/api/v1/subscriptions/admin/plans/${id}`,
@@ -110,4 +130,6 @@ export const {
     useSubscribeToPlanMutation,
     useCreateSubscriptionAdminMutation,
     useUpdateSubscriptionAdminMutation,
+    useInitializeSubscriptionMutation,
+    useVerifySubscriptionQuery
 } = subscriptionApi;
