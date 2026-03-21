@@ -7,7 +7,7 @@ import { CircleCheckBig, Fence } from 'lucide-react';
 import type { PricingTier } from './component/pricing';
 import SubscriptionServiceCard from './component/SubscriptionServiceCard';
 import PropertyPricingAccordion from './component/PropertyPricingAccordion';
-import { useGetAllSubscriptionPlansQuery, useSubscribeToPlanMutation } from '@store/api/subscription.api';
+import { useGetAllSubscriptionPlansQuery, useSubscribeToPlanMutation, useInitializeSubscriptionMutation } from '@store/api/subscription.api';
 import type { SubscriptionPlan } from '@store/api/subscription.api';
 
 /* -------------------------------------------------------
@@ -99,6 +99,7 @@ const SubscriptionPage = () => {
     /* ---- API ---- */
     const { data: plansData, isLoading: plansLoading, isError: plansError } = useGetAllSubscriptionPlansQuery();
     const [subscribeToPlan, { isLoading: subscribing }] = useSubscribeToPlanMutation();
+    const [initializeSubscription, { isLoading: initializing }] = useInitializeSubscriptionMutation();
 
     const rawPlans: SubscriptionPlan[] = Array.isArray(plansData?.data)
         ? plansData.data.filter((plan) => plan.name?.toLowerCase() !== 'free' && plan.displayName !== 'Free Plan')
@@ -112,7 +113,49 @@ const SubscriptionPage = () => {
         return tier ? tier.prices[billingCycle] : 0;
     })();
 
-    /* ---- Handle final payment confirm ---- */
+    /* ---- Handle payment initialization ---- */
+    const handleInitializePayment = async () => {
+        if (!selectedPropertyTier) return;
+        setSubscribeError(null);
+        try {
+            const frequency = billingCycle.toUpperCase() as "MONTHLY" | "QUARTERLY" | "ANNUALLY";
+            const res = await initializeSubscription({
+                planId: selectedPropertyTier,
+                frequency,
+            }).unwrap();
+
+            const responseData = res?.data;
+            console.log("response data", responseData)
+
+            if (responseData?.paymentUrl) {
+                window.location.href = responseData.paymentUrl;
+            } else if (responseData?.authorization_url || responseData?.authorizationUrl) {
+                window.location.href = responseData.authorization_url || responseData.authorizationUrl;
+            } else if (responseData?.checkoutUrl) {
+                window.location.href = responseData.checkoutUrl;
+            } else if (typeof responseData === 'string') {
+                try {
+                    new URL(responseData);
+                    window.location.href = responseData;
+                } catch {
+                    setSubscribeSuccess(true);
+                    setModalStep('none');
+                    setActiveService(null);
+                }
+            } else {
+                setSubscribeSuccess(true);
+                setModalStep('none');
+                setActiveService(null);
+            }
+        } catch (err: any) {
+            const msg =
+                err?.data?.message ?? err?.message ?? 'Payment initialization failed. Please try again.';
+            setSubscribeError(msg);
+            setModalStep('none');
+        }
+    };
+
+    /* ---- Handle final payment confirm (Fallback if needed) ---- */
     const handleConfirmPayment = async () => {
         if (!selectedPropertyTier) return;
         setSubscribeError(null);
@@ -271,8 +314,9 @@ const SubscriptionPage = () => {
 
                 <PaymentModal
                     isOpen={modalStep === 'info'}
+                    isLoading={initializing}
                     onClose={() => setModalStep('none')}
-                    onProceed={() => setModalStep('method')}
+                    onProceed={handleInitializePayment}
                 />
 
                 <PaymentMethodModal
