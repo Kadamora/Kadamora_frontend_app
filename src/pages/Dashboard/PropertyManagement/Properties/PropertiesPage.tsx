@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import PropertyCard2 from '../../../../components/cards/card/PropertyCard2';
 import { useGetManagedPropertiesQuery, useDeletePropertyMutation } from '@store/api/propertyMgt.api';
 import AddTenantModal from '../Tenant/components/AddTenantModal';
+import EmptyState from '../../PropertyListing/Home/components/EmptyState';
 
 const PropertySkeleton = () => (
     <div className="rounded-2xl border border-gray-100 bg-white p-4 animate-pulse flex flex-col gap-4 min-w-[320px] h-40">
@@ -49,9 +50,18 @@ const PropertiesPage: React.FC = () => {
                 defaultPropertyId={selectedPropertyId} 
             />
             <div className="mb-6 mt-4 max-w-300 mx-auto">
-                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Remove grid class if empty state is showing to allow centering */}
+                <div className={isLoading || properties.length > 0 ? "mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "mt-6"}>
                     {isLoading ? (
                         Array(6).fill(0).map((_, idx) => <PropertySkeleton key={idx} />)
+                    ) : properties.length === 0 ? (
+                        <div className="py-12 flex justify-center w-full col-span-full">
+                            <EmptyState
+                                title="No Properties Managed"
+                                description="You haven't listed or managed any properties yet."
+                                actionLabel="List New Property"
+                            />
+                        </div>
                     ) : (
                         properties.map((p: any) => (
                             <PropertyCard2 

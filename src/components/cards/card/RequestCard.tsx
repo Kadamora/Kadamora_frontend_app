@@ -57,7 +57,7 @@ const SharedRequestCard: React.FC<RequestCardProps> = (props) => {
         <>
             <article
                 onClick={() => setOpen(true)}
-                className="group relative bg-white rounded-2xl border border-[#CCE3FD] p-6 flex flex-col gap-4 md:p-6 sm:p-4 transition-all duration-300 ease-out transform hover:-translate-y-1 hover:border-[#CCE3FD] hover:bg-[#F1F9FF] cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="group relative bg-white rounded-2xl border border-gray-200 p-6 flex flex-col gap-4 md:p-6 sm:p-4 transition-all duration-300 ease-out transform hover:-translate-y-1 hover:border-[#CCE3FD] hover:bg-[#F1F9FF] cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/40"
             >
                 <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                     <div className="flex-1">
