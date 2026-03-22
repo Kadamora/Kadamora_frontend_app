@@ -11,16 +11,17 @@ import CommunicationPage from './Communication/CommunicationPage';
 import DocumentPage from './Document/DocumentPage';
 import SettingsPage from './Settings/SettingsPage';
 
-const tabs = ['Overview', 'Properties', 'Tenants', 'Maintenance', 'Communication', 'Documents', 'Settings'];
+const tabs = ['Overview', 'Properties', 'Tenants'];
+// const tabs = ['Overview', 'Properties', 'Tenants', 'Maintenance', 'Communication', 'Documents', 'Settings'];
 
 const tabPathMap: Record<string, string> = {
     Overview: '',
     Properties: 'properties',
     Tenants: 'tenants',
-    Maintenance: 'maintenance',
-    Communication: 'communication',
-    Documents: 'documents',
-    Settings: 'settings',
+    // Maintenance: 'maintenance',
+    // Communication: 'communication',
+    // Documents: 'documents',
+    // Settings: 'settings',
 };
 
 const actionsMap: Record<string, { label: string; path: string }> = {
@@ -81,7 +82,7 @@ const PropertyManagementRoot: React.FC = () => {
     const getButtonLabel = (label: string) => {
         if (label.startsWith('+')) return label;
         if (label === 'Create Announcement') return 'Create Announcement';
-        return `+ ${label.replace(/^Add /, '')}`;
+        return `+ ${label.replace(/^ /, '')}`;
     };
 
     return (
@@ -110,9 +111,9 @@ const PropertyManagementRoot: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="mt-4 flex items-center gap-2 flex-wrap bg-white p-2 md:justify-between">
+                <div className="mt-4 flex items-center gap-2 flex-wrap  p-2 md:justify-between">
                     <div className="w-full md:flex-1 overflow-x-auto scrollbar-hide md:overflow-visible">
-                        <div className="flex items-center gap-2 flex-nowrap md:flex-nowrap bg-white p-2">
+                        <div className="flex items-center gap-2 flex-nowrap md:flex-nowrap p-2">
                             {tabs.map((t, idx) => (
                                 <NavLink
                                     key={t}
@@ -137,7 +138,7 @@ const PropertyManagementRoot: React.FC = () => {
                     <div className="hidden md:flex ml-4 items-center">
                         <button
                             onClick={handleAction}
-                            className="px-4 py-2 rounded-md border border-[#CCE3FD] bg-white text-[#0A66B2] hover:bg-[#F4F8FF]"
+                            className="px-4 py-2 rounded-md border border-[#002E62] bg-[#002E62] text-[#fff] hover:bg-[#002E62]"
                             aria-label={action.label}
                         >
                             {getButtonLabel(action.label)}
@@ -147,7 +148,7 @@ const PropertyManagementRoot: React.FC = () => {
                     <div className="md:hidden w-full mt-3 flex justify-center">
                         <button
                             onClick={handleAction}
-                            className="w-full max-w-xs px-4 py-2 rounded-md border border-[#CCE3FD] bg-white text-[#0A66B2] hover:bg-[#F4F8FF]"
+                            className="w-full max-w-xs px-4 py-2 rounded-md border border-[#CCE3FD] bg-[#002E62] text-[#fff] hover:bg-[#002E62]"
                             aria-label={action.label}
                         >
                             {action.label}

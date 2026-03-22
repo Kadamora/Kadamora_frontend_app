@@ -18,19 +18,19 @@ const steps: StepDef[] = [
     {
         id: 'property_details',
         title: 'Property Details',
-        description: 'Lorem ipsum dolor sit amet consectetur. Vulputate nec dictum quam congue massa.',
+        description: 'Provide key information about the property to help potential clients understand what is being offered.',
     },
-    {
-        id: 'invite_user',
-        title: 'Invite User',
-        description:
-            'Lorem ipsum dolor sit amet consectetur. Tellus nunc odio enim ut sit rutrum morbi. Bibendum sed dictum egestas purus a porta sit.',
-    },
+    // {
+    //     id: 'invite_user',
+    //     title: 'Invite User',
+    //     description:
+    //         'Lorem ipsum dolor sit amet consectetur. Tellus nunc odio enim ut sit rutrum morbi. Bibendum sed dictum egestas purus a porta sit.',
+    // },
     {
         id: 'account_details',
         title: 'Property Account Details',
         description:
-            'Lorem ipsum dolor sit amet consectetur. Tellus nunc odio enim ut sit rutrum morbi. Bibendum sed dictum egestas purus a porta sit.',
+            'Enter the account and payment details associated with this property to enable transactions.',
     },
 ];
 
@@ -72,7 +72,8 @@ const AddPropertyFlowModal: React.FC<{ open: boolean; onClose: () => void }> = (
 
         try {
             await createProperty({
-                role: role === 'owner' ? 'admin' : 'agent',
+                // role: role === 'owner' ? 'admin' : 'agent',
+                role: role,
                 name: propertyName,
                 categoryType: category,
                 address,
@@ -129,11 +130,9 @@ const AddPropertyFlowModal: React.FC<{ open: boolean; onClose: () => void }> = (
                                 category={category} setCategory={setCategory} 
                                 propertyName={propertyName} setPropertyName={setPropertyName} 
                                 address={address} setAddress={setAddress} 
-                            />}
-                            {currentIdx === 1 && <InviteUserStep 
                                 estateManagerEmail={estateManagerEmail} setEstateManagerEmail={setEstateManagerEmail} 
                             />}
-                            {currentIdx === 2 && <AccountDetailsStep 
+                            {currentIdx === 1 && <AccountDetailsStep 
                                 bankName={bankName} setBankName={setBankName}
                                 accountName={accountName} setAccountName={setAccountName}
                                 accountNumber={accountNumber} setAccountNumber={setAccountNumber}
@@ -169,7 +168,7 @@ const AddPropertyFlowModal: React.FC<{ open: boolean; onClose: () => void }> = (
 };
 
 // Step 1: Property Details
-const PropertyDetailsStep: React.FC<any> = ({ role, setRole, category, setCategory, propertyName, setPropertyName, address, setAddress }) => {
+const PropertyDetailsStep: React.FC<any> = ({ role, setRole, category, setCategory, propertyName, setPropertyName, address, setAddress, estateManagerEmail, setEstateManagerEmail }) => {
     return (
         <form className="space-y-6">
             <RadioGroup
@@ -188,10 +187,10 @@ const PropertyDetailsStep: React.FC<any> = ({ role, setRole, category, setCatego
                 title="Category Name"
                 placeholder="Select a category name"
                 options={[
-                    { label: 'Apartment', value: 'apartment' },
-                    { label: 'Duplex', value: 'duplex' },
-                    { label: 'Bungalow', value: 'bungalow' },
-                    { label: 'Terrace', value: 'terrace' },
+                    { label: 'Residential', value: 'residential' },
+                    { label: 'Commercial', value: 'commercial' },
+                    // { label: 'Industrial', value: 'industrial' },
+                    // { label: 'Mixed-Use', value: 'mixed-use' },
                 ]}
                 value={category}
                 onChange={setCategory}
@@ -199,20 +198,7 @@ const PropertyDetailsStep: React.FC<any> = ({ role, setRole, category, setCatego
                 required
             />
             <Input title="Address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="12, Amino Kano Crescent, Wuse 2, Abuja" name="address" required />
-        </form>
-    );
-};
-
-// Step 2: Invite User
-const InviteUserStep: React.FC<any> = ({ estateManagerEmail, setEstateManagerEmail }) => (
-    <form className="space-y-6">
-        <div className="bg-[#F6FAFF] border border-[#B6E0FE] rounded-lg p-4 mb-4">
-            <span className="block text-[#0F62FE] font-semibold mb-1">Note:</span>
-            <span className="text-sm text-[#64748B]">
-                The tenant you added will receive a welcome email with a temporary password to log in.
-            </span>
-        </div>
-        <Input
+             <Input
             title="Estate Manager Email"
             type="email"
             placeholder="Enter estate manager email"
@@ -221,8 +207,30 @@ const InviteUserStep: React.FC<any> = ({ estateManagerEmail, setEstateManagerEma
             onChange={(e) => setEstateManagerEmail(e.target.value)}
             required
         />
-    </form>
-);
+        </form>
+    );
+};
+
+// Step 2: Invite User
+// const InviteUserStep: React.FC<any> = ({ estateManagerEmail, setEstateManagerEmail }) => (
+//     <form className="space-y-6">
+//         <div className="bg-[#F6FAFF] border border-[#B6E0FE] rounded-lg p-4 mb-4">
+//             <span className="block text-[#0F62FE] font-semibold mb-1">Note:</span>
+//             <span className="text-sm text-[#64748B]">
+//                 The tenant you added will receive a welcome email with a temporary password to log in.
+//             </span>
+//         </div>
+//         <Input
+//             title="Estate Manager Email"
+//             type="email"
+//             placeholder="Enter estate manager email"
+//             name="estateManagerEmail"
+//             value={estateManagerEmail}
+//             onChange={(e) => setEstateManagerEmail(e.target.value)}
+//             required
+//         />
+//     </form>
+// );
 
 // Step 3: Account Details
 const AccountDetailsStep: React.FC<any> = ({ bankName, setBankName, accountName, setAccountName, accountNumber, setAccountNumber }) => (

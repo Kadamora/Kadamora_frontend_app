@@ -19,7 +19,7 @@ export interface RequestItem {
 const ActiveRequests: React.FC<{ requests?: RequestItem[] }> = ({ requests }) => {
     const list = requests ?? [];
     return (
-        <section className="rounded-lg border border-[#E8F1F9] bg-white p-4 xs:p-2">
+        <section className="rounded-lg border border-gray-200 bg-white p-4 xs:p-2">
             <div className="flex justify-between items-center">
                 <h3 className="text-[18px] font-semibold text-[#093154] flex items-center gap-2">
                     <span className="inline-block">
@@ -27,15 +27,15 @@ const ActiveRequests: React.FC<{ requests?: RequestItem[] }> = ({ requests }) =>
                     </span>
                     Active Request
                 </h3>
-                <a href="#" className="text-sm text-[#0A66B2] font-medium">
+                {/* <a href="#" className="text-sm text-[#0A66B2] font-medium">
                     View All
-                </a>
+                </a> */}
             </div>
             <div className="mt-4 space-y-3">
                 {list.map((r) => (
                     <RequestCard key={String(r.id)} {...r} />
                 ))}
-                {list.length === 0 && <div className="text-sm text-[#94A3B8] py-8">No active requests.</div>}
+                {list.length === 0 && <div className="text-sm text-[#94A3B8] py-8 text-center">No active requests.</div>}
             </div>
         </section>
     );

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import CardMenuItem from './CardMenuItem';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
+import { House } from 'lucide-react';
 
 export interface PropertyCard2Props {
     id: number | string;
@@ -45,6 +46,7 @@ const PropertyCard2: React.FC<PropertyCard2Props> = ({ id, name, address, tenant
     const tenantsIcon = (
         <span className="h-10 w-10 rounded-full bg-[#F3F6F9] flex items-center justify-center">
             {/* <img src={activeTenantsIcon} alt="Tenants" className="h-8 w-8" /> */}
+            <House className="h-4 w-4 text-[#002E62]" />
         </span>
     );
 

@@ -6,11 +6,13 @@ import { baseApi } from "./baseApi";
 
 export interface InviteTenantPayload {
     propertyId: string;
-    email: string;
-    unit: string;
-    rentPrice: number | string;
-    rentDueDate: string;
-    type: string;
+    tenants: Array<{
+        email: string;
+        propertyType: string;
+        amount: number;
+        paymentFrequency: string;
+        rentStartDate: string;
+    }>;
 }
 
 export interface RecordPaymentPayload {
@@ -42,10 +44,10 @@ export interface TenantResponse {
 export const tenantApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         inviteTenant: builder.mutation<TenantResponse, InviteTenantPayload>({
-            query: ({ propertyId, ...payload }) => ({
+            query: ({ propertyId, tenants }) => ({
                 url: `/api/v1/tenants/invite-tenant/${propertyId}`,
                 method: "POST",
-                body: payload,
+                body: { tenants },
             }),
             invalidatesTags: ["PropertyMgt"],
         }),

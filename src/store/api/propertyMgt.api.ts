@@ -5,7 +5,7 @@ import { baseApi } from "./baseApi";
 ======================= */
 
 export interface CreatePropertyPayload {
-    role: "agent" | "admin";
+    role: "estate_manager" | "owner";
     name: string;
     categoryType: string;
     address: string;
