@@ -5,7 +5,7 @@ import { baseApi } from "./baseApi";
 ======================= */
 
 export interface CreatePropertyPayload {
-    role: "agent" | "admin";
+    role: "estate_manager" | "owner";
     name: string;
     categoryType: string;
     address: string;
@@ -27,10 +27,10 @@ export interface CreatePropertyResponse {
 export interface DashboardSummaryResponse {
     message: string;
     data: {
+        totalRevenue: any;
+        activeTenants: number;
+        maintenanceRequests: number;
         totalProperties: number;
-        totalTenants: number;
-        totalRevenue?: number;
-        occupancyRate?: number;
     };
 }
 

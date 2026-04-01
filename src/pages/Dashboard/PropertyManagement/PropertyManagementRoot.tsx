@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Route, Routes, NavLink, useLocation } from 'react-router';
+import { Route, Routes, NavLink, useLocation, useNavigate } from 'react-router';
 import AddPropertyFlowModal from './Properties/components/AddPropertyFlowModal';
 import CreateAnnouncementModal from './Communication/components/CreateAnnouncementModal';
 import OverviewPage from './Overview/OverviewPage';
@@ -11,16 +11,17 @@ import CommunicationPage from './Communication/CommunicationPage';
 import DocumentPage from './Document/DocumentPage';
 import SettingsPage from './Settings/SettingsPage';
 
-const tabs = ['Overview', 'Properties', 'Tenants', 'Maintenance', 'Communication', 'Documents', 'Settings'];
+const tabs = ['Overview', 'Properties', 'Tenants'];
+// const tabs = ['Overview', 'Properties', 'Tenants', 'Maintenance', 'Communication', 'Documents', 'Settings'];
 
 const tabPathMap: Record<string, string> = {
     Overview: '',
     Properties: 'properties',
     Tenants: 'tenants',
-    Maintenance: 'maintenance',
-    Communication: 'communication',
-    Documents: 'documents',
-    Settings: 'settings',
+    // Maintenance: 'maintenance',
+    // Communication: 'communication',
+    // Documents: 'documents',
+    // Settings: 'settings',
 };
 
 const actionsMap: Record<string, { label: string; path: string }> = {
@@ -38,7 +39,7 @@ const modalActions: Record<string, string> = {
 
 const PropertyManagementRoot: React.FC = () => {
     const tabRefs = React.useRef<(HTMLAnchorElement | null)[]>([]);
-
+    const navigate = useNavigate();
     const handleTabClick = (idx: number) => {
         const ref = tabRefs.current[idx];
         if (ref) {
@@ -81,7 +82,7 @@ const PropertyManagementRoot: React.FC = () => {
     const getButtonLabel = (label: string) => {
         if (label.startsWith('+')) return label;
         if (label === 'Create Announcement') return 'Create Announcement';
-        return `+ ${label.replace(/^Add /, '')}`;
+        return `+ ${label.replace(/^ /, '')}`;
     };
 
     return (
@@ -93,19 +94,26 @@ const PropertyManagementRoot: React.FC = () => {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-[25px] font-semibold text-[#002E62] leading-snug">Property Management</h1>
-                        <nav className="mb-2 text-[13px] flex items-center gap-1 text-[#475467]">
+                        {/* <nav className="mb-2 text-[13px] flex items-center gap-1 text-[#475467]">
                             <a href="/dashboard/home" className="hover:underline">
                                 Home
                             </a>
                             <span>/</span>
                             <span className="text-[#0A66B2]">Manage My Property</span>
-                        </nav>
+                        </nav> */}
+                        <nav className="flex">
+                        <span onClick={() => navigate('/dashboard/home')} className="cursor-pointer text-sm">Home</span>
+                        <span className="mx-2 text-sm">›</span>
+                        <span onClick={() => navigate(-1)} className="cursor-pointer text-sm">Listings</span>
+                        <span className="mx-2 text-sm">›</span>
+                        <span className="text-primary text-sm">Manage My Property</span>
+                    </nav>
                     </div>
                 </div>
 
-                <div className="mt-4 flex items-center gap-2 flex-wrap bg-white p-2 md:justify-between">
+                <div className="mt-4 flex items-center gap-2 flex-wrap  p-2 md:justify-between">
                     <div className="w-full md:flex-1 overflow-x-auto scrollbar-hide md:overflow-visible">
-                        <div className="flex items-center gap-2 flex-nowrap md:flex-nowrap bg-white p-2">
+                        <div className="flex items-center gap-2 flex-nowrap md:flex-nowrap p-2">
                             {tabs.map((t, idx) => (
                                 <NavLink
                                     key={t}
@@ -130,7 +138,7 @@ const PropertyManagementRoot: React.FC = () => {
                     <div className="hidden md:flex ml-4 items-center">
                         <button
                             onClick={handleAction}
-                            className="px-4 py-2 rounded-md border border-[#CCE3FD] bg-white text-[#0A66B2] hover:bg-[#F4F8FF]"
+                            className="px-4 py-2 rounded-md border border-[#002E62] bg-[#002E62] text-[#fff] hover:bg-[#002E62]"
                             aria-label={action.label}
                         >
                             {getButtonLabel(action.label)}
@@ -140,7 +148,7 @@ const PropertyManagementRoot: React.FC = () => {
                     <div className="md:hidden w-full mt-3 flex justify-center">
                         <button
                             onClick={handleAction}
-                            className="w-full max-w-xs px-4 py-2 rounded-md border border-[#CCE3FD] bg-white text-[#0A66B2] hover:bg-[#F4F8FF]"
+                            className="w-full max-w-xs px-4 py-2 rounded-md border border-[#CCE3FD] bg-[#002E62] text-[#fff] hover:bg-[#002E62]"
                             aria-label={action.label}
                         >
                             {action.label}

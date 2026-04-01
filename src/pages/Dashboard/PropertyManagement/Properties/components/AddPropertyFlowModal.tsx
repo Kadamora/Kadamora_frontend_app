@@ -4,6 +4,7 @@ import Select from '@components/forms/Select';
 import StepsSidebar from '@pages/Dashboard/PropertyListing/Home/components/ListPropertyFlow/components/StepsSidebar';
 import CloseButton from '@pages/Dashboard/PropertyListing/Home/components/OnboardingAgent/components/CloseButton';
 import React, { useState, useCallback, useEffect } from 'react';
+import { useCreatePropertyMutation } from '@store/api/propertyMgt.api';
 
 
 
@@ -17,29 +18,76 @@ const steps: StepDef[] = [
     {
         id: 'property_details',
         title: 'Property Details',
-        description: 'Lorem ipsum dolor sit amet consectetur. Vulputate nec dictum quam congue massa.',
+        description: 'Provide key information about the property to help potential clients understand what is being offered.',
     },
-    {
-        id: 'invite_user',
-        title: 'Invite User',
-        description:
-            'Lorem ipsum dolor sit amet consectetur. Tellus nunc odio enim ut sit rutrum morbi. Bibendum sed dictum egestas purus a porta sit.',
-    },
+    // {
+    //     id: 'invite_user',
+    //     title: 'Invite User',
+    //     description:
+    //         'Lorem ipsum dolor sit amet consectetur. Tellus nunc odio enim ut sit rutrum morbi. Bibendum sed dictum egestas purus a porta sit.',
+    // },
     {
         id: 'account_details',
         title: 'Property Account Details',
         description:
-            'Lorem ipsum dolor sit amet consectetur. Tellus nunc odio enim ut sit rutrum morbi. Bibendum sed dictum egestas purus a porta sit.',
+            'Enter the account and payment details associated with this property to enable transactions.',
     },
 ];
 
 const AddPropertyFlowModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
     const [currentIdx, setCurrentIdx] = useState(0);
 
+    // Form State
+    const [role, setRole] = useState<'owner' | 'estate_manager'>('owner');
+    const [category, setCategory] = useState('');
+    const [propertyName, setPropertyName] = useState('');
+    const [address, setAddress] = useState('');
+    const [estateManagerEmail, setEstateManagerEmail] = useState('');
+    const [bankName, setBankName] = useState('');
+    const [accountName, setAccountName] = useState('');
+    const [accountNumber, setAccountNumber] = useState('');
+
+    const [createProperty, { isLoading }] = useCreatePropertyMutation();
+
     const handleClose = useCallback(() => {
         onClose();
-        setTimeout(() => setCurrentIdx(0), 250);
+        setTimeout(() => {
+            setCurrentIdx(0);
+            setRole('owner');
+            setCategory('');
+            setPropertyName('');
+            setAddress('');
+            setEstateManagerEmail('');
+            setBankName('');
+            setAccountName('');
+            setAccountNumber('');
+        }, 250);
     }, [onClose]);
+
+    const handleSubmit = async () => {
+        if (currentIdx < steps.length - 1) {
+            setCurrentIdx((idx) => Math.min(idx + 1, steps.length - 1));
+            return;
+        }
+
+        try {
+            await createProperty({
+                // role: role === 'owner' ? 'admin' : 'agent',
+                role: role,
+                name: propertyName,
+                categoryType: category,
+                address,
+                estateManagerEmail,
+                bankName,
+                accountNumber,
+                accountName
+            }).unwrap();
+            
+            handleClose();
+        } catch (error) {
+            console.error('Failed to create property:', error);
+        }
+    };
 
     useEffect(() => {
         if (!open) return;
@@ -77,9 +125,18 @@ const AddPropertyFlowModal: React.FC<{ open: boolean; onClose: () => void }> = (
                             <CloseButton onClick={handleClose} />
                         </div>
                         <div className="flex-1 overflow-y-auto md:px-10 px-6 md:pt-10 pt-2 md:pb-8 pb-2">
-                            {currentIdx === 0 && <PropertyDetailsStep />}
-                            {currentIdx === 1 && <InviteUserStep />}
-                            {currentIdx === 2 && <AccountDetailsStep />}
+                            {currentIdx === 0 && <PropertyDetailsStep 
+                                role={role} setRole={setRole} 
+                                category={category} setCategory={setCategory} 
+                                propertyName={propertyName} setPropertyName={setPropertyName} 
+                                address={address} setAddress={setAddress} 
+                                estateManagerEmail={estateManagerEmail} setEstateManagerEmail={setEstateManagerEmail} 
+                            />}
+                            {currentIdx === 1 && <AccountDetailsStep 
+                                bankName={bankName} setBankName={setBankName}
+                                accountName={accountName} setAccountName={setAccountName}
+                                accountNumber={accountNumber} setAccountNumber={setAccountNumber}
+                            />}
                         </div>
                         <div className="border-t border-[#E2E8F0] bg-white px-6 py-4">
                             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
@@ -94,10 +151,11 @@ const AddPropertyFlowModal: React.FC<{ open: boolean; onClose: () => void }> = (
                                     </button>
                                     <button
                                         type="button"
-                                        onClick={() => setCurrentIdx((idx) => Math.min(idx + 1, steps.length - 1))}
-                                        className="px-6 py-3 rounded-lg bg-[#002E62] text-white text-[14px] font-semibold transition-colors hover:bg-[#002E62]/90 focus:ring-2 focus:ring-[#002E62]/70 focus:ring-offset-2 outline-none"
+                                        onClick={handleSubmit}
+                                        disabled={isLoading}
+                                        className="px-6 py-3 rounded-lg bg-[#002E62] text-white text-[14px] font-semibold transition-colors hover:bg-[#002E62]/90 focus:ring-2 focus:ring-[#002E62]/70 focus:ring-offset-2 outline-none disabled:opacity-50"
                                     >
-                                        {currentIdx === steps.length - 1 ? 'Submit' : 'Save & Continue'}
+                                        {isLoading ? 'Loading...' : currentIdx === steps.length - 1 ? 'Submit' : 'Save & Continue'}
                                     </button>
                                 </div>
                             </div>
@@ -110,9 +168,7 @@ const AddPropertyFlowModal: React.FC<{ open: boolean; onClose: () => void }> = (
 };
 
 // Step 1: Property Details
-const PropertyDetailsStep: React.FC = () => {
-    const [role, setRole] = useState<'owner' | 'estate_manager'>('owner');
-    const [category, setCategory] = useState('');
+const PropertyDetailsStep: React.FC<any> = ({ role, setRole, category, setCategory, propertyName, setPropertyName, address, setAddress, estateManagerEmail, setEstateManagerEmail }) => {
     return (
         <form className="space-y-6">
             <RadioGroup
@@ -126,52 +182,63 @@ const PropertyDetailsStep: React.FC = () => {
                 ]}
                 className="mb-2"
             />
-            <Input title="Property Name" placeholder="Hilltop Estate" name="propertyName" required />
+            <Input title="Property Name" value={propertyName} onChange={(e) => setPropertyName(e.target.value)} placeholder="Hilltop Estate" name="propertyName" required />
             <Select
                 title="Category Name"
                 placeholder="Select a category name"
                 options={[
-                    { label: 'Apartment', value: 'apartment' },
-                    { label: 'Duplex', value: 'duplex' },
-                    { label: 'Bungalow', value: 'bungalow' },
-                    { label: 'Terrace', value: 'terrace' },
+                    { label: 'Residential', value: 'residential' },
+                    { label: 'Commercial', value: 'commercial' },
+                    // { label: 'Industrial', value: 'industrial' },
+                    // { label: 'Mixed-Use', value: 'mixed-use' },
                 ]}
                 value={category}
                 onChange={setCategory}
                 name="category"
                 required
             />
-            <Input title="Address" placeholder="12, Amino Kano Crescent, Wuse 2, Abuja" name="address" required />
+            <Input title="Address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="12, Amino Kano Crescent, Wuse 2, Abuja" name="address" required />
+             <Input
+            title="Estate Manager Email"
+            type="email"
+            placeholder="Enter estate manager email"
+            name="estateManagerEmail"
+            value={estateManagerEmail}
+            onChange={(e) => setEstateManagerEmail(e.target.value)}
+            required
+        />
         </form>
     );
 };
 
 // Step 2: Invite User
-const InviteUserStep: React.FC = () => (
-    <form className="space-y-6">
-        <div className="bg-[#F6FAFF] border border-[#B6E0FE] rounded-lg p-4 mb-4">
-            <span className="block text-[#0F62FE] font-semibold mb-1">Note:</span>
-            <span className="text-sm text-[#64748B]">
-                The tenant you added will receive a welcome email with a temporary password to log in.
-            </span>
-        </div>
-        <Input
-            title="Estate Manager Email"
-            type="email"
-            placeholder="Enter estate manager email"
-            name="estateManagerEmail"
-            required
-        />
-    </form>
-);
+// const InviteUserStep: React.FC<any> = ({ estateManagerEmail, setEstateManagerEmail }) => (
+//     <form className="space-y-6">
+//         <div className="bg-[#F6FAFF] border border-[#B6E0FE] rounded-lg p-4 mb-4">
+//             <span className="block text-[#0F62FE] font-semibold mb-1">Note:</span>
+//             <span className="text-sm text-[#64748B]">
+//                 The tenant you added will receive a welcome email with a temporary password to log in.
+//             </span>
+//         </div>
+//         <Input
+//             title="Estate Manager Email"
+//             type="email"
+//             placeholder="Enter estate manager email"
+//             name="estateManagerEmail"
+//             value={estateManagerEmail}
+//             onChange={(e) => setEstateManagerEmail(e.target.value)}
+//             required
+//         />
+//     </form>
+// );
 
 // Step 3: Account Details
-const AccountDetailsStep: React.FC = () => (
+const AccountDetailsStep: React.FC<any> = ({ bankName, setBankName, accountName, setAccountName, accountNumber, setAccountNumber }) => (
     <form className="space-y-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Input title="Bank Name" placeholder="Enter bank name" name="bankName" required />
-        <Input title="Account Name" placeholder="Enter account name" name="accountName" required />
+        <Input title="Bank Name" value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="Enter bank name" name="bankName" required />
+        <Input title="Account Name" value={accountName} onChange={(e) => setAccountName(e.target.value)} placeholder="Enter account name" name="accountName" required />
         <div className="md:col-span-2">
-            <Input title="Account Number" placeholder="Enter account number" name="accountNumber" required />
+            <Input title="Account Number" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} placeholder="Enter account number" name="accountNumber" required />
         </div>
     </form>
 );

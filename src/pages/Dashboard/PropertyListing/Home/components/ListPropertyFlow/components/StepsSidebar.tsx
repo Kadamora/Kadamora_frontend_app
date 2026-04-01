@@ -5,6 +5,7 @@ interface Props {
     steps: StepDef[];
     currentIdx: number;
     listingType: string;
+    isEditMode?: boolean;
 }
 
 const circleBullet = (active: boolean, completed: boolean) => (
@@ -19,12 +20,16 @@ const circleBullet = (active: boolean, completed: boolean) => (
     </div>
 );
 
-const StepsSidebar: React.FC<Props> = ({ steps, currentIdx, listingType }) => {
+const StepsSidebar: React.FC<Props> = ({ steps, currentIdx, listingType, isEditMode }) => {
     return (
         <aside className="hidden md:flex w-full h-full flex-col bg-[#F6FAFF] p-8">
             <div className="mb-12">
                 <h1 className="text-[32px] font-semibold text-[#1E293B] leading-tight">
-                    List Property for <span className="text-[#359F6A]">{listingType}</span>
+                    {isEditMode ? (
+                        <>Edit Property for <span className="text-[#359F6A]">{listingType}</span> </>
+                    ) : (
+                        <>List Property for <span className="text-[#359F6A]">{listingType}</span></>
+                    )}
                 </h1>
             </div>
             <div className="flex flex-col space-y-8">

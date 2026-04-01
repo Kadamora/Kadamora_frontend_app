@@ -41,6 +41,7 @@ const userMenuItems = [
     {
         label: 'Profile',
         icon: <img src="/assets/icons/circle-user-round.svg" alt="Profile" className="h-6 w-6" />,
+        disabled: true,
         path: '/dashboard/profile',
     },
     {
@@ -63,11 +64,13 @@ const userMenuItems = [
     {
         label: 'Settings',
         icon: <img src="/assets/icons/settings2.svg" alt="Settings" className="h-6 w-6" />,
+         disabled: true,
         path: '/dashboard/settings',
     },
     {
         label: 'Help Center',
         icon: <img src="/assets/icons/circle-question-mark.svg" alt="Help" className="h-6 w-6" />,
+         disabled: true,
         path: '/help',
     },
     {

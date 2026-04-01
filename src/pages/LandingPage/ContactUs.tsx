@@ -1,7 +1,3 @@
-// import LandingPageContainer from '@components/containers/LandingPage';
-// import { ContactSEO } from '@components/SEO';
-// import ContactForm from '@components/landingPage/contactus/ContactForm';
-// import FAQ from '@components/landingPage/faq';
 
 import LandingPageContainer from "@components/container/LandingPage/LandingPageContainer";
 import ContactForm from "@components/landingPage/ContactForm";

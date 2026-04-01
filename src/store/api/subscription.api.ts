@@ -12,21 +12,41 @@ export interface SubscriptionPlanPrice {
 
 export interface SubscriptionPlan {
     id: string;
+    createdAt?: string;
+    updatedAt?: string;
+    deletedAt?: string | null;
+    isDeleted?: boolean;
     name: string;
+    displayName?: string;
+    description?: string;
+    maxProperties?: number;
+    maxTenants?: number;
+    canCreateRentListings?: boolean;
+    canCreateLeaseListings?: boolean;
+    canCreateSaleListings?: boolean;
+    canCreateShortLetListings?: boolean;
+    canUsePremiumFeatures?: boolean;
+    canUseAnalytics?: boolean;
+    canUsePrioritySupport?: boolean;
+    monthlyPrice?: number | string;
+    yearlyPrice?: number | string;
+    quarterlyPrice?: number | string;
+    sortOrder?: number;
     tierLabel?: string;
     targetUsers?: string;
-    description?: string;
-    features?: string;
+    features?: string | string[];
     prices?: SubscriptionPlanPrice;
-    // Fallback flat price fields if the API returns individual fields
-    monthlyPrice?: number;
-    quarterlyPrice?: number;
     annualPrice?: number;
 }
 
 export interface SubscribeToPlanInput {
     planId: string;
     billingCycle: "monthly" | "quarterly" | "annually";
+}
+
+export interface InitializeSubscriptionInput {
+    planId: string;
+    frequency: "MONTHLY" | "QUARTERLY" | "ANNUALLY";
 }
 
 export interface CreateSubscriptionPlanInput {
@@ -74,6 +94,21 @@ export const subscriptionApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["Subscription"],
         }),
+        initializeSubscription: builder.mutation<{ data: any }, InitializeSubscriptionInput>({
+            query: (body) => ({
+                url: `/api/v1/subscriptions/initialize-payment`,
+                method: "POST",
+                body,
+            }),
+            invalidatesTags: ["Subscription"],
+        }),
+        verifySubscription: builder.query<{ data: any }, { reference: string }>({
+            query: (params) => ({
+                url: `/api/v1/subscriptions/verify-payment`,
+                method: "GET",
+                params,
+            })
+        }),
         updateSubscriptionAdmin: builder.mutation<{ data: SubscriptionPlan }, { id: string; body: Partial<CreateSubscriptionPlanInput> }>({
             query: ({ id, body }) => ({
                 url: `/api/v1/subscriptions/admin/plans/${id}`,
@@ -95,4 +130,6 @@ export const {
     useSubscribeToPlanMutation,
     useCreateSubscriptionAdminMutation,
     useUpdateSubscriptionAdminMutation,
+    useInitializeSubscriptionMutation,
+    useVerifySubscriptionQuery
 } = subscriptionApi;

@@ -6,105 +6,120 @@ import activeTenantsIcon from './components/icons/active_tenants.svg';
 import maintenanceRequestIcon from './components/icons/maintenance_request.svg';
 import ActiveRequests from './components/ActiveRequests';
 import RecentActivities from './components/RecentActivities';
+import { useGetDashboardSummaryQuery } from '@store/api/propertyMgt.api';
 
 const OverviewPage: React.FC = () => {
+    const { data: dashboardSummaryData, isLoading } = useGetDashboardSummaryQuery();
+
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
+    };
+
+    const summary = dashboardSummaryData?.data;
+
+    // Check if totalRevenue is a number, if it's an empty object, default to 0
+    let revenueAmount = 0;
+    if (typeof summary?.totalRevenue === 'number') {
+        revenueAmount = summary.totalRevenue;
+    }
+
     const stats = [
         {
             id: 1,
             title: 'Total Expected Revenue',
-            value: 'NGN 2,450,000',
+            value: isLoading ? '...' : formatCurrency(revenueAmount),
             icon: <img src={totalRevenueIcon} alt="Total Revenue" className="h-12 w-12" />,
         },
         {
             id: 2,
             title: 'Total Properties',
-            value: '04',
+            value: isLoading ? '...' : String(summary?.totalProperties || 0).padStart(2, '0'),
             icon: <img src={totalPropertiesIcon} alt="Total Properties" className="h-12 w-12" />,
         },
         {
             id: 3,
             title: 'Active Tenants',
-            value: '03',
+            value: isLoading ? '...' : String(summary?.activeTenants || 0).padStart(2, '0'),
             icon: <img src={activeTenantsIcon} alt="Active Tenants" className="h-12 w-12" />,
         },
         {
             id: 4,
             title: 'Maintenance Requests',
-            value: '03',
+            value: isLoading ? '...' : String(summary?.maintenanceRequests || 0).padStart(2, '0'),
             icon: <img src={maintenanceRequestIcon} alt="Maintenance Requests" className="h-12 w-12" />,
         },
     ];
 
-    const activeRequests = [
-        {
-            id: 1,
-            title: 'Leaking Bathroom Faucet',
-            description:
-                'Lorem ipsum dolor sit amet consectetur. Nibh odio egestas tortor lorem laoreet eu volutpat. Adipiscing odio erat ac ridiculus imperdiet. Ut morbi tortor non fringilla nec curae. Purus ac morbi nunc.',
-            assignee: 'Michael Chamberlain',
-            property: 'Hilltop Diamond',
-            cost: '35,000.00',
-            serviceType: 'Plumber',
-            status: 'In-progress' as const,
-            priority: 'High' as const,
-            assignedTo: 'Chukwu & Co Plumbing Services',
-            scheduled: '03 June, 2025',
-        },
-        {
-            id: 2,
-            title: 'AC not Working',
-            description:
-                'AC is blowing warm air and not cooling properly. Technician check suggests a refrigerant leak and compressor failure.',
-            assignee: 'Nasiru Abibathu',
-            property: 'Hiltop Diamond',
-            cost: '45,000.00',
-            serviceType: 'Electrician',
-            status: 'Pending' as const,
-            priority: 'High' as const,
-        },
-        {
-            id: 3,
-            title: 'Circuit Overheating',
-            description:
-                'Electrical circuit keeps tripping and overheats under load during evening hours. Urgent inspection required.',
-            assignee: 'Nasiru Abibathu',
-            property: 'Dominion Diamond',
-            cost: '12,200.00',
-            serviceType: 'Electrician',
-            status: 'Pending' as const,
-            priority: 'Medium' as const,
-        },
+    const activeRequests: any[] = [
+        // {
+        //     id: 1,
+        //     title: 'Leaking Bathroom Faucet',
+        //     description:
+        //         'Lorem ipsum dolor sit amet consectetur. Nibh odio egestas tortor lorem laoreet eu volutpat. Adipiscing odio erat ac ridiculus imperdiet. Ut morbi tortor non fringilla nec curae. Purus ac morbi nunc.',
+        //     assignee: 'Michael Chamberlain',
+        //     property: 'Hilltop Diamond',
+        //     cost: '35,000.00',
+        //     serviceType: 'Plumber',
+        //     status: 'In-progress' as const,
+        //     priority: 'High' as const,
+        //     assignedTo: 'Chukwu & Co Plumbing Services',
+        //     scheduled: '03 June, 2025',
+        // },
+        // {
+        //     id: 2,
+        //     title: 'AC not Working',
+        //     description:
+        //         'AC is blowing warm air and not cooling properly. Technician check suggests a refrigerant leak and compressor failure.',
+        //     assignee: 'Nasiru Abibathu',
+        //     property: 'Hiltop Diamond',
+        //     cost: '45,000.00',
+        //     serviceType: 'Electrician',
+        //     status: 'Pending' as const,
+        //     priority: 'High' as const,
+        // },
+        // {
+        //     id: 3,
+        //     title: 'Circuit Overheating',
+        //     description:
+        //         'Electrical circuit keeps tripping and overheats under load during evening hours. Urgent inspection required.',
+        //     assignee: 'Nasiru Abibathu',
+        //     property: 'Dominion Diamond',
+        //     cost: '12,200.00',
+        //     serviceType: 'Electrician',
+        //     status: 'Pending' as const,
+        //     priority: 'Medium' as const,
+        // },
     ];
 
-    const activities = [
-        {
-            id: 1,
-            title: 'Rent Payment received',
-            subtitle: 'Femiayo Doruchi — Hilltop Diamond A — ₦ 340,000',
-            date: '06 June, 2025',
-            type: 'payment' as const,
-        },
-        {
-            id: 2,
-            title: 'Rent Payment received',
-            subtitle: 'Femiayo Doruchi — Hilltop Gold C — ₦ 520,000',
-            date: '06 June, 2025',
-            type: 'payment' as const,
-        },
-        {
-            id: 3,
-            title: 'Lease expiry notice sent',
-            subtitle: 'Emmanuel Davis — Dominion Estate Gold F — 30 days',
-            date: '06 June, 2025',
-            type: 'notice' as const,
-        },
-        {
-            id: 4,
-            title: 'Maintenance Report submitted',
-            subtitle: 'Chukwudi Abayo — CityVille Block A — Faulty AC',
-            date: '06 June, 2025',
-            type: 'maintenance' as const,
-        },
+    const activities: any[] = [
+        // {
+        //     id: 1,
+        //     title: 'Rent Payment received',
+        //     subtitle: 'Femiayo Doruchi — Hilltop Diamond A — ₦ 340,000',
+        //     date: '06 June, 2025',
+        //     type: 'payment' as const,
+        // },
+        // {
+        //     id: 2,
+        //     title: 'Rent Payment received',
+        //     subtitle: 'Femiayo Doruchi — Hilltop Gold C — ₦ 520,000',
+        //     date: '06 June, 2025',
+        //     type: 'payment' as const,
+        // },
+        // {
+        //     id: 3,
+        //     title: 'Lease expiry notice sent',
+        //     subtitle: 'Emmanuel Davis — Dominion Estate Gold F — 30 days',
+        //     date: '06 June, 2025',
+        //     type: 'notice' as const,
+        // },
+        // {
+        //     id: 4,
+        //     title: 'Maintenance Report submitted',
+        //     subtitle: 'Chukwudi Abayo — CityVille Block A — Faulty AC',
+        //     date: '06 June, 2025',
+        //     type: 'maintenance' as const,
+        // },
     ];
 
     return (
@@ -112,16 +127,18 @@ const OverviewPage: React.FC = () => {
             <div className="mb-6 mt-4 mx-auto max-w-7xl">
                 {/* Main columns */}
                 <div className="mt-6 flex flex-col md:flex-row gap-6">
-                    <div>
+                    <div className='w-full'>
                         {/* Stats */}
-                        <div className="mt-6 grid gap-4 grid-cols-1 md:grid-cols-2 mb-3.75">
+                        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mb-3.75">
                             {stats.map((s) => (
                                 <StatCard key={s.id} title={s.title} value={s.value} icon={s.icon} />
                             ))}
                         </div>
-                        <ActiveRequests requests={activeRequests} />
+                        <div className='w-full'>
+                            <ActiveRequests requests={activeRequests} />
+                        </div>
                     </div>
-                    <div>
+                    <div className='w-full'>
                         <RecentActivities items={activities} />
                     </div>
                 </div>

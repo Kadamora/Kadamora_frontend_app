@@ -23,10 +23,8 @@ const RentPaymentStep: React.FC = () => {
                     onChange={(value) => updateField('paymentTerm', value)}
                     options={[
                         { label: 'Select payment term', value: '' },
-                        { label: 'Monthly', value: 'monthly' },
-                        { label: 'Quarterly', value: 'quarterly' },
-                        { label: 'Annually', value: 'annually' },
                         { label: 'Bi-Annually', value: 'bi_annually' },
+                        { label: 'Annually', value: 'annually' },
                     ]}
                 />
                 <Input

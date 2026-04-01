@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { useNavigate, Link } from 'react-router';
+import { useNavigate } from 'react-router';
 // import { mockProperties } from './fakedb'; // Removing mock import, checking if file needs to be deleted later or just unused.
 import { useDebounce } from '../../../../hooks/useDebounce';
 import FilterBlocks, { MobileFilterModal } from './FilterBlocks';
@@ -25,13 +25,6 @@ const PropertyManagementPage: React.FC = () => {
 
     // Debounce search to avoid hitting server on every keystroke
     const debouncedSearch = useDebounce(search, 500);
-
-    /* 
-    const filtered = useMemo(
-        () => mockProperties.filter((p) => p.title.toLowerCase().includes(search.toLowerCase())),
-        [search],
-    );
-    */
     const {
         data: agentProfiles,
         isLoading: isLoadingProfile,
@@ -60,6 +53,7 @@ const PropertyManagementPage: React.FC = () => {
     }, [propertyListingsResponse, debouncedSearch]);
 
     const agentProfile = agentProfiles?.data
+    console.log("agent profile", agentProfile)
     const profileNotFound =
         isError &&
         'status' in (error as any) &&
@@ -202,6 +196,36 @@ const PropertyManagementPage: React.FC = () => {
         }));
     }, [filteredListings]);
 
+    const ALLOWED_PLANS = ['basic', 'commercial_basic', 'commercial_premium'];
+
+    const subscriptionStatus = useMemo(() => {
+        const sub = agentProfile?.subscription;
+        if (!sub || !sub.isActive) {
+            return { isLocked: true, lockedLabel: 'Subscribe to Unlock', showSubscribeButton: true };
+        }
+        const currentPlan = typeof sub.plan === 'string' ? sub.plan.toLowerCase() : '';
+        if (!ALLOWED_PLANS.includes(currentPlan)) {
+            return { isLocked: true, lockedLabel: 'Subscribe to Unlock', showSubscribeButton: true };
+        }
+
+        if (sub.endDate) {
+            const end = new Date(sub.endDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            end.setHours(0, 0, 0, 0);
+            const diffMs = end.getTime() - today.getTime();
+            const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+            if (diffDays < 0) {
+                return { isLocked: true, lockedLabel: 'Subscription Expired', showSubscribeButton: true };
+            } else if (diffDays <= 1) {
+                return { isLocked: false, lockedLabel: diffDays === 1 ? 'Expires in 1 day' : 'Expires today', showSubscribeButton: false };
+            }
+        }
+        
+        return { isLocked: false, lockedLabel: undefined, showSubscribeButton: false };
+    }, [agentProfile]);
+
     if (isLoadingPropertyListings) {
         return (
             <div className="flex items-center justify-center py-20">
@@ -215,13 +239,13 @@ const PropertyManagementPage: React.FC = () => {
                 <h1 className="text-[25px] font-semibold text-[#002E62] leading-snug">
                     Property listing, Management and Investment
                 </h1>
-                <nav className="mb-2 text-[13px] flex items-center gap-1">
-                    <Link to="/dashboard/property-listing" className="hover:underline">
-                        Home
-                    </Link>
-                    <span>/</span>
-                    <span className="text-primary">Property listing</span>
-                </nav>
+                 <nav className="flex">
+                        <span onClick={() => navigate('/')} className="cursor-pointer text-sm">Home</span>
+                        <span className="mx-2 text-sm">›</span>
+                        {/* <span onClick={() => navigate(-1)} className="cursor-pointer text-sm">Listings</span> */}
+                        {/* <span className="mx-2 text-sm">›</span> */}
+                        <span className="text-primary text-sm">Property listing</span>
+                    </nav>
             </div>
 
             {/* Quick Actions */}
@@ -277,8 +301,12 @@ const PropertyManagementPage: React.FC = () => {
                             <img src="/assets/icons/manage_property.svg" alt="Manage properties" className="h-7 w-7" />
                         }
                         onClick={() => navigate('/dashboard/property-management')}
+                        disabled={subscriptionStatus.isLocked}
+                        lockedLabel={subscriptionStatus.lockedLabel}
+                        showSubscribeButton={subscriptionStatus.showSubscribeButton}
+                        onSubscribeClick={() => navigate('/dashboard/subscription')}
                     />
-                    <QuickActionCard
+                    {/* <QuickActionCard
                         title="Offer Investment Opportunities"
                         desc="Offer your properties for investment or explore investment contributions."
                         icon={
@@ -290,7 +318,7 @@ const PropertyManagementPage: React.FC = () => {
                         }
                         disabled
                         lockedLabel="Coming Soon"
-                    />
+                    /> */}
                 </div>
             </section>
 
@@ -353,7 +381,7 @@ const PropertyManagementPage: React.FC = () => {
                             <ProductCard key={p.id} property={p} />
                         ))}
                     </div> */}
-                    <div className="grid lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-2 gap-6">
+                    <div className="grid lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-2 gap-6 h-fit">
                         {productCards.length === 0 ? (
                             <EmptyState
                                 title={

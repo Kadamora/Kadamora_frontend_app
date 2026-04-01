@@ -13,19 +13,10 @@ interface UnreadCountPayload {
 }
 
 interface UseNotificationSocketOptions {
-    /** Called when a new notification arrives */
     onNotification?: (notification: Notification) => void;
-    /** Called when the unread count changes */
     onUnreadCountUpdate?: (payload: UnreadCountPayload) => void;
 }
 
-/**
- * Establishes a Socket.io connection for real-time notification updates.
- *
- * Listens for:
- *   - `notification_received` — a new notification payload
- *   - `unread_count_update`   — an updated unread count
- */
 export function useNotificationSocket({
     onNotification,
     onUnreadCountUpdate,

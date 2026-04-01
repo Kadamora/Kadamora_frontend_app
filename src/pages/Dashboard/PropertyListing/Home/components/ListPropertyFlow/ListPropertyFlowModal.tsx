@@ -19,7 +19,7 @@ import ListingSuccessPrompt from './components/ListingSuccessPrompt.tsx';
 
 import CloseButton from '../OnboardingAgent/components/CloseButton.tsx';
 import { PropertyListingFormProvider, usePropertyListingForm, type FacilitySelection, type PropertyListingFormState } from './formContext.tsx';
-import { type CreatePropertyListingPayload, type PropertyFacilitiesPayload, type PropertyMediaPayload, useCreatePropertyListingMutation } from '@store/api/propertyListings.api.ts';
+import { type CreatePropertyListingPayload, type PropertyFacilitiesPayload, type PropertyMediaPayload, useCreatePropertyListingMutation, useUpdatePropertyListingMutation, type AgentPropertyListing } from '@store/api/propertyListings.api.ts';
 import { useUploadFilesMutation } from '@store/api/upload.api';
 
 // Listing types
@@ -52,6 +52,7 @@ export type ListingType = 'rent' | 'lease' | 'short_let' | 'sell';
 interface Props {
     open: boolean;
     step?: number;
+    editingProperty?: AgentPropertyListing | null;
     onClose: () => void;
     goTo?: (s: number) => void;
 }
@@ -138,14 +139,22 @@ const getStepsForType = (type: ListingType): StepDef[] => {
     }
 };
 
-const ListPropertyFlowModal: React.FC<Props> = ({ open, onClose }) => {
+const ListPropertyFlowModal: React.FC<Props> = ({ open, editingProperty, onClose }) => {
     const [listingType, setListingType] = useState<ListingType | null>(null);
     const [currentIdx, setCurrentIdx] = useState(0);
     const [showSuccessPrompt, setShowSuccessPrompt] = useState(false);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (editingProperty) {
+            setListingType(editingProperty.propertyType as ListingType);
+            setCurrentIdx(0);
+        }
+    }, [editingProperty]);
     const token = useSelector((state: any) => state.auth.accessToken);
     const [videoUploadProgress, setVideoUploadProgress] = useState(0);
+
 
     const handleClose = useCallback(() => {
         onClose();
@@ -206,9 +215,10 @@ const ListPropertyFlowModal: React.FC<Props> = ({ open, onClose }) => {
             )}
 
             {!showSuccessPrompt && listingType && (
-                <PropertyListingFormProvider key={listingType} listingType={listingType}>
+                <PropertyListingFormProvider key={editingProperty ? `edit-${editingProperty.id}` : listingType} listingType={listingType} initialData={editingProperty}>
                     <ListingFormContent
                         listingType={listingType}
+                        editingProperty={editingProperty}
                         steps={steps}
                         currentIdx={currentIdx}
                         setCurrentIdx={setCurrentIdx}
@@ -230,6 +240,7 @@ const ListPropertyFlowModal: React.FC<Props> = ({ open, onClose }) => {
 
 interface ListingFormContentProps {
     listingType: ListingType;
+    editingProperty?: AgentPropertyListing | null;
     steps: StepDef[];
     currentIdx: number;
     setCurrentIdx: React.Dispatch<React.SetStateAction<number>>;
@@ -242,6 +253,7 @@ interface ListingFormContentProps {
 
 const ListingFormContent: React.FC<ListingFormContentProps> = ({
     listingType,
+    editingProperty,
     steps,
     currentIdx,
     setCurrentIdx,
@@ -255,6 +267,7 @@ const ListingFormContent: React.FC<ListingFormContentProps> = ({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [createPropertyListing] = useCreatePropertyListingMutation();
+    const [updatePropertyListing] = useUpdatePropertyListingMutation();
     const [uploadFiles] = useUploadFilesMutation();
 
     const activeStep = steps[currentIdx];
@@ -312,13 +325,17 @@ const ListingFormContent: React.FC<ListingFormContentProps> = ({
             };
 
 
-            const payload = await buildCreatePropertyPayload(listingType, state, uploadFile, uploadVideoWithProgress);
-            // console.log('payload', payload);
-            const response = await createPropertyListing(payload).unwrap();
-            resetForm();
-            console.log("response", response)
-            const successMessage = response?.message || 'Property listed successfully';
-            onSuccess(successMessage);
+            const payload = await buildCreatePropertyPayload(listingType, state, uploadFile, uploadVideoWithProgress, !!editingProperty);
+            
+            if (editingProperty) {
+                const response = await updatePropertyListing({ id: editingProperty.id, payload }).unwrap();
+                resetForm();
+                onSuccess(response?.message || 'Property updated successfully');
+            } else {
+                const response = await createPropertyListing(payload).unwrap();
+                resetForm();
+                onSuccess(response?.message || 'Property listed successfully');
+            }
         } catch (error) {
             setSubmitError(resolveCreateError(error));
         } finally {
@@ -331,7 +348,7 @@ const ListingFormContent: React.FC<ListingFormContentProps> = ({
         <div className="w-full md:w-295 lg:w-310 max-w-[96vw] rounded-xl overflow-hidden flex bg-white shadow-[0_4px_32px_-4px_rgba(15,23,42,0.12)] md:flex-row flex-col md:h-175">
             {/* ... sidebar ... */}
             <div className="hidden md:block w-[35%]">
-                <StepsSidebar steps={steps} currentIdx={currentIdx} listingType={listingType} />
+                <StepsSidebar steps={steps} currentIdx={currentIdx} listingType={listingType} isEditMode={!!editingProperty} />
             </div>
 
             {/* ... mobile header ... */}
@@ -437,11 +454,12 @@ async function buildCreatePropertyPayload(
     state: PropertyListingFormState,
     uploadFile: Uploader,
     uploadVideo: Uploader,
+    isEditMode = false,
 ): Promise<CreatePropertyListingPayload> {
     const facilities = mapFacilities(state.facilities);
-    const media = await prepareMediaPayload(listingType, state, uploadFile, uploadVideo);
-    // ... payload construction
-     const payload: CreatePropertyListingPayload = {
+    const media = await prepareEditMediaPayload(state, uploadFile, uploadVideo);
+    // Base payload - always included
+    const payload: CreatePropertyListingPayload = {
         title: state.title.trim(),
         description: state.description.trim(),
         location: state.location.trim(),
@@ -454,28 +472,32 @@ async function buildCreatePropertyPayload(
         furnishingStatus: state.furnishingStatus || 'furnished',
         facilities,
         price: toNumber(state.price),
-        renewalOption: state.renewalOption,
         negotiable: state.negotiable,
         amenities: state.amenities,
         media,
     };
     
-     if (state.paymentTerm) payload.paymentTerm = state.paymentTerm;
+    // Fields NOT allowed by the update endpoint - skip them when editing
+    if (!isEditMode) {
+        if (state.renewalOption !== undefined) payload.renewalOption = state.renewalOption;
+        if (state.size?.trim()) payload.size = state.size.trim();
+        if (state.availablePropertyDocuments?.length > 0)
+            payload.availablePropertyDocuments = state.availablePropertyDocuments;
+        if (state.maintenanceResponsibility) payload.maintenanceResponsibility = state.maintenanceResponsibility;
+        if (state.propertyConditions) payload.propertyConditions = state.propertyConditions;
+        if (state.otherCharges?.trim()) payload.otherCharges = state.otherCharges.trim();
+    }
+
+    if (state.paymentTerm) payload.paymentTerm = state.paymentTerm;
     if (state.serviceCharge) payload.serviceCharge = toNumber(state.serviceCharge);
-    if (state.additionalCharges.trim()) payload.additionalCharges = state.additionalCharges.trim();
+    if (state.additionalCharges?.trim()) payload.additionalCharges = state.additionalCharges.trim();
     if (state.weeklyRate) payload.weeklyRate = toNumber(state.weeklyRate);
     if (state.monthlyRate) payload.monthlyRate = toNumber(state.monthlyRate);
     if (state.minimumNightsStay) payload.minimumNightsStay = toNumber(state.minimumNightsStay);
-    if (state.houseRule.trim()) payload.houseRule = state.houseRule.trim();
-    if (state.size.trim()) payload.size = state.size.trim();
+    if (state.houseRule?.trim()) payload.houseRule = state.houseRule.trim();
     if (state.leaseDuration) payload.leaseDuration = toNumber(state.leaseDuration);
-    if (state.maintenanceCharge.trim()) payload.maintenanceCharge = state.maintenanceCharge.trim();
-    if (state.availablePropertyDocuments.length > 0)
-        payload.availablePropertyDocuments = state.availablePropertyDocuments;
-    if (state.maintenanceResponsibility) payload.maintenanceResponsibility = state.maintenanceResponsibility;
-    if (state.securityDeposit.trim()) payload.securityDeposit = state.securityDeposit.trim();
-    if (state.propertyConditions) payload.propertyConditions = state.propertyConditions;
-    if (state.otherCharges.trim()) payload.otherCharges = state.otherCharges.trim();
+    if (state.maintenanceCharge?.trim()) payload.maintenanceCharge = state.maintenanceCharge.trim();
+    if (state.securityDeposit?.trim()) payload.securityDeposit = state.securityDeposit.trim();
 
     return payload;
 }
@@ -529,35 +551,54 @@ function mapFacilities(facilities: FacilitySelection[]): PropertyFacilitiesPaylo
     return payload;
 }
 
-async function prepareMediaPayload(
-    listingType: ListingType,
+async function prepareEditMediaPayload(
     state: PropertyListingFormState,
     uploadFile: Uploader,
     uploadVideo: Uploader,
 ): Promise<PropertyMediaPayload[]> {
-    const photoUploads = await Promise.all(
-        state.photos.map((photo, index) => {
-            return uploadFile(photo.file).then((url): PropertyMediaPayload => ({
+    const media: PropertyMediaPayload[] = [];
+    
+    // Handle Photos
+    for (let i = 0; i < state.photos.length; i++) {
+        const item = state.photos[i];
+        if (item.file) {
+            // New upload
+            const url = await uploadFile(item.file);
+            media.push({
                 url,
-                altText: photo.file.name || `${state.title || 'property'}-${index + 1}`,
+                altText: item.file.name || `property-photo-${i + 1}`,
                 mediaType: 'image',
-                sortOrder: index + 1,
-            }));
-        }),
-    );
+                sortOrder: i + 1,
+            });
+        } else if (item.url) {
+            // Existing photo
+            media.push({
+                url: item.url,
+                altText: `property-photo-${i + 1}`,
+                mediaType: 'image',
+                sortOrder: i + 1,
+            });
+        }
+    }
 
-    console.log(listingType)
-    const media: PropertyMediaPayload[] = [...photoUploads];
-
+    // Handle Video
     if (state.video) {
-        // Use uploadVideo for video
-        const videoUrl = await uploadVideo(state.video.file);
-        media.push({
-            url: videoUrl,
-            altText: state.video.file.name || `${state.title || 'property'}-video`,
-            mediaType: 'video',
-            sortOrder: media.length + 1,
-        });
+        if (state.video.file) {
+            const videoUrl = await uploadVideo(state.video.file);
+            media.push({
+                url: videoUrl,
+                altText: state.video.file.name || `property-video`,
+                mediaType: 'video',
+                sortOrder: media.length + 1,
+            });
+        } else if (state.video.url) {
+            media.push({
+                url: state.video.url,
+                altText: `property-video`,
+                mediaType: 'video',
+                sortOrder: media.length + 1,
+            });
+        }
     }
 
     return media;
@@ -570,7 +611,9 @@ function toNumber(value: string | number | undefined, defaultValue = 0): number 
     if (value === undefined || value === null || value === '') {
         return defaultValue;
     }
-    const parsed = Number(value);
+    // Strip formatting characters like commas (e.g. "100,000,000" → "100000000")
+    const cleaned = typeof value === 'string' ? value.replace(/,/g, '').trim() : value;
+    const parsed = Number(cleaned);
     return Number.isNaN(parsed) ? defaultValue : parsed;
 }
 

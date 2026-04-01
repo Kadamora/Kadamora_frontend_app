@@ -57,7 +57,7 @@ const ActivityRow: React.FC<{ a: ActivityItem }> = ({ a }) => {
 const RecentActivities: React.FC<{ items?: ActivityItem[] }> = ({ items }) => {
     const list = items ?? [];
     return (
-        <aside className="rounded-2xl border border-[#CCE3FD] bg-white p-6">
+        <aside className="rounded-2xl border border-gray-200 bg-white p-6">
             <div className="flex justify-between items-center mb-2">
                 <h3 className="text-[20px] font-medium text-[#093154] flex items-center gap-2">
                     <span className="inline-block">
@@ -65,15 +65,15 @@ const RecentActivities: React.FC<{ items?: ActivityItem[] }> = ({ items }) => {
                     </span>
                     Recent Activities
                 </h3>
-                <a href="#" className="text-sm text-[#0A66B2] font-medium">
+                {/* <a href="#" className="text-sm text-[#0A66B2] font-medium">
                     View All
-                </a>
+                </a> */}
             </div>
             <div className="mt-2 divide-y divide-[#F3F6F9]">
                 {list.map((it) => (
                     <ActivityRow key={String(it.id)} a={it} />
                 ))}
-                {list.length === 0 && <div className="text-sm text-[#94A3B8] py-8">No recent activities.</div>}
+                {list.length === 0 && <div className="text-sm text-[#94A3B8] py-8 text-center">No recent activities.</div>}
             </div>
         </aside>
     );

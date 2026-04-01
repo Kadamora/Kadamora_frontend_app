@@ -1,23 +1,75 @@
 import Input from '@components/forms/Input';
 import Select from '@components/forms/Select';
 import React, { useState } from 'react';
-
-
+import { useGetManagedPropertiesQuery } from '@store/api/propertyMgt.api';
+import { useInviteTenantMutation } from '@store/api/tenant.api';
 
 interface AddTenantModalProps {
     open: boolean;
     onClose: () => void;
+    defaultPropertyId?: string; // Optional if opened from a specific context
 }
 
-const typeOptions = [
-    { label: 'Primary', value: 'primary' },
-    { label: 'Co-tenant', value: 'co-tenant' },
-    { label: 'Guarantor', value: 'guarantor' },
+const propertyTypeOptions = [
+    { label: 'Residential', value: 'residential' },
+    { label: 'Commercial', value: 'commercial' },
 ];
 
-const AddTenantModal: React.FC<AddTenantModalProps> = ({ open, onClose }) => {
-    const [type, setType] = useState('');
-    const [rentDueDate, setRentDueDate] = useState('');
+const paymentFrequencyOptions = [
+    { label: 'Monthly', value: 'monthly' },
+    { label: 'Quarterly', value: 'quarterly' },
+    { label: 'Yearly', value: 'yearly' },
+];
+
+const AddTenantModal: React.FC<AddTenantModalProps> = ({ open, onClose, defaultPropertyId }) => {
+    const [propertyId, setPropertyId] = useState(defaultPropertyId || '');
+    const [email, setEmail] = useState('');
+    const [propertyType, setPropertyType] = useState('residential');
+    const [amount, setAmount] = useState('');
+    const [paymentFrequency, setPaymentFrequency] = useState('monthly');
+    const [rentStartDate, setRentStartDate] = useState('');
+
+    const { data: propertiesData } = useGetManagedPropertiesQuery(undefined, { skip: !open });
+    const [inviteTenant, { isLoading }] = useInviteTenantMutation();
+
+    const propertiesOptions = propertiesData?.data?.map((p: any) => ({
+        label: p.name,
+        value: p.id
+    })) || [];
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!propertyId) {
+            console.error("Property must be selected");
+            return;
+        }
+
+        try {
+            await inviteTenant({
+                propertyId,
+                tenants: [
+                    {
+                        email,
+                        propertyType,
+                        amount: Number(amount),
+                        paymentFrequency,
+                        rentStartDate: new Date(rentStartDate).toISOString(),
+                    }
+                ]
+            }).unwrap();
+
+            // Clear form and close on success
+            setEmail('');
+            setPropertyType('residential');
+            setAmount('');
+            setPaymentFrequency('monthly');
+            setRentStartDate('');
+            setPropertyId(defaultPropertyId || '');
+            onClose();
+        } catch (error) {
+            console.error('Failed to invite tenant:', error);
+        }
+    };
 
     if (!open) return null;
 
@@ -43,55 +95,71 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ open, onClose }) => {
                     </svg>
                 </button>
                 <h2 className="text-lg font-semibold mb-6">Invite Tenant</h2>
-                <div className="bg-[#F6FAFF] border border-[#B6E0FE] rounded-lg p-4 mb-6">
-                    <span className="block text-[#0F62FE] font-semibold mb-1">Note:</span>
-                    <span className="text-sm text-[#64748B]">
-                        The tenant you added will receive a welcome email with a temporary password to log in.
-                    </span>
-                </div>
-                <form className="space-y-4">
-                    <Input
-                        title="Tenant Email"
-                        name="tenantEmail"
-                        placeholder="Enter tenant email"
-                        type="email"
+                <form className="space-y-4" onSubmit={handleSubmit}>
+                    <Select
+                        title="Property"
+                        name="propertyId"
+                        placeholder="Select property"
+                        options={propertiesOptions}
+                        value={propertyId}
+                        onChange={setPropertyId}
                         required
                     />
-                    <Input title="Unit" name="unit" placeholder="Enter unit" required />
+                    <Input
+                        title="Tenant Email"
+                        name="email"
+                        placeholder="Enter tenant email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+                    <Select
+                        title="Property Type"
+                        name="propertyType"
+                        placeholder="Select type"
+                        options={propertyTypeOptions}
+                        value={propertyType}
+                        onChange={setPropertyType}
+                        required
+                    />
                     <div className="flex gap-4">
                         <Input
-                            title="Rent Price"
-                            name="rentPrice"
+                            title="Rent Amount"
+                            name="amount"
                             placeholder="Enter amount"
                             type="number"
                             required
                             className="flex-1"
+                            value={amount}
+                            onChange={(e) => setAmount(e.target.value)}
                         />
                         <Input
-                            title="Rent Due Date"
-                            name="rentDueDate"
+                            title="Rent Start Date"
+                            name="rentStartDate"
                             placeholder="Select Date"
                             type="date"
                             required
                             className="flex-1"
-                            value={rentDueDate}
-                            onChange={(e) => setRentDueDate(e.target.value)}
+                            value={rentStartDate}
+                            onChange={(e) => setRentStartDate(e.target.value)}
                         />
                     </div>
                     <Select
-                        title="Type"
-                        name="type"
-                        placeholder="Select type"
-                        options={typeOptions}
-                        value={type}
-                        onChange={setType}
+                        title="Payment Frequency"
+                        name="paymentFrequency"
+                        placeholder="Select frequency"
+                        options={paymentFrequencyOptions}
+                        value={paymentFrequency}
+                        onChange={setPaymentFrequency}
                         required
                     />
                     <button
                         type="submit"
-                        className="mt-4 w-full py-3 rounded-lg bg-[#002E62] text-white font-semibold text-[15px] hover:bg-[#002E62]/90 transition-colors"
+                        disabled={isLoading}
+                        className="mt-4 w-full py-3 rounded-lg bg-[#002E62] text-white font-semibold text-[15px] hover:bg-[#002E62]/90 transition-colors disabled:opacity-50"
                     >
-                        Save Changes
+                        {isLoading ? 'Sending...' : 'Save Changes'}
                     </button>
                 </form>
             </div>

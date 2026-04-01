@@ -45,6 +45,7 @@ const Subscription = lazy(() => import('@pages/Dashboard/subscription/Subscripti
 const DashboardTimelinePage = lazy(() => import('@pages/Dashboard/Timeline/DashboardTimeline'));
 const ChatListPage = lazy(() => import('@pages/Dashboard/Chat/ChatListPage'));
 const ChatDetailPage = lazy(() => import('@pages/Dashboard/Chat/ChatDetailPage'));
+const VerifySubscription = lazy(() => import('@pages/Dashboard/subscription/VerifySubscription'));
 
 // admin dashboard
 const AdminDashboard = lazy(() => import('@pages/Admin/Dashboard'));
@@ -75,6 +76,14 @@ export default function AppRoutes(){
                     <Route path="contact" element={<ContactUs />} />
                     <Route path="property-listing" element={<UnAuthPropertyListing />} />
                     <Route path="property-view/:agentId" element={<UnAuthPropertyView />} />
+                    <Route 
+                        path="verify" 
+                        element={
+                            <RequireAuth>
+                                <VerifySubscription />
+                            </RequireAuth>
+                        } 
+                    />
 
                     <Route
                         path="auth"

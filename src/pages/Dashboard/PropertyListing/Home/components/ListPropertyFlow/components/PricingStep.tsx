@@ -35,14 +35,12 @@ const PricingStep: React.FC = () => {
                     onChange={(value) => updateField('paymentTerm', value)}
                     options={[
                         { value: '', label: 'Select payment option' },
-                        { value: 'monthly', label: 'Monthly' },
-                        { value: 'quarterly', label: 'Quarterly' },
-                        { value: 'biannually', label: 'Bi-annually' },
-                        { value: 'annually', label: 'Annually' },
-                        // { value: 'cash', label: 'Cash Payment' },
-                        // { value: 'installment', label: 'Installment Payment' },
-                        // { value: 'mortgage', label: 'Mortgage' },
-                        // { value: 'lease_to_own', label: 'Lease to Own' },
+                        // { value: 'outright', label: 'Outright Payment (Full Payment)' },
+                        // { value: 'installment', label: 'Installment Payment Plan' },
+                        // { value: 'flexible', label: 'Flexible Payment Plan' },
+                         { label: 'Outright Payment (Full Payment)', value: 'biannually' },
+                        { label: 'Installment Payment Plan', value: 'quarterly' },
+                        { label: 'Flexible Payment Plan', value: 'annually' },
                     ]}
                 />
                 <Select
