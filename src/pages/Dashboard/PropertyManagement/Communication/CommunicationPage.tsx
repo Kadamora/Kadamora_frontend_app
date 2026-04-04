@@ -2,70 +2,28 @@ import React, { useState } from 'react';
 import StatCard from './StatCard';
 import Chat from './Chat';
 import AnnouncementCard from './AnnouncementCard';
+import { Mail, Megaphone, MessageSquare, Users } from 'lucide-react';
 
 const statData = [
     {
         label: 'Today Messages',
         value: 8,
-        icon: (
-            <svg
-                className="h-7 w-7 text-[#0A66B2]"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-            >
-                <rect x="4" y="4" width="16" height="16" rx="4" />
-                <path d="M8 2v4M16 2v4" />
-            </svg>
-        ),
+        icon: <MessageSquare className="w-[18px] h-[18px] text-[#A5EEFD]" />,
     },
     {
         label: 'Active Announcements',
         value: 4,
-        icon: (
-            <svg
-                className="h-7 w-7 text-[#0B7A52]"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-            >
-                <path d="M12 19V5M5 12h14" />
-            </svg>
-        ),
+        icon: <Megaphone className="w-[18px] h-[18px] text-[#17c964]" />,
     },
     {
         label: 'Unread Messages',
         value: 3,
-        icon: (
-            <svg
-                className="h-7 w-7 text-[#0A66B2]"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-            >
-                <rect x="4" y="4" width="16" height="16" rx="4" />
-                <path d="M8 2v4M16 2v4" />
-            </svg>
-        ),
+        icon: <Mail className="w-[18px] h-[18px] text-[#006fee]" />,
     },
     {
         label: 'Total Recipients',
         value: 9,
-        icon: (
-            <svg
-                className="h-7 w-7 text-[#F9B233]"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-            >
-                <circle cx="12" cy="12" r="10" />
-                <path d="M9 12l2 2 4-4" />
-            </svg>
-        ),
+        icon: <Users className="w-[18px] h-[18px] text-[#f5a524]" />,
     },
 ];
 
@@ -152,15 +110,7 @@ const CommunicationPage: React.FC = () => {
                                     <AnnouncementCard
                                         key={idx}
                                         icon={
-                                            <svg
-                                                className="h-6 w-6 text-[#0A66B2]"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth={2}
-                                            >
-                                                <path d="M12 19V5M5 12h14" />
-                                            </svg>
+                                            <Megaphone className="w-[18px] h-[18px] text-[#17c964]" />
                                         }
                                         {...a}
                                     />

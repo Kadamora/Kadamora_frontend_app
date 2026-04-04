@@ -155,9 +155,6 @@ const MaintenancePage: React.FC = () => {
     return (
         <div className="pb-10">
             <div className="mb-6 mt-4 max-w-300 mx-auto">
-                <div className="mt-4 flex items-center gap-2 flex-wrap">
-                    {/* Tabs are rendered in the root layout */}
-                </div>
                 <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                     {statusStats.map((s) => (
                         <StatusCard key={s.label} label={s.label} value={s.value} icon={s.icon} />
@@ -221,5 +218,13 @@ const MaintenancePage: React.FC = () => {
         </div>
     );
 };
+
+// export default MaintenancePage;
+//                     </div>
+//                 </div>
+//             </div>
+//         </div>
+//     );
+// };
 
 export default MaintenancePage;

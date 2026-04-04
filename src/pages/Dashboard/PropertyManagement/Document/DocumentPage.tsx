@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import CardMenuItem from '../../../../components/cards/card/CardMenuItem';
 import DeleteConfirmationModal from '../../../../components/cards/card/DeleteConfirmationModal';
+import { Eye, Download } from 'lucide-react';
 
 import StatusTag from './StatusTag';
 import Input from '@components/forms/Input';
@@ -161,7 +162,7 @@ const DocumentPage: React.FC = () => {
                         </div>
                     </div>
                     <Table
-                        className="text-[16px]"
+                        className="text-[14px]"
                         responsive="stack"
                         renderCard={(d: any) => (
                             <div className="grid grid-cols-2 gap-3 items-start">
@@ -228,39 +229,23 @@ const DocumentPage: React.FC = () => {
                                                     className="absolute right-0 mt-2 w-55 bg-white border border-[#E6EEF7] rounded-xl shadow-lg ring-1 ring-black/5 py-2 z-50 overflow-hidden"
                                                 >
                                                     <CardMenuItem
-                                                        label="Edit Document"
-                                                        iconSrc="/assets/icons/pen-line.svg"
-                                                        iconAlt="Edit Document"
+                                                        label="View"
+                                                        icon={<Eye className="w-[18px] h-[18px] text-[#475467]" />}
                                                         onActivate={() => {
                                                             setOpenMenuFor(null);
-                                                            console.log('Edit document', d.sn);
+                                                            console.log('View document', d.sn);
                                                         }}
                                                         className="text-[#0A2D50] hover:bg-[#F1F9FF]"
                                                     />
 
                                                     <CardMenuItem
-                                                        label="Upload New"
-                                                        iconSrc="/assets/icons/plus.svg"
-                                                        iconAlt="Upload"
+                                                        label="Download"
+                                                        icon={<Download className="w-[18px] h-[18px] text-[#475467]" />}
                                                         onActivate={() => {
                                                             setOpenMenuFor(null);
-                                                            console.log('Upload new for', d.sn);
+                                                            console.log('Download document', d.sn);
                                                         }}
                                                         className="text-[#0A2D50] hover:bg-[#F1F9FF]"
-                                                    />
-
-                                                    <div className="h-px bg-[#EEF4FB] my-1" />
-
-                                                    <CardMenuItem
-                                                        label="Delete Document"
-                                                        iconSrc="/assets/icons/trash-2.svg"
-                                                        iconAlt="Delete"
-                                                        onActivate={() => {
-                                                            setOpenMenuFor(null);
-                                                            setDeleteCandidate(d.sn);
-                                                            setShowDeleteConfirm(true);
-                                                        }}
-                                                        className="text-[#D02929] hover:bg-[#FFF5F5]"
                                                     />
                                                 </div>
                                             )}
@@ -334,39 +319,23 @@ const DocumentPage: React.FC = () => {
                                                 className="absolute right-0 mt-2 w-55 bg-white border border-[#E6EEF7] rounded-xl shadow-lg ring-1 ring-black/5 py-2 z-50 overflow-hidden"
                                             >
                                                 <CardMenuItem
-                                                    label="Edit Document"
-                                                    iconSrc="/assets/icons/pen-line.svg"
-                                                    iconAlt="Edit Document"
+                                                    label="View"
+                                                    icon={<Eye className="w-[18px] h-[18px] text-[#475467]" />}
                                                     onActivate={() => {
                                                         setOpenMenuFor(null);
-                                                        console.log('Edit document', d.sn);
+                                                        console.log('View document', d.sn);
                                                     }}
                                                     className="text-[#0A2D50] hover:bg-[#F1F9FF]"
                                                 />
 
                                                 <CardMenuItem
-                                                    label="Upload New"
-                                                    iconSrc="/assets/icons/plus.svg"
-                                                    iconAlt="Upload"
+                                                    label="Download"
+                                                    icon={<Download className="w-[18px] h-[18px] text-[#475467]" />}
                                                     onActivate={() => {
                                                         setOpenMenuFor(null);
-                                                        console.log('Upload new for', d.sn);
+                                                        console.log('Download document', d.sn);
                                                     }}
                                                     className="text-[#0A2D50] hover:bg-[#F1F9FF]"
-                                                />
-
-                                                <div className="h-px bg-[#EEF4FB] my-1" />
-
-                                                <CardMenuItem
-                                                    label="Delete Document"
-                                                    iconSrc="/assets/icons/trash-2.svg"
-                                                    iconAlt="Delete"
-                                                    onActivate={() => {
-                                                        setOpenMenuFor(null);
-                                                        setDeleteCandidate(d.sn);
-                                                        setShowDeleteConfirm(true);
-                                                    }}
-                                                    className="text-[#D02929] hover:bg-[#FFF5F5]"
                                                 />
                                             </div>
                                         )}
