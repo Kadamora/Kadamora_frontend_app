@@ -10,31 +10,36 @@ import MaintenancePage from './Maintainance/MaintenancePage';
 import CommunicationPage from './Communication/CommunicationPage';
 import DocumentPage from './Document/DocumentPage';
 import SettingsPage from './Settings/SettingsPage';
+import InspectionPage from './Inspection/InspectionPage';
+import AddInspectionModal from './Inspection/components/AddInspectionModal';
 
-const tabs = ['Overview', 'Properties', 'Tenants'];
-// const tabs = ['Overview', 'Properties', 'Tenants', 'Maintenance', 'Communication', 'Documents', 'Settings'];
+// const tabs = ['Overview', 'Properties', 'Tenants'];
+const tabs = ['Overview', 'Properties', 'Tenants', 'Maintenance', 'Communication', 'Documents', 'Inspection', 'Settings'];
 
 const tabPathMap: Record<string, string> = {
     Overview: '',
     Properties: 'properties',
     Tenants: 'tenants',
-    // Maintenance: 'maintenance',
-    // Communication: 'communication',
-    // Documents: 'documents',
-    // Settings: 'settings',
+    Maintenance: 'maintenance',
+    Communication: 'communication',
+    Documents: 'documents',
+    Inspection: 'inspection',
+    Settings: 'settings',
 };
 
 const actionsMap: Record<string, { label: string; path: string }> = {
+    '': { label: 'Add Property', path: '/dashboard/property-management/properties/create' },
+    'properties': { label: 'Add Property', path: '/dashboard/property-management/properties/create' },
     'tenants': { label: 'Add Tenant', path: '/dashboard/property-management/tenants/create' },
     'communication': { label: 'Create Announcement', path: '/dashboard/property-management/communication/create' },
-    'properties': { label: 'Add Property', path: '/dashboard/property-management/properties/create' },
-    '': { label: 'Add Property', path: '/dashboard/property-management/properties/create' },
+    'inspection': { label: 'Add Inspection', path: '/dashboard/property-management/inspection/create' },
 };
 
 const modalActions: Record<string, string> = {
     'Add Property': 'addProperty',
     'Add Tenant': 'addTenant',
     'Create Announcement': 'announcement',
+    'Add Inspection': 'inspection',
 };
 
 const PropertyManagementRoot: React.FC = () => {
@@ -55,12 +60,13 @@ const PropertyManagementRoot: React.FC = () => {
         return tail.split('/').filter(Boolean)[0] || '';
     }, [location.pathname]);
 
-    const action = actionsMap[activeSegment] || actionsMap[''];
+    const action = actionsMap[activeSegment];
 
     const [modals, setModals] = React.useState({
         addProperty: false,
         addTenant: false,
         announcement: false,
+        inspection: false,
     });
 
     const handleAction = () => {
@@ -90,6 +96,7 @@ const PropertyManagementRoot: React.FC = () => {
             <AddPropertyFlowModal open={modals.addProperty} onClose={() => closeModal('addProperty')} />
             <AddTenantModal open={modals.addTenant} onClose={() => closeModal('addTenant')} />
             <CreateAnnouncementModal open={modals.announcement} onClose={() => closeModal('announcement')} />
+            <AddInspectionModal open={modals.inspection} onClose={() => closeModal('inspection')} />
             <div className="mb-6 mt-4 max-w-300 mx-auto">
                 <div className="flex items-center justify-between">
                     <div>
@@ -135,25 +142,29 @@ const PropertyManagementRoot: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="hidden md:flex ml-4 items-center">
-                        <button
-                            onClick={handleAction}
-                            className="px-4 py-2 rounded-md border border-[#002E62] bg-[#002E62] text-[#fff] hover:bg-[#002E62]"
-                            aria-label={action.label}
-                        >
-                            {getButtonLabel(action.label)}
-                        </button>
-                    </div>
+                    {action && (
+                        <>
+                            <div className="hidden md:flex ml-4 items-center">
+                                <button
+                                    onClick={handleAction}
+                                    className="px-4 py-2 rounded-md border border-[#002E62] bg-[#002E62] text-[#fff] hover:bg-[#002E62]"
+                                    aria-label={action.label}
+                                >
+                                    {getButtonLabel(action.label)}
+                                </button>
+                            </div>
 
-                    <div className="md:hidden w-full mt-3 flex justify-center">
-                        <button
-                            onClick={handleAction}
-                            className="w-full max-w-xs px-4 py-2 rounded-md border border-[#CCE3FD] bg-[#002E62] text-[#fff] hover:bg-[#002E62]"
-                            aria-label={action.label}
-                        >
-                            {action.label}
-                        </button>
-                    </div>
+                            <div className="md:hidden w-full mt-3 flex justify-center">
+                                <button
+                                    onClick={handleAction}
+                                    className="w-full max-w-xs px-4 py-2 rounded-md border border-[#CCE3FD] bg-[#002E62] text-[#fff] hover:bg-[#002E62]"
+                                    aria-label={action.label}
+                                >
+                                    {action.label}
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -165,6 +176,7 @@ const PropertyManagementRoot: React.FC = () => {
                     <Route path="maintenance" element={<MaintenancePage />} />
                     <Route path="communication" element={<CommunicationPage />} />
                     <Route path="documents" element={<DocumentPage />} />
+                    <Route path="inspection" element={<InspectionPage/>}/>
                     <Route path="settings" element={<SettingsPage />} />
                 </Routes>
             </div>

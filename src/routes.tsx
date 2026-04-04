@@ -19,6 +19,8 @@ const Timeline = lazy(() => import('@pages/LandingPage/Timeline'))
 const ContactUs = lazy(() => import('@pages/LandingPage/ContactUs'));
 const UnAuthPropertyListing = lazy(() => import('@pages/LandingPage/PropertyListing'));
 const UnAuthPropertyView = lazy(() => import('@pages/LandingPage/PropertyView'));
+const Blogs = lazy(() => import('@pages/LandingPage/Blogs/Blogs'));
+const Pricing = lazy(() => import('@pages/LandingPage/Pricing/Pricing'));
 
 // auth
 const Login = lazy(() => import('@pages/Auth/Login'))
@@ -76,6 +78,8 @@ export default function AppRoutes(){
                     <Route path="contact" element={<ContactUs />} />
                     <Route path="property-listing" element={<UnAuthPropertyListing />} />
                     <Route path="property-view/:agentId" element={<UnAuthPropertyView />} />
+                    <Route path="blogs" element={<Blogs />} />
+                    <Route path="pricing" element={<Pricing />} />
                     <Route 
                         path="verify" 
                         element={

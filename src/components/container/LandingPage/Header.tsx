@@ -103,9 +103,21 @@ export default function Header({ isSticky, hasHero = true }: HeaderProps) {
                         >
                             Timeline
                         </Link>
-                        <Link to="/contact" className={`nav-anim ${getTextClasses(isActivePath('/contact'))} relative`}>
-                            Contact Us
+                        <Link
+                            to="/blogs"
+                            className={`nav-anim ${getTextClasses(isActivePath('/blogs'))} relative`}
+                        >
+                            Blogs
                         </Link>
+                        <Link
+                            to="/pricing"
+                            className={`nav-anim ${getTextClasses(isActivePath('/pricing'))} relative`}
+                        >
+                            Pricing
+                        </Link>
+                        {/* <Link to="/contact" className={`nav-anim ${getTextClasses(isActivePath('/contact'))} relative`}>
+                            Contact Us
+                        </Link> */}
                     </div>
                     <div className="hidden lg:flex items-center space-x-4">
                         {isAuthenticated ? (
@@ -173,6 +185,12 @@ export default function Header({ isSticky, hasHero = true }: HeaderProps) {
                         {/* <Link to="/timeline" onClick={closeMenu} className="block text-4xl font-medium">
                             Timeline
                         </Link> */}
+                        <Link to="/blogs" onClick={closeMenu} className="block text-4xl font-medium">
+                            Blogs
+                        </Link>
+                        <Link to="/pricing" onClick={closeMenu} className="block text-4xl font-medium">
+                            Pricing
+                        </Link>
                         {/* <Link to="/dashboard" onClick={closeMenu} className="block text-4xl font-medium">
                             Dashboard
                         </Link> */}

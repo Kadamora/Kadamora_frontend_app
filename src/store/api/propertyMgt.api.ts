@@ -48,6 +48,65 @@ export interface GetPropertiesResponse {
     data: Property[];
 }
 
+export interface UploadDocumentPayload {
+    propertyId: string;
+    title: string;
+    category: string;
+    relatedToLabel: string;
+    fileUrl: string;
+    status: string;
+}
+
+export interface UpdateDocumentStatusPayload {
+    documentId: string;
+    status: string;
+}
+
+
+export interface CreateInspectionPayload {
+    propertyId: string;
+    unitName: string;
+    type: "Virtual" | "Physical";
+    scheduledDate: string;
+    scheduledTime: string;
+    hostingLink: string;
+}
+
+export interface UpdateInspectionStatusPayload {
+    inspectionId: string;
+    status: string;
+}
+
+export interface CreateMaintenancePayload {
+    propertyId: string;
+    title: string;
+    description: string;
+    priority: "Low" | "Medium" | "High";
+    imageUrls: string[];
+}
+
+export interface AssignMaintenancePayload {
+    requestId: string;
+    assignedTo: string;
+}
+
+export interface UpdateMaintenanceStatusPayload {
+    requestId: string;
+    status: string;
+}
+
+export interface UpdateSettingsPayload {
+    propertyId: string;
+    BankName?: string;
+    AccountNumber?: string;
+    AccountName?: string;
+    autoPaymentReminder?: boolean;
+    emailNewMaintenanceRequests?: boolean;
+    emailPaymentNotifications?: boolean;
+    emailRentExpiryAlerts?: boolean;
+    emailInspectionReminders?: boolean;
+    smsEmergencyMaintenance?: boolean;
+}
 /* =======================
    API
 ======================= */
@@ -55,10 +114,7 @@ export interface GetPropertiesResponse {
 export const propertyMgtApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
 
-        createProperty: builder.mutation<
-            CreatePropertyResponse,
-            CreatePropertyPayload
-        >({
+        createProperty: builder.mutation<CreatePropertyResponse, CreatePropertyPayload>({
             query: (payload) => ({
                 url: "/api/v1/management/create-property",
                 method: "POST",
@@ -67,10 +123,7 @@ export const propertyMgtApi = baseApi.injectEndpoints({
             invalidatesTags: ["PropertyMgt"],
         }),
 
-        updateProperty: builder.mutation<
-            CreatePropertyResponse,
-            UpdatePropertyPayload
-        >({
+        updateProperty: builder.mutation<CreatePropertyResponse, UpdatePropertyPayload>({
             query: ({ propertyId, ...payload }) => ({
                 url: `/api/v1/management/update-property/${propertyId}`,
                 method: "PUT",
@@ -79,21 +132,15 @@ export const propertyMgtApi = baseApi.injectEndpoints({
             invalidatesTags: ["PropertyMgt"],
         }),
 
-        deleteProperty: builder.mutation<
-            CreatePropertyResponse,
-            { propertyId: string }
-        >({
+        deleteProperty: builder.mutation<CreatePropertyResponse, { propertyId: string }>({
             query: ({ propertyId }) => ({
                 url: `/api/v1/management/delete-property/${propertyId}`,
-                method: "DELETE",
+                method: "PUT",
             }),
             invalidatesTags: ["PropertyMgt"],
         }),
 
-        getDashboardSummary: builder.query<
-            DashboardSummaryResponse,
-            void
-        >({
+        getDashboardSummary: builder.query<DashboardSummaryResponse, void>({
             query: () => ({
                 url: "/api/v1/management/dashboard-summary",
                 method: "GET",
@@ -101,10 +148,7 @@ export const propertyMgtApi = baseApi.injectEndpoints({
             providesTags: ["PropertyMgt"],
         }),
 
-        getManagedProperties: builder.query<
-            GetPropertiesResponse,
-            void
-        >({
+        getManagedProperties: builder.query<GetPropertiesResponse, void>({
             query: () => ({
                 url: "/api/v1/management/properties",
                 method: "GET",
@@ -112,13 +156,102 @@ export const propertyMgtApi = baseApi.injectEndpoints({
             providesTags: ["PropertyMgt"],
         }),
 
-        removeTenantFromProperty: builder.mutation<
-            CreatePropertyResponse,
-            { propertyId: string; tenantId: string }
-        >({
+        removeTenantFromProperty: builder.mutation<CreatePropertyResponse, { propertyId: string; tenantId: string }>({
             query: ({ propertyId, tenantId }) => ({
                 url: `/api/v1/management/delete-tenant/${propertyId}/${tenantId}`,
                 method: "DELETE",
+            }),
+            invalidatesTags: ["PropertyMgt"],
+        }),
+        uploadDocument: builder.mutation<CreatePropertyResponse, UploadDocumentPayload>({
+            query: ({ propertyId, ...payload }) => ({
+                url: `/api/v1/documents/${propertyId}`,
+                method: "POST",
+                body: payload,
+            }),
+            invalidatesTags: ["PropertyMgt"],
+        }),
+
+        getDocumentsByProperty: builder.query<any, { propertyId: string }>({
+            query: ({ propertyId }) => ({
+                url: `/api/v1/documents/${propertyId}`,
+                method: "GET",
+            }),
+            providesTags: ["PropertyMgt"],
+        }),
+
+        updateDocumentStatus: builder.mutation<CreatePropertyResponse, UpdateDocumentStatusPayload>({
+            query: ({ documentId, status }) => ({
+                url: `/api/v1/documents/${documentId}/status`,
+                method: "PATCH",
+                body: { status },
+            }),
+            invalidatesTags: ["PropertyMgt"],
+        }),
+        createInspection: builder.mutation<CreatePropertyResponse, CreateInspectionPayload>({
+            query: ({ propertyId, ...payload }) => ({
+                url: `/api/v1/inspections/${propertyId}`,
+                method: "POST",
+                body: payload,
+            }),
+            invalidatesTags: ["PropertyMgt"],
+        }),
+
+        getInspectionsByProperty: builder.query<any, { propertyId: string }>({
+            query: ({ propertyId }) => ({
+                url: `/api/v1/inspections/${propertyId}`,
+                method: "GET",
+            }),
+            providesTags: ["PropertyMgt"],
+        }),
+
+        updateInspectionStatus: builder.mutation<CreatePropertyResponse, UpdateInspectionStatusPayload>({
+            query: ({ inspectionId, status }) => ({
+                url: `/api/v1/inspections/${inspectionId}/status`,
+                method: "PATCH",
+                body: { status },
+            }),
+            invalidatesTags: ["PropertyMgt"],
+        }),
+        createMaintenance: builder.mutation<CreatePropertyResponse, CreateMaintenancePayload>({
+            query: ({ propertyId, ...payload }) => ({
+                url: `/api/v1/maintenance/${propertyId}`,
+                method: "POST",
+                body: payload,
+            }),
+            invalidatesTags: ["PropertyMgt"],
+        }),
+
+        getMaintenanceByProperty: builder.query<any, { propertyId: string }>({
+            query: ({ propertyId }) => ({
+                url: `/api/v1/maintenance/${propertyId}`,
+                method: "GET",
+            }),
+            providesTags: ["PropertyMgt"],
+        }),
+
+        assignMaintenance: builder.mutation<CreatePropertyResponse, AssignMaintenancePayload>({
+            query: ({ requestId, ...payload }) => ({
+                url: `/api/v1/maintenance/${requestId}/assign`,
+                method: "PUT",
+                body: payload,
+            }),
+            invalidatesTags: ["PropertyMgt"],
+        }),
+
+        updateMaintenanceStatus: builder.mutation<CreatePropertyResponse, UpdateMaintenanceStatusPayload>({
+            query: ({ requestId, status }) => ({
+                url: `/api/v1/maintenance/${requestId}/status`,
+                method: "PATCH",
+                body: { status },
+            }),
+            invalidatesTags: ["PropertyMgt"],
+        }),
+        updateSettings: builder.mutation<CreatePropertyResponse, UpdateSettingsPayload>({
+            query: ({ propertyId, ...payload }) => ({
+                url: `/api/v1/management/update-settings/${propertyId}`,
+                method: "PATCH",
+                body: payload,
             }),
             invalidatesTags: ["PropertyMgt"],
         }),
@@ -136,4 +269,17 @@ export const {
     useGetDashboardSummaryQuery,
     useGetManagedPropertiesQuery,
     useRemoveTenantFromPropertyMutation,
+    useUploadDocumentMutation,
+    useGetDocumentsByPropertyQuery,
+    useUpdateDocumentStatusMutation,
+
+    useCreateInspectionMutation,
+    useGetInspectionsByPropertyQuery,
+    useUpdateInspectionStatusMutation,
+
+    useCreateMaintenanceMutation,
+    useGetMaintenanceByPropertyQuery,
+    useAssignMaintenanceMutation,
+    useUpdateMaintenanceStatusMutation,
+    useUpdateSettingsMutation,
 } = propertyMgtApi;

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import CardMenuItem from './CardMenuItem';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
-import { House } from 'lucide-react';
+import { Users } from 'lucide-react';
 
 export interface PropertyCard2Props {
     id: number | string;
@@ -46,7 +46,7 @@ const PropertyCard2: React.FC<PropertyCard2Props> = ({ id, name, address, tenant
     const tenantsIcon = (
         <span className="h-10 w-10 rounded-full bg-[#F3F6F9] flex items-center justify-center">
             {/* <img src={activeTenantsIcon} alt="Tenants" className="h-8 w-8" /> */}
-            <House className="h-4 w-4 text-[#002E62]" />
+            <Users className="h-4 w-4 text-[#002E62]" />
         </span>
     );
 
@@ -81,7 +81,7 @@ const PropertyCard2: React.FC<PropertyCard2Props> = ({ id, name, address, tenant
                                 id={`prop-menu-${id}`}
                                 role="menu"
                                 aria-orientation="vertical"
-                                className="absolute right-0 mt-2 w-[220px] bg-white border border-[#E6EEF7] rounded-xl shadow-lg ring-1 ring-black/5 py-2 z-100 overflow-hidden"
+                                className="absolute right-0 mt-2 w-[160px] bg-white border border-[#E6EEF7] rounded-xl shadow-lg ring-1 ring-black/5 py-2 z-100 overflow-hidden"
                             >
                                 <CardMenuItem
                                     ref={firstItemRef}
@@ -106,7 +106,7 @@ const PropertyCard2: React.FC<PropertyCard2Props> = ({ id, name, address, tenant
                                     className="text-[#0A2D50] hover:bg-[#F1F9FF]"
                                 />
 
-                                <div className="h-px bg-[#EEF4FB] my-1" />
+                                {/* <div className="h-px bg-[#EEF4FB] my-1" /> */}
 
                                 <CardMenuItem
                                     label="Delete Property"
@@ -117,7 +117,7 @@ const PropertyCard2: React.FC<PropertyCard2Props> = ({ id, name, address, tenant
                                         setMenuOpen(false);
                                         setShowDeleteConfirm(true);
                                     }}
-                                    className="text-[#D02929] hover:bg-[#FFF5F5]"
+                                    className="text-[#0A2D50] hover:bg-[#F1F9FF]"
                                 />
                             </div>
                         )}

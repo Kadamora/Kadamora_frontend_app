@@ -11,14 +11,14 @@ interface AddTenantModalProps {
 }
 
 const propertyTypeOptions = [
-    { label: 'Residential', value: 'residential' },
-    { label: 'Commercial', value: 'commercial' },
+    { label: 'Residential', value: 'Residential' },
+    { label: 'Commercial', value: 'Commercial' },
 ];
 
 const paymentFrequencyOptions = [
-    { label: 'Monthly', value: 'monthly' },
-    { label: 'Quarterly', value: 'quarterly' },
-    { label: 'Yearly', value: 'yearly' },
+    { label: 'Monthly', value: 'Monthly' },
+    { label: 'Quarterly', value: 'Quarterly' },
+    { label: 'Yearly', value: 'Yearly' },
 ];
 
 const AddTenantModal: React.FC<AddTenantModalProps> = ({ open, onClose, defaultPropertyId }) => {

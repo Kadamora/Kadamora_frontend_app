@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap');
 @import 'tailwindcss';
 
 @theme {
@@ -8,10 +9,7 @@
     --font-jost: 'Jost', sans-serif;
 }
 
-@font-face {
-    font-family: 'Jost';
-    src: url('../fonts/Jost.ttf') format('truetype');
-}
+
 
 body {
     font-family: var(--font-jost) !important;
