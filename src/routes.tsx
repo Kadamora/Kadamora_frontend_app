@@ -29,6 +29,7 @@ const SignupVerify = lazy(() => import('@pages/Auth/SignupVerify'))
 const SignupVerified = lazy(() => import('@pages/Auth/SignupVerified'))
 const ForgotPassword = lazy(() => import('@pages/Auth/ForgotPassword'))
 const ResetPassword = lazy(() => import('@pages/Auth/ResetPassword'))
+const VerifyTenantAcceptance = lazy(() => import('@pages/Auth/VerifyTenantAcceptance'))
 
 // admin auth
 const AdminLogin = lazy(() => import('@pages/Auth/AdminLogin'))
@@ -87,6 +88,10 @@ export default function AppRoutes(){
                                 <VerifySubscription />
                             </RequireAuth>
                         } 
+                    />
+                    <Route 
+                        path="verify-acceptance/:tenantId" 
+                        element={<VerifyTenantAcceptance />} 
                     />
 
                     <Route

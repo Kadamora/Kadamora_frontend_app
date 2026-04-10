@@ -136,7 +136,7 @@ const PropertyManagementPage: React.FC = () => {
         tone: VerificationTone;
     }
 
-    const verificationCopy: VerificationState = useMemo(() => {
+    const verificationCopy: VerificationState | null = useMemo(() => {
         if (isLoadingProfile) return { message: 'Checking your verification status...', tone: 'pending' };
         if (profileError) return { message: profileError, tone: 'error' };
         if (!agentProfile)
@@ -152,11 +152,20 @@ const PropertyManagementPage: React.FC = () => {
         }
         const statusForCopy = normalizedStatus ?? 'PENDING';
         switch (statusForCopy) {
-            case 'APPROVED':
-                return {
-                    message: 'Verification approved. You can now list and manage properties.',
-                    tone: 'success',
-                };
+            case 'APPROVED': {
+                const approvedAt = agentProfile?.approvedAt;
+                if (approvedAt) {
+                    const approvedDate = new Date(approvedAt);
+                    const hoursDiff = (Date.now() - approvedDate.getTime()) / (1000 * 60 * 60);
+                    if (hoursDiff <= 24) {
+                        return {
+                            message: 'Verification approved. You can now list and manage properties.',
+                            tone: 'success',
+                        };
+                    }
+                }
+                return null;
+            }
             case 'REJECTED':
                 return {
                     message: 'Your verification was rejected. Update your profile and try again.',
@@ -252,22 +261,24 @@ const PropertyManagementPage: React.FC = () => {
             <section className="mb-10">
                 <div className="flex md:justify-between md:flex-row flex-col md:items-center mb-5">
                     <div className="text-[#001731] font-semibold text-[17px] md:mb-0 mb-3.75">Quick Actions</div>
-                    <div
-                        className={`${verificationToneClasses[verificationCopy.tone]} font-semibold flex items-center gap-2`}
-                    >
-                        <img src="/assets/icons/info.svg" alt="Info" className="h-6 w-6" />
-                        {verificationCopy.message === 'Complete your agent profile to unlock property listing tools.' ? (
-                            <button
-                                onClick={openOnboardingFlow}
-                                className="underline hover:opacity-80 transition-opacity cursor-pointer"
-                                aria-live="polite"
-                            >
-                                {verificationCopy.message}
-                            </button>
-                        ) : (
-                            <span aria-live="polite">{verificationCopy.message}</span>
-                        )}
-                    </div>
+                    {verificationCopy && (
+                        <div
+                            className={`${verificationToneClasses[verificationCopy.tone]} font-semibold flex items-center gap-2`}
+                        >
+                            <img src="/assets/icons/info.svg" alt="Info" className="h-6 w-6" />
+                            {verificationCopy.message === 'Complete your agent profile to unlock property listing tools.' ? (
+                                <button
+                                    onClick={openOnboardingFlow}
+                                    className="underline hover:opacity-80 transition-opacity cursor-pointer"
+                                    aria-live="polite"
+                                >
+                                    {verificationCopy.message}
+                                </button>
+                            ) : (
+                                <span aria-live="polite">{verificationCopy.message}</span>
+                            )}
+                        </div>
+                    )}
                 </div>
                 <div className="grid gap-6 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2">
                     <QuickActionCard

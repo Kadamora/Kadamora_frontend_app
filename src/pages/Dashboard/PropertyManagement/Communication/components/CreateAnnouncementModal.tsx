@@ -3,6 +3,8 @@ import Input from '@components/forms/Input';
 import Select from '@components/forms/Select';
 import Textarea from '@components/forms/Textarea';
 import React, { useState } from 'react';
+import { useCreateAnnouncementMutation } from '../../../../../store/api/announcement.api';
+import { useGetManagedPropertiesQuery } from '@store/api/propertyMgt.api';
 
 
 interface CreateAnnouncementModalProps {
@@ -10,19 +12,24 @@ interface CreateAnnouncementModalProps {
     onClose: () => void;
 }
 
-const propertyOptions = [
-    { label: 'Property 1', value: 'property1' },
-    { label: 'Property 2', value: 'property2' },
-];
 const unitOptions = [
     { label: 'Unit 1', value: 'unit1' },
     { label: 'Unit 2', value: 'unit2' },
 ];
 
 const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ open, onClose }) => {
-    const [property, setProperty] = useState('');
+    const [propertyId, setPropertyId] = useState('');
     const [unit, setUnit] = useState('');
+    const [title, setTitle] = useState('');
+    const [message, setMessage] = useState('');
     const [file, setFile] = useState<File | null>(null);
+
+    const [createAnnouncement, { isLoading }] = useCreateAnnouncementMutation();
+        const { data: propertiesData } = useGetManagedPropertiesQuery(undefined, { skip: !open });
+    const propertiesOptions = propertiesData?.data?.map((p: any) => ({
+        label: p.name,
+        value: p.id
+    })) || [];
 
     if (!open) return null;
 
@@ -48,18 +55,36 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ open,
                     </svg>
                 </button>
                 <h2 className="text-lg font-semibold mb-6">Announcement</h2>
-                <form className="space-y-4">
+                <form 
+                    className="space-y-4"
+                    onSubmit={async (e) => {
+                        e.preventDefault();
+                        const formData = new FormData();
+                        formData.append('propertyId', propertyId);
+                        formData.append('unit', unit);
+                        formData.append('title', title);
+                        formData.append('message', message);
+                        if (file) formData.append('file', file);
+                        
+                        try {
+                            await createAnnouncement(formData).unwrap();
+                            onClose();
+                        } catch (err) {
+                            console.error('Failed to create announcement', err);
+                        }
+                    }}
+                >
                     <div className="flex gap-4">
                         <Select
-                            title="Property"
-                            name="property"
-                            placeholder="Select property"
-                            options={propertyOptions}
-                            value={property}
-                            onChange={setProperty}
-                            required
-                            className="flex-1"
-                        />
+                                                title="Property"
+                                                name="propertyId"
+                                                placeholder="Select property"
+                                                options={propertiesOptions}
+                                                value={propertyId}
+                                                onChange={setPropertyId}
+                                                required
+                                                className="flex-1"
+                                            />
                         <Select
                             title="Unit"
                             name="unit"
@@ -71,12 +96,21 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ open,
                             className="flex-1"
                         />
                     </div>
-                    <Input title="Announcement Title" name="title" placeholder="Enter message title" required />
+                    <Input 
+                        title="Announcement Title" 
+                        name="title" 
+                        placeholder="Enter message title" 
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        required 
+                    />
                     <div>
                         <label className="block text-sm font-semibold mb-2">Message</label>
                         <Textarea
                             name="message"
                             placeholder="Enter Message Here"
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
                             rows={5}
                             required
                             className="resize-none"
@@ -119,9 +153,10 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ open,
                     </div>
                     <button
                         type="submit"
-                        className="mt-4 w-full py-3 rounded-lg bg-[#002E62] text-white font-semibold text-[15px] hover:bg-[#002E62]/90 transition-colors"
+                        disabled={isLoading}
+                        className="mt-4 w-full py-3 rounded-lg bg-[#002E62] text-white font-semibold text-[15px] hover:bg-[#002E62]/90 transition-colors disabled:opacity-50"
                     >
-                        Send Announcement
+                        {isLoading ? 'Sending...' : 'Send Announcement'}
                     </button>
                 </form>
             </div>

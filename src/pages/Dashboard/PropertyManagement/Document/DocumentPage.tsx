@@ -7,6 +7,7 @@ import StatusTag from './StatusTag';
 import Input from '@components/forms/Input';
 import Select from '@components/forms/Select';
 import Table, { type TableHeader } from '@components/ui/Table/Table';
+import { useGetAllDocumentsQuery } from '@store/api/propertyMgt.api';
 
 const mockDocuments = [
     {
@@ -97,6 +98,15 @@ const DocumentPage: React.FC = () => {
         setShowDeleteConfirm(false);
         setDeleteCandidate(null);
     };
+
+    const { data: allDocumentsData } = useGetAllDocumentsQuery();
+
+    useEffect(() => {
+        if (allDocumentsData) {
+            console.log('All Documents Data:', allDocumentsData);
+        }
+    }, [allDocumentsData]);
+
     const filteredDocuments = documents.filter((d) => {
         const matchCategory = category ? d.category === category : true;
         const matchStatus = status ? d.status === status : true;

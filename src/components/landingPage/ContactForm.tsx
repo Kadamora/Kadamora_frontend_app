@@ -2,6 +2,8 @@
 import Input from '@components/forms/Input';
 import Textarea from '@components/forms/Textarea';
 import { useState } from 'react';
+import { useContactUsMutation } from '@store/api/auth.api';
+import toast from 'react-hot-toast';
 
 
 export default function ContactForm() {
@@ -9,8 +11,10 @@ export default function ContactForm() {
         fullName: '',
         email: '',
         subject: '',
-        description: '',
+        message: '',
     });
+
+    const [contactUs, { isLoading }] = useContactUsMutation();
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -20,10 +24,16 @@ export default function ContactForm() {
         }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Handle form submission here
-        console.log('Form submitted:', formData);
+        try {
+           const response = await contactUs(formData).unwrap();
+           console.log("contact us response", response)
+            toast.success('Your message has been sent successfully!');
+            setFormData({ fullName: '', email: '', subject: '', message: '' });
+        } catch (error: any) {
+            toast.error(error?.data?.message || 'Failed to send message. Please try again.');
+        }
     };
 
     return (
@@ -92,17 +102,21 @@ export default function ContactForm() {
                                 />
 
                                 <Textarea
-                                    id="description"
-                                    name="description"
+                                    id="message"
+                                    name="message"
                                     rows={4}
-                                    value={formData.description}
+                                    value={formData.message}
                                     onChange={handleInputChange}
-                                    placeholder="Enter description"
+                                    placeholder="Enter your message"
                                     required
                                 />
                                 {/* Submit Button */}
-                                <button className="bg-primary text-white px-8 py-1 rounded-full text-lg hover:bg-border">
-                                    Get Started
+                                <button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="bg-primary text-white px-8 py-1 rounded-full text-lg hover:bg-border disabled:opacity-50"
+                                >
+                                    {isLoading ? 'Sending...' : 'Get Started'}
                                 </button>
                             </form>
                         </div>
