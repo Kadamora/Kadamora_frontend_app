@@ -4,6 +4,44 @@ import { baseApi } from "./baseApi";
    Types
 ======================= */
 
+export const PropertyType = {
+  APARTMENT: 'APARTMENT',
+  HOUSE: 'HOUSE',
+  STUDIO: 'STUDIO',
+  DUPLEX: 'DUPLEX',
+  OFFICE: 'OFFICE',
+  COMMERCIAL: 'COMMERCIAL',
+  ONEBEDROOM: 'ONEBEDROOM',
+  TWOBEDROOM: 'TWOBEDROOM',
+  THREEBEDROOM: 'THREEBEDROOM',
+  FOURBEDROOM: 'FOURBEDROOM',
+  PENTHOUSE: 'PENTHOUSE',
+  TOWNHOUSE: 'TOWNHOUSE',
+  VILLA: 'VILLA',
+  TERRACE: 'TERRACE',
+  SEMI_DETACHED: 'SEMI_DETACHED',
+  DETACHED: 'DETACHED',
+  QUADPLEX: 'QUADPLEX',
+  QUINTPLEX: 'QUINTPLEX',
+  SEXTPLEX: 'SEXTPLEX',
+  SEPTPLEX: 'SEPTPLEX',
+  OCTOPLEX: 'OCTOPLEX',
+  NON_RESIDENTIAL: 'NON_RESIDENTIAL',
+  MAISONETTE: 'MAISONETTE',
+} as const;
+
+export type PropertyType = typeof PropertyType[keyof typeof PropertyType];
+
+export const PaymentFrequency = {
+  MONTHLY: 'MONTHLY',
+  QUARTERLY: 'QUARTERLY',
+  YEARLY: 'YEARLY',
+} as const;
+
+export type PaymentFrequency = typeof PaymentFrequency[keyof typeof PaymentFrequency];
+
+
+
 export interface InviteTenantPayload {
     propertyId: string;
     tenants: Array<{
@@ -93,6 +131,22 @@ export const tenantApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["PropertyMgt"],
         }),
+
+        acceptInvitation: builder.mutation<TenantResponse, string>({
+            query: (tenantId) => ({
+                url: `/api/v1/tenants/accept-invitation/${tenantId}`,
+                method: "PUT",
+            }),
+            invalidatesTags: ["PropertyMgt"],
+        }),
+
+        deleteTenant: builder.mutation<TenantResponse, string>({
+            query: (tenantId) => ({
+                url: `/api/v1/tenants/${tenantId}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["PropertyMgt"],
+        }),
     }),
 });
 
@@ -107,4 +161,6 @@ export const {
     useUpdateTenantMutation,
     useGetAllTenantsQuery,
     useLeavePropertyMutation,
+    useAcceptInvitationMutation,
+    useDeleteTenantMutation,
 } = tenantApi;

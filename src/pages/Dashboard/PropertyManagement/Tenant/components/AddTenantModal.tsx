@@ -2,7 +2,7 @@ import Input from '@components/forms/Input';
 import Select from '@components/forms/Select';
 import React, { useState } from 'react';
 import { useGetManagedPropertiesQuery } from '@store/api/propertyMgt.api';
-import { useInviteTenantMutation } from '@store/api/tenant.api';
+import { useInviteTenantMutation, PropertyType, PaymentFrequency } from '@store/api/tenant.api';
 
 interface AddTenantModalProps {
     open: boolean;
@@ -11,22 +11,43 @@ interface AddTenantModalProps {
 }
 
 const propertyTypeOptions = [
-    { label: 'Residential', value: 'Residential' },
-    { label: 'Commercial', value: 'Commercial' },
+    { label: 'Apartment', value: PropertyType.APARTMENT },
+    { label: 'House', value: PropertyType.HOUSE },
+    { label: 'Studio', value: PropertyType.STUDIO },
+    { label: 'Duplex', value: PropertyType.DUPLEX },
+    { label: 'Office', value: PropertyType.OFFICE },
+    { label: 'Commercial', value: PropertyType.COMMERCIAL },
+    { label: 'One Bedroom', value: PropertyType.ONEBEDROOM },
+    { label: 'Two Bedroom', value: PropertyType.TWOBEDROOM },
+    { label: 'Three Bedroom', value: PropertyType.THREEBEDROOM },
+    { label: 'Four Bedroom', value: PropertyType.FOURBEDROOM },
+    { label: 'Penthouse', value: PropertyType.PENTHOUSE },
+    { label: 'Townhouse', value: PropertyType.TOWNHOUSE },
+    { label: 'Villa', value: PropertyType.VILLA },
+    { label: 'Terrace', value: PropertyType.TERRACE },
+    { label: 'Semi Detached', value: PropertyType.SEMI_DETACHED },
+    { label: 'Detached', value: PropertyType.DETACHED },
+    { label: 'Quadplex', value: PropertyType.QUADPLEX },
+    { label: 'Quintplex', value: PropertyType.QUINTPLEX },
+    { label: 'Sextplex', value: PropertyType.SEXTPLEX },
+    { label: 'Septplex', value: PropertyType.SEPTPLEX },
+    { label: 'Octoplex', value: PropertyType.OCTOPLEX },
+    { label: 'Non Residential', value: PropertyType.NON_RESIDENTIAL },
+    { label: 'Maisonette', value: PropertyType.MAISONETTE },
 ];
 
 const paymentFrequencyOptions = [
-    { label: 'Monthly', value: 'Monthly' },
-    { label: 'Quarterly', value: 'Quarterly' },
-    { label: 'Yearly', value: 'Yearly' },
+    { label: 'Monthly', value: PaymentFrequency.MONTHLY },
+    { label: 'Quarterly', value: PaymentFrequency.QUARTERLY },
+    { label: 'Yearly', value: PaymentFrequency.YEARLY },
 ];
 
 const AddTenantModal: React.FC<AddTenantModalProps> = ({ open, onClose, defaultPropertyId }) => {
     const [propertyId, setPropertyId] = useState(defaultPropertyId || '');
     const [email, setEmail] = useState('');
-    const [propertyType, setPropertyType] = useState('residential');
+    const [propertyType, setPropertyType] = useState<PropertyType>(PropertyType.APARTMENT);
     const [amount, setAmount] = useState('');
-    const [paymentFrequency, setPaymentFrequency] = useState('monthly');
+    const [paymentFrequency, setPaymentFrequency] = useState<PaymentFrequency>(PaymentFrequency.MONTHLY);
     const [rentStartDate, setRentStartDate] = useState('');
 
     const { data: propertiesData } = useGetManagedPropertiesQuery(undefined, { skip: !open });
@@ -60,9 +81,9 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ open, onClose, defaultP
 
             // Clear form and close on success
             setEmail('');
-            setPropertyType('residential');
+            setPropertyType(PropertyType.APARTMENT);
             setAmount('');
-            setPaymentFrequency('monthly');
+            setPaymentFrequency(PaymentFrequency.MONTHLY);
             setRentStartDate('');
             setPropertyId(defaultPropertyId || '');
             onClose();
@@ -120,7 +141,7 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ open, onClose, defaultP
                         placeholder="Select type"
                         options={propertyTypeOptions}
                         value={propertyType}
-                        onChange={setPropertyType}
+                        onChange={(val: string) => setPropertyType(val as PropertyType)}
                         required
                     />
                     <div className="flex gap-4">
@@ -151,7 +172,7 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ open, onClose, defaultP
                         placeholder="Select frequency"
                         options={paymentFrequencyOptions}
                         value={paymentFrequency}
-                        onChange={setPaymentFrequency}
+                        onChange={(val: string) => setPaymentFrequency(val as PaymentFrequency)}
                         required
                     />
                     <button

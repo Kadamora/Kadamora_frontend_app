@@ -5,6 +5,7 @@ import './styles/chat.css';
 import { getChats, getMessages, sendMessage } from './fakeDB';
 import type { ChatSummary } from './fakeDB';
 import Input from '@components/forms/Input';
+import { ListFilter } from 'lucide-react';
 
 const Chat: React.FC = () => {
     const [chats] = useState<ChatSummary[]>(getChats());
@@ -41,18 +42,19 @@ const Chat: React.FC = () => {
             <aside
                 className={`md:w-85 min-w-65 max-w-90 border-r border-[#EDF1F5] flex flex-col bg-white z-20 md:static fixed top-0 left-0 h-full md:h-auto transition-transform duration-200 ${showList ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
             >
-                <div className="flex items-center gap-8 px-6 pt-6 pb-2">
+                {/* <div className="flex items-center gap-8 px-6 pt-6 pb-2">
                     <button className="text-[17px] font-semibold text-[#002E62] border-b-2 border-[#002E62] pb-2">
                         Messages
                     </button>
                     <button className="text-[17px] font-semibold text-[#98A2B3] pb-2">Announcements</button>
-                </div>
+                </div> */}
                 <div className="px-6 pt-2 pb-3">
                     <h3 className="text-[17px] font-semibold text-[#002E62] mb-2">Chat</h3>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 ">
                         <Input
+                        containerClassName='w-full'
                             placeholder="Search"
-                            className="py-2! text-[15px]!"
+                            className="py-2! text-[15px]! "
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
@@ -60,14 +62,7 @@ const Chat: React.FC = () => {
                             title="Filter"
                             className="h-9 w-9 flex items-center justify-center rounded-lg border border-[#E0DEF7] bg-white text-[#64748B]"
                         >
-                            <svg width="18" height="18" fill="none" viewBox="0 0 18 18">
-                                <path
-                                    d="M3.75 4.5A2.25 2.25 0 016 2.25h6A2.25 2.25 0 0114.25 4.5v9A2.25 2.25 0 0112 15.75H6A2.25 2.25 0 013.75 13.5v-9z"
-                                    stroke="#64748B"
-                                    strokeWidth="1.5"
-                                />
-                                <path d="M6 7.5h6M6 10.5h3" stroke="#64748B" strokeWidth="1.5" strokeLinecap="round" />
-                            </svg>
+                            <ListFilter/>
                         </button>
                     </div>
                 </div>

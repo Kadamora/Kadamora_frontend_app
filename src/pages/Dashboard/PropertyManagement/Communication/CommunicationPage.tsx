@@ -95,7 +95,7 @@ const CommunicationPage: React.FC = () => {
                         {tabList.map((tab) => (
                             <button
                                 key={tab}
-                                className={`px-3 py-1.5 text-sm font-semibold rounded-md border-b-2 ${activeTab === tab ? 'border-[#0A66B2] text-[#0A66B2] bg-[#F1F9FF]' : 'border-transparent text-[#475467] bg-[#FAFBFC]'}`}
+                                className={`px-3 py-1.5 text-sm font-semibold  border-b-2 ${activeTab === tab ? 'border-[#0A66B2] text-[#0A66B2] bg-[#F1F9FF]' : 'border-transparent text-[#475467] bg-[#FAFBFC]'}`}
                                 onClick={() => setActiveTab(tab)}
                             >
                                 {tab}

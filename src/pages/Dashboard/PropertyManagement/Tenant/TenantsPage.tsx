@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Select from '@components/forms/Select';
 import Input from '@components/forms/Input';
 import DeleteConfirmationModal from '@components/cards/card/DeleteConfirmationModal';
 import CardMenuItem from '@components/cards/card/CardMenuItem';
 import Table, { type TableHeader } from '@components/ui/Table/Table';
-import { useGetAllTenantsQuery } from '@store/api/tenant.api';
+import { useGetAllTenantsQuery, useLeavePropertyMutation } from '@store/api/tenant.api';
 import EmptyState from '../../PropertyListing/Home/components/EmptyState';
+import toast from 'react-hot-toast';
 
 const SkeletonRow = () => (
     <tr className="animate-pulse bg-white border-b border-gray-100">
@@ -34,21 +36,25 @@ const TenantsPage: React.FC = () => {
     const mappedTenants = (tenantsData?.data?.tenants || []).map((t: any, idx: number) => ({
         ...t,
         sn: String(idx + 1).padStart(2, '0'),
+        id: t.tenantId,
+        propertyId: t.property?.id,
         name: t.user?.firstName ? `${t.user.firstName} ${t.user.lastName || ''}` : t.name || 'Unknown',
-        email: t.user?.email || t.email || 'N/A',
+        email: t.user?.email || t.email?.toLowerCase() || 'N/A',
         phone: t.user?.phoneNumber || t.phone || 'N/A',
         property: t.property?.name || 'N/A',
         unit: t.unit || 'N/A',
-        status: t.rentStatus || t.status || 'Paid', // Assuming rentStatus maps directly
+        status: t.rent?.status || t.status || 'PENDING',
     }));
 
     // per-row menu state
-    const [openMenuFor, setOpenMenuFor] = useState<string | null>(null);
+    const [openMenuFor, setOpenMenuFor] = useState<any>(null);
+    const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
     const menuRef = useRef<HTMLDivElement | null>(null);
 
+    const [leaveProperty] = useLeavePropertyMutation();
     // delete modal state
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [deleteCandidate, setDeleteCandidate] = useState<string | null>(null);
+    const [deleteCandidate, setDeleteCandidate] = useState<any | null>(null);
 
     // close menu on outside click / Escape
     useEffect(() => {
@@ -72,12 +78,25 @@ const TenantsPage: React.FC = () => {
         };
     }, [openMenuFor]);
 
-    const handleConfirmDelete = () => {
+    const handleConfirmDelete = async () => {
         if (!deleteCandidate) return;
-        // Logic for backend deletion would go here (e.g. useLeavePropertyMutation or similar)
-        console.log("Delete candidate ID:", deleteCandidate);
-        setShowDeleteConfirm(false);
-        setDeleteCandidate(null);
+        if (!deleteCandidate.propertyId) {
+            toast.error("Missing property ID");
+            return;
+        }
+
+        try {
+            await leaveProperty({ 
+                propertyId: deleteCandidate.propertyId, 
+            }).unwrap();
+            toast.success("Tenant removed successfully");
+        } catch (error: any) {
+            console.error("Failed to delete tenant:", error);
+            toast.error(error?.data?.message || "Failed to remove tenant");
+        } finally {
+            setShowDeleteConfirm(false);
+            setDeleteCandidate(null);
+        }
     };
 
     // Filter tenants
@@ -147,8 +166,8 @@ const TenantsPage: React.FC = () => {
                         isOpen={showDeleteConfirm}
                         title="Delete Tenant"
                         message={
-                            mappedTenants.find((x: any) => x.sn === deleteCandidate)
-                                ? `Are you sure you want to delete ${mappedTenants.find((x: any) => x.sn === deleteCandidate)?.name}? This action cannot be undone.`
+                            deleteCandidate
+                                ? `Are you sure you want to delete ${deleteCandidate.name}? This action cannot be undone.`
                                 : undefined
                         }
                         onConfirm={handleConfirmDelete}
@@ -207,13 +226,15 @@ const TenantsPage: React.FC = () => {
                                                     {t.email} • {t.phone}
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div className="relative inline-block" ref={openMenuFor === t.sn ? menuRef : null}>
+                                        </div>                                        <div className="relative inline-block">
                                             <button
                                                 aria-haspopup="menu"
-                                                aria-expanded={openMenuFor === t.sn}
-                                                aria-controls={`tenant-menu-${t.sn}`}
-                                                onClick={() => setOpenMenuFor((s) => (s === t.sn ? null : t.sn))}
+                                                aria-expanded={openMenuFor?.sn === t.sn}
+                                                onClick={(e) => {
+                                                    const rect = e.currentTarget.getBoundingClientRect();
+                                                    setMenuPos({ top: rect.bottom + window.scrollY, right: window.innerWidth - rect.right });
+                                                    setOpenMenuFor(openMenuFor?.sn === t.sn ? null : t);
+                                                }}
                                                 className="inline-flex items-center justify-center text-[#6B7280] p-2 rounded-full"
                                                 title="Tenant actions"
                                             >
@@ -228,51 +249,6 @@ const TenantsPage: React.FC = () => {
                                                     <circle cx="5" cy="12" r="1.5" />
                                                 </svg>
                                             </button>
-    
-                                            {openMenuFor === t.sn && (
-                                                <div
-                                                    id={`tenant-menu-${t.sn}`}
-                                                    role="menu"
-                                                    aria-orientation="vertical"
-                                                    className="absolute right-0 mt-2 w-55 bg-white border border-[#E6EEF7] rounded-xl shadow-lg ring-1 ring-black/5 py-2 z-50 overflow-hidden"
-                                                >
-                                                    <CardMenuItem
-                                                        label="Edit Tenant"
-                                                        iconSrc="/assets/icons/pen-line.svg"
-                                                        iconAlt="Edit Tenant"
-                                                        onActivate={() => {
-                                                            setOpenMenuFor(null);
-                                                            console.log('Edit tenant', t.sn);
-                                                        }}
-                                                        className="text-[#0A2D50] hover:bg-[#F1F9FF]"
-                                                    />
-    
-                                                    <CardMenuItem
-                                                        label="Add Tenant"
-                                                        iconSrc="/assets/icons/plus.svg"
-                                                        iconAlt="Add Tenant"
-                                                        onActivate={() => {
-                                                            setOpenMenuFor(null);
-                                                            console.log('Add tenant for', t.sn);
-                                                        }}
-                                                        className="text-[#0A2D50] hover:bg-[#F1F9FF]"
-                                                    />
-    
-                                                    <div className="h-px bg-[#EEF4FB] my-1" />
-    
-                                                    <CardMenuItem
-                                                        label="Delete Tenant"
-                                                        iconSrc="/assets/icons/trash-2.svg"
-                                                        iconAlt="Delete"
-                                                        onActivate={() => {
-                                                            setOpenMenuFor(null);
-                                                            setDeleteCandidate(t.sn);
-                                                            setShowDeleteConfirm(true);
-                                                        }}
-                                                        className="text-[#D02929] hover:bg-[#FFF5F5]"
-                                                    />
-                                                </div>
-                                            )}
                                         </div>
                                     </div>
     
@@ -286,7 +262,7 @@ const TenantsPage: React.FC = () => {
                                         <div className="text-right">
                                             <div className="font-medium">Status</div>
                                             <div
-                                                className={`mt-1 inline-block px-3 py-1 rounded-full text-[14px] font-semibold ${t.status === 'Paid' ? 'bg-[#E6F6F3] text-[#256D51]' : 'bg-[#FFF0F0] text-[#D02929]'}`}
+                                                className={`mt-1 inline-block px-3 py-1 rounded-full text-[14px] font-semibold ${t.status?.toLowerCase() === 'paid' ? 'bg-[#E6F6F3] text-[#256D51]' : t.status?.toLowerCase() === 'pending' ? 'bg-[#FFF3CD] text-[#856404]' : 'bg-[#FFF0F0] text-[#D02929]'}`}
                                             >
                                                 {t.status}
                                             </div>
@@ -339,18 +315,21 @@ const TenantsPage: React.FC = () => {
                                         <td className="px-4 py-3">{t.unit}</td>
                                         <td className="px-4 py-3">
                                             <span
-                                                className={`px-4 py-1 rounded-full text-[15px] font-semibold ${t.status?.toLowerCase() === 'paid' ? 'bg-[#E6F6F3] text-[#256D51]' : 'bg-[#FFF0F0] text-[#D02929]'}`}
+                                                className={`px-4 py-1 rounded-full text-[15px] font-semibold ${t.status?.toLowerCase() === 'paid' ? 'bg-[#E6F6F3] text-[#256D51]' : t.status?.toLowerCase() === 'pending' ? 'bg-[#FFF3CD] text-[#856404]' : 'bg-[#FFF0F0] text-[#D02929]'}`}
                                             >
                                                 {t.status}
                                             </span>
                                         </td>
                                         <td className="px-4 py-3 text-center">
-                                            <div className="relative inline-block" ref={openMenuFor === t.sn ? menuRef : null}>
+                                            <div className="relative inline-block">
                                                 <button
                                                     aria-haspopup="menu"
-                                                    aria-expanded={openMenuFor === t.sn}
-                                                    aria-controls={`tenant-menu-${t.sn}`}
-                                                    onClick={() => setOpenMenuFor((s) => (s === t.sn ? null : t.sn))}
+                                                    aria-expanded={openMenuFor?.sn === t.sn}
+                                                    onClick={(e) => {
+                                                        const rect = e.currentTarget.getBoundingClientRect();
+                                                        setMenuPos({ top: rect.bottom + window.scrollY, right: window.innerWidth - rect.right });
+                                                        setOpenMenuFor(openMenuFor?.sn === t.sn ? null : t);
+                                                    }}
                                                     className="inline-flex items-center justify-center text-[#6B7280]"
                                                     title="Tenant actions"
                                                 >
@@ -365,51 +344,6 @@ const TenantsPage: React.FC = () => {
                                                         <circle cx="5" cy="12" r="1.5" />
                                                     </svg>
                                                 </button>
-    
-                                                {openMenuFor === t.sn && (
-                                                    <div
-                                                        id={`tenant-menu-${t.sn}`}
-                                                        role="menu"
-                                                        aria-orientation="vertical"
-                                                        className="absolute right-0 mt-2 w-55 bg-white border border-[#E6EEF7] rounded-xl shadow-lg ring-1 ring-black/5 py-2 z-50 overflow-hidden"
-                                                    >
-                                                        <CardMenuItem
-                                                            label="Edit Tenant"
-                                                            iconSrc="/assets/icons/pen-line.svg"
-                                                            iconAlt="Edit Tenant"
-                                                            onActivate={() => {
-                                                                setOpenMenuFor(null);
-                                                                console.log('Edit tenant', t.sn);
-                                                            }}
-                                                            className="text-[#0A2D50] hover:bg-[#F1F9FF]"
-                                                        />
-    
-                                                        <CardMenuItem
-                                                            label="Add Tenant"
-                                                            iconSrc="/assets/icons/plus.svg"
-                                                            iconAlt="Add Tenant"
-                                                            onActivate={() => {
-                                                                setOpenMenuFor(null);
-                                                                console.log('Add tenant for', t.sn);
-                                                            }}
-                                                            className="text-[#0A2D50] hover:bg-[#F1F9FF]"
-                                                        />
-    
-                                                        <div className="h-px bg-[#EEF4FB] my-1" />
-    
-                                                        <CardMenuItem
-                                                            label="Delete Tenant"
-                                                            iconSrc="/assets/icons/trash-2.svg"
-                                                            iconAlt="Delete"
-                                                            onActivate={() => {
-                                                                setOpenMenuFor(null);
-                                                                setDeleteCandidate(t.sn);
-                                                                setShowDeleteConfirm(true);
-                                                            }}
-                                                            className="text-[#D02929] hover:bg-[#FFF5F5]"
-                                                        />
-                                                    </div>
-                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -424,6 +358,56 @@ const TenantsPage: React.FC = () => {
                     {/* pagination + summary handled by Table component */}
                 </div>
             </div>
+            
+            {openMenuFor && createPortal(
+                <div
+                    ref={menuRef}
+                    role="menu"
+                    aria-orientation="vertical"
+                    style={{ position: 'absolute', top: menuPos.top + 8, right: menuPos.right }}
+                    className="w-55 bg-white border border-[#E6EEF7] rounded-xl shadow-lg ring-1 ring-black/5 py-2 z-[9999] overflow-hidden"
+                >
+                    <CardMenuItem
+                        label="Edit Tenant"
+                        iconSrc="/assets/icons/pen-line.svg"
+                        iconAlt="Edit Tenant"
+                        onActivate={() => {
+                            const tId = openMenuFor.id;
+                            setOpenMenuFor(null);
+                            console.log('Edit tenant', tId);
+                        }}
+                        className="text-[#0A2D50] hover:bg-[#F1F9FF]"
+                    />
+
+                    <CardMenuItem
+                        label="Add Tenant"
+                        iconSrc="/assets/icons/plus.svg"
+                        iconAlt="Add Tenant"
+                        onActivate={() => {
+                            const tSn = openMenuFor.sn;
+                            setOpenMenuFor(null);
+                            console.log('Add tenant for', tSn);
+                        }}
+                        className="text-[#0A2D50] hover:bg-[#F1F9FF]"
+                    />
+
+                    <div className="h-px bg-[#EEF4FB] my-1" />
+
+                    <CardMenuItem
+                        label="Delete Tenant"
+                        iconSrc="/assets/icons/trash-2.svg"
+                        iconAlt="Delete"
+                        onActivate={() => {
+                            const c = openMenuFor;
+                            setOpenMenuFor(null);
+                            setDeleteCandidate(c);
+                            setShowDeleteConfirm(true);
+                        }}
+                        className="text-[#D02929] hover:bg-[#FFF5F5]"
+                    />
+                </div>,
+                document.body
+            )}
         </div>
     );
 };

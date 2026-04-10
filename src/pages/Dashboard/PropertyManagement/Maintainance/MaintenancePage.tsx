@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useGetAllMaintenancesQuery } from '@store/api/propertyMgt.api';
 
 import StatusCard from './StatusCard';
 import pendingIcon from './icons/pendinf.svg';
@@ -152,6 +153,15 @@ const requestsData = {
 const MaintenancePage: React.FC = () => {
     const [activeTab, setActiveTab] = useState<(typeof tabList)[number]>('Pending');
     const [search, setSearch] = useState('');
+
+    const { data: allMaintenancesData } = useGetAllMaintenancesQuery();
+
+    useEffect(() => {
+        if (allMaintenancesData) {
+            console.log('All Maintenances Data:', allMaintenancesData);
+        }
+    }, [allMaintenancesData]);
+
     return (
         <div className="pb-10">
             <div className="mb-6 mt-4 max-w-300 mx-auto">

@@ -4,7 +4,7 @@ import CloseButton from '@pages/Dashboard/PropertyListing/Home/components/Onboar
 import RadioGroup from '@components/forms/RadioGroup';
 import Input from '@components/forms/Input';
 import Select from '@components/forms/Select';
-// import { useGetManagedPropertiesQuery } from '@store/api/propertyMgt.api';
+import { useCreateInspectionMutation, useGetManagedPropertiesQuery } from '@store/api/propertyMgt.api';
 
 interface AddInspectionModalProps {
     open: boolean;
@@ -23,22 +23,11 @@ const unitOptions = [
     { label: 'Unit C3', value: 'unit-c3' },
 ];
 
-const dateOptions = [
-    { label: 'Select Date', value: '' },
-    { label: 'Tomorrow, Oct 16', value: '2025-10-16' },
-    { label: 'Next Monday, Oct 20', value: '2025-10-20' },
-];
 
-const timeOptions = [
-    { label: 'Select Time', value: '' },
-    { label: '10:00 AM', value: '10:00' },
-    { label: '02:00 PM', value: '14:00' },
-    { label: '04:00 PM', value: '16:00' },
-];
 
 const AddInspectionModal: React.FC<AddInspectionModalProps> = ({ open, onClose }) => {
+    const [propertyId, setPropertyId] = useState('');
     const [type, setType] = useState<'Virtual' | 'Physical' | 'Hybrid'>('Virtual');
-    const [propertyName, setPropertyName] = useState('');
     const [unit, setUnit] = useState('');
     const [date, setDate] = useState('');
     const [time, setTime] = useState('');
@@ -51,7 +40,7 @@ const AddInspectionModal: React.FC<AddInspectionModalProps> = ({ open, onClose }
         // Reset state after closing animation
         setTimeout(() => {
             setType('Virtual');
-            setPropertyName('');
+            setPropertyId('');
             setUnit('');
             setDate('');
             setTime('');
@@ -73,12 +62,30 @@ const AddInspectionModal: React.FC<AddInspectionModalProps> = ({ open, onClose }
         };
     }, [open, handleClose]);
 
+    const [createInspection, { isLoading }] = useCreateInspectionMutation();
+        const { data: propertiesData } = useGetManagedPropertiesQuery(undefined, { skip: !open });
+const propertiesOptions = propertiesData?.data?.map((p: any) => ({
+        label: p.name,
+        value: p.id
+    })) || [];
+
     if (!open) return null;
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Submit Inspection:', { type, propertyName, unit, date, time, meetingLink });
-        handleClose();
+        try {
+            await createInspection({
+                propertyId: propertyId || 'dummy-property-id', // Now uses the real selected propertyId
+                unitName: unit || 'default-unit',
+                type: type as any,
+                scheduledDate: date,
+                scheduledTime: time,
+                hostingLink: meetingLink
+            }).unwrap();
+            handleClose();
+        } catch (err) {
+            console.error('Failed to create inspection', err);
+        }
     };
 
     return (
@@ -102,12 +109,15 @@ const AddInspectionModal: React.FC<AddInspectionModalProps> = ({ open, onClose }
                         />
                     </div>
 
-                    <Input
-                        title="Property Name"
-                        placeholder="Enter property name"
-                        value={propertyName}
-                        onChange={(e) => setPropertyName(e.target.value)}
-                    />
+                    <Select
+                                            title="Property"
+                                            name="propertyId"
+                                            placeholder="Select property"
+                                            options={propertiesOptions}
+                                            value={propertyId}
+                                            onChange={setPropertyId}
+                                            required
+                                        />
 
                     <Select
                         title="Unit"
@@ -119,40 +129,47 @@ const AddInspectionModal: React.FC<AddInspectionModalProps> = ({ open, onClose }
 
                     <div className="flex gap-4">
                         <div className="flex-1">
-                            <Select
+                            <Input
                                 title="Date"
+                                name="date"
                                 placeholder="Select Date"
-                                options={dateOptions}
+                                type="date"
                                 value={date}
-                                onChange={setDate}
-                                    />
+                                onChange={(e) => setDate(e.target.value)}
+                                required
+                            />
                         </div>
                         <div className="flex-1">
-                            <Select
+                            <Input
                                 title="Time"
+                                name="time"
                                 placeholder="Select Time"
-                                options={timeOptions}
+                                type="time"
                                 value={time}
-                                onChange={setTime}
-                                    />
+                                onChange={(e) => setTime(e.target.value)}
+                                required
+                            />
                         </div>
                     </div>
 
                     {type !== 'Physical' && (
-                        <Select
+                        <Input
                             title="Meeting Link"
-                            placeholder="Select Unit"
-                            options={unitOptions} // Reusing unitOptions as placeholder structure similar to mockup image
+                            name="meetingLink"
+                            placeholder="Enter meeting link"
+                            type="text"
                             value={meetingLink}
-                            onChange={setMeetingLink}
-                            />
+                            onChange={(e) => setMeetingLink(e.target.value)}
+                            required
+                        />
                     )}
 
                     <button
                         type="submit"
-                        className="w-28 py-3 rounded-md bg-[#002E62] text-white font-semibold text-[15px] hover:bg-[#002E62]/90 transition-colors mt-4"
+                        disabled={isLoading}
+                        className="w-28 py-3 rounded-md bg-[#002E62] text-white font-semibold text-[15px] hover:bg-[#002E62]/90 transition-colors mt-4 disabled:opacity-50"
                     >
-                        Send
+                        {isLoading ? 'Sending...' : 'Send'}
                     </button>
                 </form>
             </div>

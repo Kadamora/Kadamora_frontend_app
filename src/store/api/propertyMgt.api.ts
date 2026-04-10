@@ -62,7 +62,6 @@ export interface UpdateDocumentStatusPayload {
     status: string;
 }
 
-
 export interface CreateInspectionPayload {
     propertyId: string;
     unitName: string;
@@ -188,6 +187,13 @@ export const propertyMgtApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["PropertyMgt"],
         }),
+        getAllDocuments: builder.query<any, void>({
+            query: () => ({
+                url: `/api/v1/management/documents`,
+                method: "GET",
+            }),
+            providesTags: ["PropertyMgt"],
+        }),
         createInspection: builder.mutation<CreatePropertyResponse, CreateInspectionPayload>({
             query: ({ propertyId, ...payload }) => ({
                 url: `/api/v1/inspections/${propertyId}`,
@@ -204,6 +210,13 @@ export const propertyMgtApi = baseApi.injectEndpoints({
             }),
             providesTags: ["PropertyMgt"],
         }),
+        getSettingByProperty: builder.query<any, { propertyId: string }>({
+            query: ({ propertyId }) => ({
+                url: `/api/v1/inspections/${propertyId}`,
+                method: "GET",
+            }),
+            providesTags: ["PropertyMgt"],
+        }),
 
         updateInspectionStatus: builder.mutation<CreatePropertyResponse, UpdateInspectionStatusPayload>({
             query: ({ inspectionId, status }) => ({
@@ -212,6 +225,13 @@ export const propertyMgtApi = baseApi.injectEndpoints({
                 body: { status },
             }),
             invalidatesTags: ["PropertyMgt"],
+        }),
+        getAllInspections: builder.query<any, void>({
+            query: () => ({
+                url: `/api/v1/management/inspections`,
+                method: "GET",
+            }),
+            providesTags: ["PropertyMgt"],
         }),
         createMaintenance: builder.mutation<CreatePropertyResponse, CreateMaintenancePayload>({
             query: ({ propertyId, ...payload }) => ({
@@ -246,6 +266,13 @@ export const propertyMgtApi = baseApi.injectEndpoints({
                 body: { status },
             }),
             invalidatesTags: ["PropertyMgt"],
+        }),
+        getAllMaintenances: builder.query<any, void>({
+            query: () => ({
+                url: `/api/v1/management/maintenances`,
+                method: "GET",
+            }),
+            providesTags: ["PropertyMgt"],
         }),
         updateSettings: builder.mutation<CreatePropertyResponse, UpdateSettingsPayload>({
             query: ({ propertyId, ...payload }) => ({
@@ -282,4 +309,7 @@ export const {
     useAssignMaintenanceMutation,
     useUpdateMaintenanceStatusMutation,
     useUpdateSettingsMutation,
+    useGetAllInspectionsQuery,
+    useGetAllMaintenancesQuery,
+    useGetAllDocumentsQuery,
 } = propertyMgtApi;

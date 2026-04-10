@@ -27,11 +27,11 @@ export interface ChatSummary {
 // Users
 export const users: ChatUser[] = [
     { id: '1', name: 'FlatA Members', subtitle: '', online: false },
-    { id: '2', name: 'JordanSky', subtitle: '(Estate Manager)', avatar: '/avatars/jordan.png', online: true },
-    { id: '3', name: 'LucasPine', avatar: '/avatars/lucas.png', online: false },
-    { id: '4', name: 'EthanWave', avatar: '/avatars/ethan.png', online: false },
+    { id: '2', name: 'JordanSky', subtitle: '(Estate Manager)', online: true },
+    { id: '3', name: 'LucasPine', online: false },
+    { id: '4', name: 'EthanWave', online: false },
     { id: '5', name: 'Terrace C Members', subtitle: '', online: false },
-    { id: '6', name: 'OliviaSun', avatar: '/avatars/olivia.png', online: false },
+    { id: '6', name: 'OliviaSun', online: false },
 ];
 
 // Chat summaries
