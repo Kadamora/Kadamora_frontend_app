@@ -12,20 +12,17 @@ interface CreateAnnouncementModalProps {
     onClose: () => void;
 }
 
-const unitOptions = [
-    { label: 'Unit 1', value: 'unit1' },
-    { label: 'Unit 2', value: 'unit2' },
-];
-
 const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ open, onClose }) => {
     const [propertyId, setPropertyId] = useState('');
-    const [unit, setUnit] = useState('');
+    // const [unit, setUnit] = useState('');
     const [title, setTitle] = useState('');
-    const [message, setMessage] = useState('');
-    const [file, setFile] = useState<File | null>(null);
+    const [content, setContent] = useState('');
+    const [propertyType, setPropertyType] = useState('residential');
+    const [url, setUrl] = useState('');
+    // const [file, setFile] = useState<File | null>(null);
 
     const [createAnnouncement, { isLoading }] = useCreateAnnouncementMutation();
-        const { data: propertiesData } = useGetManagedPropertiesQuery(undefined, { skip: !open });
+    const { data: propertiesData } = useGetManagedPropertiesQuery(undefined, { skip: !open });
     const propertiesOptions = propertiesData?.data?.map((p: any) => ({
         label: p.name,
         value: p.id
@@ -55,19 +52,20 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ open,
                     </svg>
                 </button>
                 <h2 className="text-lg font-semibold mb-6">Announcement</h2>
-                <form 
+                <form
                     className="space-y-4"
                     onSubmit={async (e) => {
                         e.preventDefault();
-                        const formData = new FormData();
-                        formData.append('propertyId', propertyId);
-                        formData.append('unit', unit);
-                        formData.append('title', title);
-                        formData.append('message', message);
-                        if (file) formData.append('file', file);
-                        
+                        const payload = {
+                            title,
+                            content,
+                            propertyId,
+                            propertyType,
+                            url
+                        };
+
                         try {
-                            await createAnnouncement(formData).unwrap();
+                            await createAnnouncement(payload).unwrap();
                             onClose();
                         } catch (err) {
                             console.error('Failed to create announcement', err);
@@ -76,16 +74,29 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ open,
                 >
                     <div className="flex gap-4">
                         <Select
-                                                title="Property"
-                                                name="propertyId"
-                                                placeholder="Select property"
-                                                options={propertiesOptions}
-                                                value={propertyId}
-                                                onChange={setPropertyId}
-                                                required
-                                                className="flex-1"
-                                            />
+                            title="Property"
+                            name="propertyId"
+                            placeholder="Select property"
+                            options={propertiesOptions}
+                            value={propertyId}
+                            onChange={setPropertyId}
+                            required
+                            className="flex-1"
+                        />
                         <Select
+                            title="Property Type"
+                            name="propertyType"
+                            placeholder="Select Type"
+                            options={[
+                                { label: 'Residential', value: 'residential' },
+                                { label: 'Commercial', value: 'commercial' },
+                            ]}
+                            value={propertyType}
+                            onChange={(val) => setPropertyType(val)}
+                            required
+                            className="flex-1"
+                        />
+                        {/* <Select
                             title="Unit"
                             name="unit"
                             placeholder="Select Unit"
@@ -94,29 +105,36 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ open,
                             onChange={setUnit}
                             required
                             className="flex-1"
-                        />
+                        /> */}
                     </div>
-                    <Input 
-                        title="Announcement Title" 
-                        name="title" 
-                        placeholder="Enter message title" 
+                    <Input
+                        title="Announcement Title"
+                        name="title"
+                        placeholder="Enter message title"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        required 
+                        required
                     />
                     <div>
                         <label className="block text-sm font-semibold mb-2">Message</label>
                         <Textarea
                             name="message"
                             placeholder="Enter Message Here"
-                            value={message}
-                            onChange={(e) => setMessage(e.target.value)}
+                            value={content}
+                            onChange={(e) => setContent(e.target.value)}
                             rows={5}
                             required
                             className="resize-none"
                         />
                     </div>
-                    <div>
+                    <Input
+                        title="URL (optional)"
+                        name="url"
+                        placeholder="Enter URL"
+                        value={url}
+                        onChange={(e) => setUrl(e.target.value)}
+                    />
+                    {/* <div>
                         <label className="block text-sm font-semibold mb-2">Upload File</label>
                         <label className="block border-2 border-dashed border-[#E0DEF7] rounded-lg p-6 text-center cursor-pointer text-[#64748B] hover:bg-[#F6F6FB] transition-colors">
                             <input
@@ -150,7 +168,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ open,
                                 </span>
                             )}
                         </label>
-                    </div>
+                    </div> */}
                     <button
                         type="submit"
                         disabled={isLoading}

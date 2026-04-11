@@ -10,151 +10,73 @@ import RequestCard from '@components/cards/card/RequestCard';
 import type { RequestStatus, Priority } from '@components/cards/card/RequestCard';
 import Input from '@components/forms/Input';
 
-const statusStats = [
-    {
-        label: 'Pending',
-        value: 8,
-        icon: <img src={pendingIcon} alt="Pending" className="h-12 w-12" />,
-    },
-    {
-        label: 'In-Progress',
-        value: 4,
-        icon: <img src={progressIcon} alt="In-Progress" className="h-12 w-12" />,
-    },
-    {
-        label: 'Scheduled',
-        value: 3,
-        icon: <img src={scheduledIcon} alt="Scheduled" className="h-12 w-12" />,
-    },
-    {
-        label: 'Completed',
-        value: 9,
-        icon: <img src={completedIcon} alt="Completed" className="h-12 w-12" />,
-    },
-];
-
 const tabList = ['Pending', 'In-Progress', 'Scheduled', 'Completed'] as const;
-
-const requestsData = {
-    'Pending': [
-        {
-            title: 'Leaking Bathroom Faucet',
-            description:
-                'Lorem ipsum dolor sit amet consectetur. Nibh odio egestas tortor lorem laoreet eu volutpat. Adipiscing odio erat ac ridiculus imperdiet. Ut morbi tortor non fringilla nec urna. Purus eu erat nunc nisl. Massa commodo in sed mattis.',
-            status: 'Pending' as RequestStatus,
-            priority: 'High' as Priority,
-            assignee: 'Michael Chamberlain',
-            property: 'Hilltop DiamondA',
-            serviceType: 'Plumber',
-            showActions: true,
-        },
-        {
-            title: 'Circuit Overheating',
-            description:
-                'Lorem ipsum dolor sit amet consectetur. Nibh odio egestas tortor lorem laoreet eu volutpat. Adipiscing odio erat ac ridiculus imperdiet. Ut morbi tortor non fringilla nec urna. Purus eu erat nunc nisl. Massa commodo in sed mattis.',
-            status: 'Pending' as RequestStatus,
-            priority: 'High' as Priority,
-            assignee: 'Michael Chamberlain',
-            property: 'Hilltop DiamondA',
-            serviceType: 'Electrician',
-            showActions: true,
-        },
-    ],
-    'In-Progress': [
-        {
-            title: 'Leaking Bathroom Faucet',
-            description:
-                'Lorem ipsum dolor sit amet consectetur. Nibh odio egestas tortor lorem laoreet eu volutpat. Adipiscing odio erat ac ridiculus imperdiet. Ut morbi tortor non fringilla nec urna. Purus eu erat nunc nisl. Massa commodo in sed mattis.',
-            status: 'In-progress' as RequestStatus,
-            priority: 'High' as Priority,
-            assignee: 'Michael Chamberlain',
-            property: 'Hilltop DiamondA',
-            serviceType: 'Plumber',
-            cost: '35,000.00',
-            assignedTo: 'Chukwu & Co Plumbing Services',
-            scheduled: '03 June, 2025',
-            percent: 40,
-        },
-        {
-            title: 'Circuit Overheating',
-            description:
-                'Lorem ipsum dolor sit amet consectetur. Nibh odio egestas tortor lorem laoreet eu volutpat. Adipiscing odio erat ac ridiculus imperdiet. Ut morbi tortor non fringilla nec urna. Purus eu erat nunc nisl. Massa commodo in sed mattis.',
-            status: 'In-progress' as RequestStatus,
-            priority: 'High' as Priority,
-            assignee: 'Michael Chamberlain',
-            property: 'Hilltop DiamondA',
-            serviceType: 'Plumber',
-            cost: '35,000.00',
-            assignedTo: 'Chukwu & Co Plumbing Services',
-            scheduled: '03 June, 2025',
-            percent: 80,
-        },
-    ],
-    'Scheduled': [
-        {
-            title: 'Circuit Overheating',
-            description:
-                'Lorem ipsum dolor sit amet consectetur. Nibh odio egestas tortor lorem laoreet eu volutpat. Adipiscing odio erat ac ridiculus imperdiet. Ut morbi tortor non fringilla nec urna. Purus eu erat nunc nisl. Massa commodo in sed mattis.',
-            status: 'Scheduled' as RequestStatus,
-            priority: 'Medium' as Priority,
-            assignee: 'Michael Chamberlain',
-            property: 'Hilltop DiamondA',
-            serviceType: 'Electrician',
-            cost: '35,000.00',
-            assignedTo: 'Chukwu & Co Plumbing Services',
-            scheduled: '03 June, 2025',
-        },
-        {
-            title: 'Faulty Door Handle',
-            description:
-                'Lorem ipsum dolor sit amet consectetur. Nibh odio egestas tortor lorem laoreet eu volutpat. Adipiscing odio erat ac ridiculus imperdiet. Ut morbi tortor non fringilla nec urna. Purus eu erat nunc nisl. Massa commodo in sed mattis.',
-            status: 'Scheduled' as RequestStatus,
-            priority: 'Low' as Priority,
-            assignee: 'Michael Chamberlain',
-            property: 'Hilltop DiamondA',
-            serviceType: 'Carpenter',
-            cost: '35,000.00',
-            assignedTo: 'Chukwu & Co Plumbing Services',
-            scheduled: '03 June, 2025',
-        },
-    ],
-    'Completed': [
-        {
-            title: 'Leaking Roof',
-            description:
-                'Lorem ipsum dolor sit amet consectetur. Nibh odio egestas tortor lorem laoreet eu volutpat. Adipiscing odio erat ac ridiculus imperdiet. Ut morbi tortor non fringilla nec urna. Purus eu erat nunc nisl. Massa commodo in sed mattis.',
-            status: 'Completed' as RequestStatus,
-            priority: 'High' as Priority,
-            assignee: 'Michael Chamberlain',
-            property: 'Hilltop DiamondA',
-            serviceType: 'Carpenter',
-            cost: '35,000.00',
-            assignedTo: 'Chukwu & Co Plumbing Services',
-            scheduled: '03 June, 2025',
-            percent: 100,
-        },
-        {
-            title: 'Circuit Overheating',
-            description:
-                'Lorem ipsum dolor sit amet consectetur. Nibh odio egestas tortor lorem laoreet eu volutpat. Adipiscing odio erat ac ridiculus imperdiet. Ut morbi tortor non fringilla nec urna. Purus eu erat nunc nisl. Massa commodo in sed mattis.',
-            status: 'Completed' as RequestStatus,
-            priority: 'High' as Priority,
-            assignee: 'Michael Chamberlain',
-            property: 'Hilltop DiamondA',
-            serviceType: 'Plumber',
-            cost: '35,000.00',
-            assignedTo: 'Chukwu & Co Plumbing Services',
-            scheduled: '03 June, 2025',
-            percent: 100,
-        },
-    ],
-};
 
 const MaintenancePage: React.FC = () => {
     const [activeTab, setActiveTab] = useState<(typeof tabList)[number]>('Pending');
     const [search, setSearch] = useState('');
 
-    const { data: allMaintenancesData } = useGetAllMaintenancesQuery();
+    const { data: allMaintenancesData, isLoading } = useGetAllMaintenancesQuery();
+    const maintenanceRequests = allMaintenancesData?.data || [];
+
+    // Calculate dynamic stats
+    const stats = [
+        {
+            label: 'Pending',
+            value: maintenanceRequests.filter((r: any) => r.status === 'Pending').length,
+            icon: <img src={pendingIcon} alt="Pending" className="h-12 w-12" />,
+        },
+        {
+            label: 'In-Progress',
+            value: maintenanceRequests.filter((r: any) => r.status === 'In-progress').length,
+            icon: <img src={progressIcon} alt="In-Progress" className="h-12 w-12" />,
+        },
+        {
+            label: 'Scheduled',
+            value: maintenanceRequests.filter((r: any) => r.status === 'Scheduled').length,
+            icon: <img src={scheduledIcon} alt="Scheduled" className="h-12 w-12" />,
+        },
+        {
+            label: 'Completed',
+            value: maintenanceRequests.filter((r: any) => r.status === 'Completed').length,
+            icon: <img src={completedIcon} alt="Completed" className="h-12 w-12" />,
+        },
+    ];
+
+    // Filter requests for active tab and search query
+    const filteredRequests = maintenanceRequests
+        .filter((r: any) => {
+            if (activeTab === 'In-Progress') return r.status === 'In-progress';
+            return r.status === activeTab;
+        })
+        .filter((r: any) => {
+            if (!search) return true;
+            const q = search.toLowerCase();
+            return (
+                r.title?.toLowerCase().includes(q) ||
+                r.description?.toLowerCase().includes(q) ||
+                r.property?.name?.toLowerCase().includes(q) ||
+                r.assignedToName?.toLowerCase().includes(q) ||
+                r.serviceType?.toLowerCase().includes(q)
+            );
+        });
+
+    const mappedRequests = filteredRequests.map((r: any) => ({
+        title: r.title,
+        description: r.description,
+        status: (r.status === 'In-progress' ? 'In-progress' : r.status) as RequestStatus,
+        priority: r.priority as Priority,
+        assignee: r.assignedToName || 'Unassigned',
+        avatar: r.imageUrls[0],
+        ownerName: r.property?.accountName,
+        property: r.property?.name || 'N/A',
+        serviceType: r.serviceType || 'Not specified',
+        cost: r.serviceCost ? r.serviceCost.toLocaleString() : undefined,
+        scheduled: r.scheduledDate ? new Date(r.scheduledDate).toLocaleDateString() : undefined,
+        createdAt: r.createdAt ? new Date(r.createdAt).toLocaleDateString() : undefined,
+        showActions: r.status === 'Pending',
+        percent: r.status === 'Completed' ? 100 : (r.status === 'In-progress' ? 50 : 0), // Defaulting progress percentages
+    }));
 
     useEffect(() => {
         if (allMaintenancesData) {
@@ -166,7 +88,7 @@ const MaintenancePage: React.FC = () => {
         <div className="pb-10">
             <div className="mb-6 mt-4 max-w-300 mx-auto">
                 <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                    {statusStats.map((s) => (
+                    {stats.map((s) => (
                         <StatusCard key={s.label} label={s.label} value={s.value} icon={s.icon} />
                     ))}
                 </div>
@@ -206,35 +128,29 @@ const MaintenancePage: React.FC = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {requestsData[activeTab]
-                            .filter((r) => {
-                                if (!search) return true;
-                                const q = search.toLowerCase();
-                                return (
-                                    r.title.toLowerCase().includes(q) ||
-                                    r.description.toLowerCase().includes(q) ||
-                                    (r.assignee ?? '').toLowerCase().includes(q) ||
-                                    (r.property ?? '').toLowerCase().includes(q) ||
-                                    (r.serviceType ?? '').toLowerCase().includes(q)
-                                );
-                            })
-                            .map((r, idx) => (
-                                <RequestCard key={idx} {...r} />
-                            ))}
-                    </div>
+
+                    {isLoading ? (
+                        <div className="flex justify-center items-center py-20">
+                            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#002E62]"></div>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {mappedRequests.length > 0 ? (
+                                mappedRequests.map((r:any, idx:any) => (
+                                    <RequestCard key={idx} {...r} />
+                                ))
+                            ) : (
+                                <div className="col-span-full text-center py-10 text-[#71717A]">
+                                    No maintenance requests found for this category.
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
     );
 };
 
-// export default MaintenancePage;
-//                     </div>
-//                 </div>
-//             </div>
-//         </div>
-//     );
-// };
 
 export default MaintenancePage;

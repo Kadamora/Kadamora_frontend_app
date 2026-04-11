@@ -7,8 +7,10 @@ import PropertiesPage from './Properties/PropertiesPage';
 import TenantsPage from './Tenant/TenantsPage';
 import AddTenantModal from './Tenant/components/AddTenantModal';
 import MaintenancePage from './Maintainance/MaintenancePage';
+import AddMaintenanceModal from './Maintainance/components/AddMaintenanceModal';
 import CommunicationPage from './Communication/CommunicationPage';
 import DocumentPage from './Document/DocumentPage';
+import AddDocumentModal from './Document/components/AddDocumentModal';
 import SettingsPage from './Settings/SettingsPage';
 import InspectionPage from './Inspection/InspectionPage';
 import AddInspectionModal from './Inspection/components/AddInspectionModal';
@@ -33,6 +35,8 @@ const actionsMap: Record<string, { label: string; path: string }> = {
     'tenants': { label: 'Add Tenant', path: '/dashboard/property-management/tenants/create' },
     'communication': { label: 'Create Announcement', path: '/dashboard/property-management/communication/create' },
     'inspection': { label: 'Add Inspection', path: '/dashboard/property-management/inspection/create' },
+    'maintenance': { label: 'New Request', path: '/dashboard/property-management/maintenance/create' },
+    'documents': { label: 'Upload Document', path: '/dashboard/property-management/documents/upload' },
 };
 
 const modalActions: Record<string, string> = {
@@ -40,6 +44,8 @@ const modalActions: Record<string, string> = {
     'Add Tenant': 'addTenant',
     'Create Announcement': 'announcement',
     'Add Inspection': 'inspection',
+    'New Request': 'maintenance',
+    'Upload Document': 'document',
 };
 
 const PropertyManagementRoot: React.FC = () => {
@@ -67,6 +73,8 @@ const PropertyManagementRoot: React.FC = () => {
         addTenant: false,
         announcement: false,
         inspection: false,
+        maintenance: false,
+        document: false,
     });
 
     const handleAction = () => {
@@ -97,6 +105,8 @@ const PropertyManagementRoot: React.FC = () => {
             <AddTenantModal open={modals.addTenant} onClose={() => closeModal('addTenant')} />
             <CreateAnnouncementModal open={modals.announcement} onClose={() => closeModal('announcement')} />
             <AddInspectionModal open={modals.inspection} onClose={() => closeModal('inspection')} />
+            <AddMaintenanceModal open={modals.maintenance} onClose={() => closeModal('maintenance')} />
+            <AddDocumentModal open={modals.document} onClose={() => closeModal('document')} />
             <div className="mb-6 mt-4 max-w-300 mx-auto">
                 <div className="flex items-center justify-between">
                     <div>

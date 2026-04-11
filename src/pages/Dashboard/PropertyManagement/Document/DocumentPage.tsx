@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import CardMenuItem from '../../../../components/cards/card/CardMenuItem';
 import DeleteConfirmationModal from '../../../../components/cards/card/DeleteConfirmationModal';
 import { Eye, Download } from 'lucide-react';
@@ -9,69 +10,40 @@ import Select from '@components/forms/Select';
 import Table, { type TableHeader } from '@components/ui/Table/Table';
 import { useGetAllDocumentsQuery } from '@store/api/propertyMgt.api';
 
-const mockDocuments = [
-    {
-        sn: '01',
-        name: 'Lease Agreement - John Smith',
-        category: 'Legal',
-        related: 'John Smith - Unit A12 - Sunset Gardens',
-        date: '6th Aug,2025',
-        status: 'Active',
-    },
-    {
-        sn: '02',
-        name: 'Property Insurance Certificate',
-        category: 'Property',
-        related: 'Sunset Gardens',
-        date: '4th Aug,2025',
-        status: 'Expired',
-    },
-    {
-        sn: '03',
-        name: 'Inspection Report - Unit B5',
-        category: 'Maintenance',
-        related: 'Sarah Johnson - Unit B5 - Sunset Gardens',
-        date: '16th July,2025',
-        status: 'Active',
-    },
-    {
-        sn: '04',
-        name: 'ID Copy - Mike Wilson',
-        category: 'Personal',
-        related: 'Mike Wilson - Unit C3 - Hilltop Estate',
-        date: '6th July,2025',
-        status: 'Pending',
-    },
-    {
-        sn: '05',
-        name: 'Building Permit - Renovation',
-        category: 'Legal',
-        related: 'Metro Business Center',
-        date: '2nd July,2025',
-        status: 'Approved',
-    },
-    {
-        sn: '06',
-        name: 'Rent Receipt - December 2023',
-        category: 'Financial',
-        related: 'Emma Davis - Unit A8 - Dominion Estate',
-        date: '16th June,2025',
-        status: 'Issued',
-    },
-];
+// Map the API response to a flat display shape
+function mapDocument(doc: any, idx: number) {
+    return {
+        id: doc.id,
+        sn: String(idx + 1).padStart(2, '0'),
+        name: doc.title,
+        category: doc.category,
+        related: doc.relatedToLabel || (doc.property?.name ?? '—'),
+        date: doc.uploadDate
+            ? new Date(doc.uploadDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+            : new Date(doc.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+        status: doc.status,
+        fileUrl: doc.fileUrl,
+        property: doc.property?.name ?? '—',
+    };
+}
 
 const DocumentPage: React.FC = () => {
     const [category, setCategory] = useState('');
     const [status, setStatus] = useState('');
     const [search, setSearch] = useState('');
 
-    const [documents, setDocuments] = useState(mockDocuments);
-    const [openMenuFor, setOpenMenuFor] = useState<string | null>(null);
+    const [openMenuFor, setOpenMenuFor] = useState<any>(null);
+    const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
     const menuRef = useRef<HTMLDivElement | null>(null);
 
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [deleteCandidate, setDeleteCandidate] = useState<string | null>(null);
+    // const [ setDeleteCandidate] = useState<string | null>(null);
 
+    const { data: allDocumentsData, isLoading } = useGetAllDocumentsQuery();
+    const rawDocuments: any[] = allDocumentsData?.data || [];
+    const documents = rawDocuments.map(mapDocument);
+
+    // close menu on outside click / Escape
     useEffect(() => {
         if (!openMenuFor) return;
 
@@ -80,6 +52,7 @@ const DocumentPage: React.FC = () => {
                 setOpenMenuFor(null);
             }
         };
+
         const handleKey = (e: KeyboardEvent) => {
             if (e.key === 'Escape') setOpenMenuFor(null);
         };
@@ -93,26 +66,69 @@ const DocumentPage: React.FC = () => {
     }, [openMenuFor]);
 
     const handleConfirmDelete = () => {
-        if (!deleteCandidate) return;
-        setDocuments((prev) => prev.filter((d) => d.sn !== deleteCandidate));
         setShowDeleteConfirm(false);
-        setDeleteCandidate(null);
+        // setDeleteCandidate(null);
     };
 
-    const { data: allDocumentsData } = useGetAllDocumentsQuery();
-
-    useEffect(() => {
-        if (allDocumentsData) {
-            console.log('All Documents Data:', allDocumentsData);
+    // View: open file in a new tab
+    const handleView = (doc: any) => {
+        if (doc.fileUrl) {
+            window.open(doc.fileUrl, '_blank', 'noopener,noreferrer');
         }
-    }, [allDocumentsData]);
+        setOpenMenuFor(null);
+    };
+
+    // Download: trigger browser download
+    const handleDownload = async (doc: any) => {
+        if (!doc.fileUrl) return;
+        setOpenMenuFor(null);
+
+        // If it's a Cloudinary URL, we can use the fl_attachment flag to force download
+        if (doc.fileUrl.includes('cloudinary.com')) {
+            const parts = doc.fileUrl.split('/upload/');
+            if (parts.length === 2) {
+                const downloadUrl = `${parts[0]}/upload/fl_attachment/${parts[1]}`;
+                window.open(downloadUrl, '_blank');
+                return;
+            }
+        }
+
+        // Fallback or generic download via blob
+        try {
+            const response = await fetch(doc.fileUrl);
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const ext = doc.fileUrl.split('.').pop()?.split('?')[0] || 'file';
+            a.download = `${doc.name}.${ext}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Download failed:', error);
+            window.open(doc.fileUrl, '_blank');
+        }
+    };
+
+    // Build unique filter options from live data
+    const categoryOptions = [
+        { label: 'All Categories', value: '' },
+        ...Array.from(new Set(documents.map((d) => d.category))).map((c) => ({ label: c, value: c })),
+    ];
+    const statusOptions = [
+        { label: 'All Status', value: '' },
+        ...Array.from(new Set(documents.map((d) => d.status))).map((s) => ({ label: s, value: s })),
+    ];
 
     const filteredDocuments = documents.filter((d) => {
         const matchCategory = category ? d.category === category : true;
         const matchStatus = status ? d.status === status : true;
         const matchSearch = search
             ? d.name.toLowerCase().includes(search.toLowerCase()) ||
-              d.related.toLowerCase().includes(search.toLowerCase())
+              d.related.toLowerCase().includes(search.toLowerCase()) ||
+              d.property.toLowerCase().includes(search.toLowerCase())
             : true;
         return matchCategory && matchStatus && matchSearch;
     });
@@ -120,17 +136,11 @@ const DocumentPage: React.FC = () => {
     return (
         <div className="pb-10">
             <div className="mb-6 mt-4 max-w-300 mx-auto">
-                <div className="mt-8 rounded-xl border border-[#E8F4F8] bg-white p-6">
+                <div className="mt-8 rounded-xl border border-[#E8F4F8] bg-white p-6 shadow-sm">
                     <div className="flex flex-col gap-3 mb-6 sm:flex-row sm:items-center">
                         <Select
                             title="Category"
-                            options={[
-                                { label: 'All Categories', value: '' },
-                                ...Array.from(new Set(documents.map((d) => d.category))).map((c) => ({
-                                    label: c,
-                                    value: c,
-                                })),
-                            ]}
+                            options={categoryOptions}
                             value={category}
                             onChange={setCategory}
                             containerClassName="min-w-[160px]"
@@ -138,13 +148,7 @@ const DocumentPage: React.FC = () => {
 
                         <Select
                             title="Status"
-                            options={[
-                                { label: 'All Status', value: '' },
-                                ...Array.from(new Set(documents.map((d) => d.status))).map((s) => ({
-                                    label: s,
-                                    value: s,
-                                })),
-                            ]}
+                            options={statusOptions}
                             value={status}
                             onChange={setStatus}
                             containerClassName="min-w-[140px]"
@@ -171,193 +175,148 @@ const DocumentPage: React.FC = () => {
                             />
                         </div>
                     </div>
-                    <Table
-                        className="text-[14px]"
-                        responsive="stack"
-                        renderCard={(d: any) => (
-                            <div className="grid grid-cols-2 gap-3 items-start">
-                                <div className="col-span-2 flex items-center gap-3">
-                                    <span className="h-8 w-8 rounded bg-gray-100 flex items-center justify-center">
-                                        <img
-                                            src="/assets/icons/file-text.svg"
-                                            alt="Document icon"
-                                            className="h-5 w-5"
-                                        />
-                                    </span>
-                                    <div className="flex-1">
-                                        <div className="font-semibold text-[#0A2D50] text-[15px]">{d.name}</div>
-                                        <div className="text-[13px] text-[#64748B]">{d.related}</div>
-                                    </div>
-                                </div>
 
-                                <div className="text-[13px] text-[#374151]">
-                                    <div className="font-medium text-sm">Category</div>
-                                    <div className="text-[#475467]">{d.category}</div>
-                                </div>
-                                <div className="text-[13px] text-[#374151]">
-                                    <div className="font-medium text-sm">Uploaded</div>
-                                    <div className="text-[#475467]">{d.date}</div>
-                                </div>
-
-                                <div className="col-span-1 text-[13px] text-[#374151]">
-                                    <div className="font-medium text-sm">Status</div>
-                                    <div className="mt-1 inline-block">
-                                        <StatusTag status={d.status as any} />
+                    {isLoading ? (
+                        <div className="flex justify-center items-center py-20">
+                            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#002E62]"></div>
+                        </div>
+                    ) : (
+                        <Table
+                            className="text-[14px]"
+                            responsive="stack"
+                            renderCard={(d: any) => (
+                                <div className="grid grid-cols-2 gap-3 items-start p-4 border-b border-gray-50 last:border-b-0">
+                                    <div className="col-span-2 flex items-center gap-3">
+                                        <span className="h-8 w-8 rounded bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                            <svg viewBox="0 0 24 24" className="h-5 w-5 text-[#002E62]" fill="none" stroke="currentColor" strokeWidth={2}>
+                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                                <polyline points="14 2 14 8 20 8" />
+                                            </svg>
+                                        </span>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="font-semibold text-[#0A2D50] text-[15px] truncate">{d.name}</div>
+                                            <div className="text-[13px] text-[#64748B] truncate">{d.related}</div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="col-span-1 text-right">
-                                    <div className="inline-block">
-                                        <div
-                                            className="relative inline-block"
-                                            ref={openMenuFor === d.sn ? menuRef : null}
-                                        >
+
+                                    <div className="text-[13px] text-[#374151]">
+                                        <div className="font-medium text-sm">Category</div>
+                                        <div className="text-[#475467]">{d.category}</div>
+                                    </div>
+                                    <div className="text-[13px] text-[#374151]">
+                                        <div className="font-medium text-sm">Property</div>
+                                        <div className="text-[#475467]">{d.property}</div>
+                                    </div>
+                                    <div className="text-[13px] text-[#374151]">
+                                        <div className="font-medium text-sm">Uploaded</div>
+                                        <div className="text-[#475467]">{d.date}</div>
+                                    </div>
+
+                                    <div className="col-span-1 text-[13px] text-[#374151]">
+                                        <div className="font-medium text-sm">Status</div>
+                                        <div className="mt-1 inline-block">
+                                            <StatusTag status={d.status as any} />
+                                        </div>
+                                    </div>
+                                    <div className="col-span-1 text-right">
+                                        <div className="inline-block">
                                             <button
                                                 aria-haspopup="menu"
-                                                aria-expanded={openMenuFor === d.sn}
-                                                aria-controls={`doc-menu-${d.sn}`}
-                                                onClick={() => setOpenMenuFor((s) => (s === d.sn ? null : d.sn))}
-                                                className="inline-flex items-center justify-center rounded-full text-[#98A2B3] p-2"
-                                                title="More actions"
-                                                aria-label="More actions"
+                                                aria-expanded={openMenuFor?.id === d.id}
+                                                onClick={(e) => {
+                                                    const rect = e.currentTarget.getBoundingClientRect();
+                                                    setMenuPos({ top: rect.bottom + window.scrollY, right: window.innerWidth - rect.right });
+                                                    setOpenMenuFor(openMenuFor?.id === d.id ? null : d);
+                                                }}
+                                                className="inline-flex items-center justify-center rounded-full text-[#98A2B3] p-2 hover:bg-gray-100 transition-colors"
                                             >
-                                                <svg
-                                                    viewBox="0 0 24 24"
-                                                    className="h-5 w-5"
-                                                    fill="currentColor"
-                                                    aria-hidden
-                                                >
+                                                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
                                                     <circle cx="12" cy="12" r="1.5" />
                                                     <circle cx="19" cy="12" r="1.5" />
                                                     <circle cx="5" cy="12" r="1.5" />
                                                 </svg>
                                             </button>
-                                            {openMenuFor === d.sn && (
-                                                <div
-                                                    id={`doc-menu-${d.sn}`}
-                                                    role="menu"
-                                                    aria-orientation="vertical"
-                                                    className="absolute right-0 mt-2 w-55 bg-white border border-[#E6EEF7] rounded-xl shadow-lg ring-1 ring-black/5 py-2 z-50 overflow-hidden"
-                                                >
-                                                    <CardMenuItem
-                                                        label="View"
-                                                        icon={<Eye className="w-[18px] h-[18px] text-[#475467]" />}
-                                                        onActivate={() => {
-                                                            setOpenMenuFor(null);
-                                                            console.log('View document', d.sn);
-                                                        }}
-                                                        className="text-[#0A2D50] hover:bg-[#F1F9FF]"
-                                                    />
-
-                                                    <CardMenuItem
-                                                        label="Download"
-                                                        icon={<Download className="w-[18px] h-[18px] text-[#475467]" />}
-                                                        onActivate={() => {
-                                                            setOpenMenuFor(null);
-                                                            console.log('Download document', d.sn);
-                                                        }}
-                                                        className="text-[#0A2D50] hover:bg-[#F1F9FF]"
-                                                    />
-                                                </div>
-                                            )}
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        )}
-                        headers={
-                            [
-                                { key: 'sn', label: 'S/N' },
-                                { key: 'document', label: 'DOCUMENT' },
-                                { key: 'category', label: 'CATEGORY' },
-                                { key: 'related', label: 'RELATED TO' },
-                                { key: 'date', label: 'UPLOAD DATE' },
-                                { key: 'status', label: 'STATUS' },
-                                { key: 'action', label: 'ACTION' },
-                            ] as TableHeader[]
-                        }
-                        items={filteredDocuments}
-                        renderRow={(d: any, idx: number) => (
-                            <tr
-                                key={d.sn}
-                                className={idx % 2 === 0 ? 'bg-white text-[#3F3F46]' : 'bg-[#F3F5F5] text-[#3F3F46]'}
-                            >
-                                <td className="px-3 py-2">{d.sn}</td>
-                                <td className="px-3 py-2 flex items-center gap-2">
-                                    <span className="h-7 w-7 rounded bg-gray-100 flex items-center justify-center">
-                                        <img
-                                            src="/assets/icons/file-text.svg"
-                                            alt="Document icon"
-                                            className="h-5 w-5"
-                                        />
-                                    </span>
-                                    {d.name}
-                                </td>
-                                <td className="px-3 py-2">{d.category}</td>
-                                <td className="px-3 py-2">{d.related}</td>
-                                <td className="px-3 py-2">{d.date}</td>
-                                <td className="px-3 py-2">
-                                    <StatusTag status={d.status as any} />
-                                </td>
-                                <td className="px-3 py-2 text-center">
-                                    <div className="relative inline-block" ref={openMenuFor === d.sn ? menuRef : null}>
-                                        <button
-                                            aria-haspopup="menu"
-                                            aria-expanded={openMenuFor === d.sn}
-                                            aria-controls={`doc-menu-${d.sn}`}
-                                            onClick={() => setOpenMenuFor((s) => (s === d.sn ? null : d.sn))}
-                                            className="inline-flex items-center justify-center rounded-full text-[#98A2B3]"
-                                            title="More actions"
-                                            aria-label="More actions"
-                                        >
-                                            <svg
-                                                viewBox="0 0 24 24"
-                                                className="h-5 w-5"
-                                                fill="currentColor"
-                                                aria-hidden
-                                            >
-                                                <circle cx="12" cy="12" r="1.5" />
-                                                <circle cx="19" cy="12" r="1.5" />
-                                                <circle cx="5" cy="12" r="1.5" />
-                                            </svg>
-                                        </button>
-
-                                        {openMenuFor === d.sn && (
-                                            <div
-                                                id={`doc-menu-${d.sn}`}
-                                                role="menu"
-                                                aria-orientation="vertical"
-                                                className="absolute right-0 mt-2 w-55 bg-white border border-[#E6EEF7] rounded-xl shadow-lg ring-1 ring-black/5 py-2 z-50 overflow-hidden"
-                                            >
-                                                <CardMenuItem
-                                                    label="View"
-                                                    icon={<Eye className="w-[18px] h-[18px] text-[#475467]" />}
-                                                    onActivate={() => {
-                                                        setOpenMenuFor(null);
-                                                        console.log('View document', d.sn);
-                                                    }}
-                                                    className="text-[#0A2D50] hover:bg-[#F1F9FF]"
-                                                />
-
-                                                <CardMenuItem
-                                                    label="Download"
-                                                    icon={<Download className="w-[18px] h-[18px] text-[#475467]" />}
-                                                    onActivate={() => {
-                                                        setOpenMenuFor(null);
-                                                        console.log('Download document', d.sn);
-                                                    }}
-                                                    className="text-[#0A2D50] hover:bg-[#F1F9FF]"
-                                                />
+                            )}
+                            headers={
+                                [
+                                    { key: 'sn', label: 'S/N' },
+                                    { key: 'document', label: 'DOCUMENT' },
+                                    { key: 'category', label: 'CATEGORY' },
+                                    { key: 'related', label: 'RELATED TO' },
+                                    { key: 'date', label: 'UPLOAD DATE' },
+                                    { key: 'status', label: 'STATUS' },
+                                    { key: 'action', label: 'ACTION' },
+                                ] as TableHeader[]
+                            }
+                            items={filteredDocuments}
+                            renderRow={(d: any, idx: number) => (
+                                <tr
+                                    key={d.id}
+                                    className={idx % 2 === 0 ? 'bg-white text-[#3F3F46]' : 'bg-[#F3F5F5] text-[#3F3F46]'}
+                                >
+                                    <td className="px-3 py-2">{d.sn}</td>
+                                    <td className="px-3 py-2">
+                                        <div className="flex items-center gap-2">
+                                            <span className="h-7 w-7 rounded bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                                <svg viewBox="0 0 24 24" className="h-4 w-4 text-[#002E62]" fill="none" stroke="currentColor" strokeWidth={2}>
+                                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                                    <polyline points="14 2 14 8 20 8" />
+                                                </svg>
+                                            </span>
+                                            <div className="min-w-0">
+                                                <div className="font-medium truncate">{d.name}</div>
+                                                <div className="text-[12px] text-[#64748B] truncate">{d.property}</div>
                                             </div>
-                                        )}
-                                    </div>
-                                </td>
-                            </tr>
-                        )}
-                        start={filteredDocuments.length ? 1 : 0}
-                        end={filteredDocuments.length}
-                        total={documents.length}
-                    />
-                    {/* pagination + summary handled by Table component */}
+                                        </div>
+                                    </td>
+                                    <td className="px-3 py-2">{d.category}</td>
+                                    <td className="px-3 py-2">{d.related}</td>
+                                    <td className="px-3 py-2">{d.date}</td>
+                                    <td className="px-3 py-2">
+                                        <StatusTag status={d.status as any} />
+                                    </td>
+                                    <td className="px-3 py-2 text-center">
+                                        <div className="relative inline-block">
+                                            <button
+                                                aria-haspopup="menu"
+                                                aria-expanded={openMenuFor?.id === d.id}
+                                                onClick={(e) => {
+                                                    const rect = e.currentTarget.getBoundingClientRect();
+                                                    setMenuPos({ top: rect.bottom + window.scrollY, right: window.innerWidth - rect.right });
+                                                    setOpenMenuFor(openMenuFor?.id === d.id ? null : d);
+                                                }}
+                                                className="inline-flex items-center justify-center rounded-full text-[#98A2B3] p-1 hover:bg-gray-100 transition-colors"
+                                            >
+                                                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
+                                                    <circle cx="12" cy="12" r="1.5" />
+                                                    <circle cx="19" cy="12" r="1.5" />
+                                                    <circle cx="5" cy="12" r="1.5" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
+                            start={filteredDocuments.length ? 1 : 0}
+                            end={filteredDocuments.length}
+                            total={documents.length}
+                        />
+                    )}
+
+                    {!isLoading && documents.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-16 text-[#71717A]">
+                            <svg className="h-12 w-12 mb-3 text-[#CBD5E1]" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                            </svg>
+                            <p className="text-[14px] font-medium">No documents found</p>
+                            <p className="text-[12px] mt-1">Upload a document using the button above.</p>
+                        </div>
+                    )}
+
                     <DeleteConfirmationModal
                         isOpen={showDeleteConfirm}
                         title="Delete Document"
@@ -367,6 +326,30 @@ const DocumentPage: React.FC = () => {
                     />
                 </div>
             </div>
+
+            {openMenuFor && createPortal(
+                <div
+                    ref={menuRef}
+                    role="menu"
+                    aria-orientation="vertical"
+                    style={{ position: 'absolute', top: menuPos.top + 8, right: menuPos.right }}
+                    className="w-44 bg-white border border-[#E6EEF7] rounded-xl shadow-lg ring-1 ring-black/5 py-2 z-[9999] overflow-hidden"
+                >
+                    <CardMenuItem
+                        label="View"
+                        icon={<Eye className="w-[18px] h-[18px] text-[#475467]" />}
+                        onActivate={() => handleView(openMenuFor)}
+                        className="text-[#0A2D50] hover:bg-[#F1F9FF]"
+                    />
+                    <CardMenuItem
+                        label="Download"
+                        icon={<Download className="w-[18px] h-[18px] text-[#475467]" />}
+                        onActivate={() => handleDownload(openMenuFor)}
+                        className="text-[#0A2D50] hover:bg-[#F1F9FF]"
+                    />
+                </div>,
+                document.body
+            )}
         </div>
     );
 };

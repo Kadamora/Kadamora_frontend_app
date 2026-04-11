@@ -61,10 +61,10 @@ export interface RecordPaymentPayload {
 
 export interface UpdateTenantPayload {
     tenantId: string;
-    unit?: string;
-    rentPrice?: number | string;
-    rentDueDate?: string;
-    type?: string;
+    propertyType?: string;
+    amount?: number;
+    paymentFrequency?: string;
+    currentDueDate?: string;
 }
 
 export interface TenantResponse {
@@ -142,7 +142,7 @@ export const tenantApi = baseApi.injectEndpoints({
 
         deleteTenant: builder.mutation<TenantResponse, string>({
             query: (tenantId) => ({
-                url: `/api/v1/tenants/${tenantId}`,
+                url: `/api/v1/tenants/leave-property/${tenantId}`,
                 method: "DELETE",
             }),
             invalidatesTags: ["PropertyMgt"],

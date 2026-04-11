@@ -8,6 +8,7 @@ import Table, { type TableHeader } from '@components/ui/Table/Table';
 import { useGetAllTenantsQuery, useLeavePropertyMutation } from '@store/api/tenant.api';
 import EmptyState from '../../PropertyListing/Home/components/EmptyState';
 import toast from 'react-hot-toast';
+import EditTenantModal from './components/EditTenantModal';
 
 const SkeletonRow = () => (
     <tr className="animate-pulse bg-white border-b border-gray-100">
@@ -55,6 +56,10 @@ const TenantsPage: React.FC = () => {
     // delete modal state
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [deleteCandidate, setDeleteCandidate] = useState<any | null>(null);
+
+    // edit modal state
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editCandidate, setEditCandidate] = useState<any | null>(null);
 
     // close menu on outside click / Escape
     useEffect(() => {
@@ -372,9 +377,10 @@ const TenantsPage: React.FC = () => {
                         iconSrc="/assets/icons/pen-line.svg"
                         iconAlt="Edit Tenant"
                         onActivate={() => {
-                            const tId = openMenuFor.id;
+                            const candidate = openMenuFor;
                             setOpenMenuFor(null);
-                            console.log('Edit tenant', tId);
+                            setEditCandidate(candidate);
+                            setShowEditModal(true);
                         }}
                         className="text-[#0A2D50] hover:bg-[#F1F9FF]"
                     />
@@ -408,6 +414,15 @@ const TenantsPage: React.FC = () => {
                 </div>,
                 document.body
             )}
+
+            <EditTenantModal
+                open={showEditModal}
+                onClose={() => {
+                    setShowEditModal(false);
+                    setEditCandidate(null);
+                }}
+                tenant={editCandidate}
+            />
         </div>
     );
 };
