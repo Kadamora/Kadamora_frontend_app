@@ -84,11 +84,11 @@ const RequestDetailsModal: React.FC<DetailsModalProps> = ({ isOpen, onClose, ite
                     )}
 
                     {/* lists and meta */}
-                    <ul className="list-disc pl-5 my-3 text-[#6B7280] text-[15px]">
+                    {/* <ul className="list-disc pl-5 my-3 text-[#6B7280] text-[15px]">
                         <li>Leak is getting worse over time</li>
                         <li>Water pooling slightly around the base of the faucet</li>
                         <li>Potential water waste and risk of further damage</li>
-                    </ul>
+                    </ul> */}
 
                     <div className="mt-6 text-[14px] text-[#0A2D50] font-semibold">
                         Raised On:{' '}

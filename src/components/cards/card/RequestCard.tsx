@@ -21,6 +21,8 @@ export interface RequestCardProps {
     priority?: Priority;
     assignedTo?: string;
     scheduled?: string;
+    createdAt?: string;
+    ownerName?: string;
     percent?: number;
     avatar?: string;
     showActions?: boolean;
@@ -73,22 +75,23 @@ const SharedRequestCard: React.FC<RequestCardProps> = (props) => {
                     </div>
                     <StatusPill status={props.status} />
                 </div>
-                <div className="flex flex-col items-start gap-8 mt-2 md:gap-8 sm:gap-4 sm:flex-row sm:items-center flex-wrap">
+                <div className="flex items-start gap-8 mt-2 md:gap-8 sm:gap-4 ">
                     {/* Avatar, Name, Property */}
                     <div className="flex items-center gap-3 min-w-[180px] sm:min-w-0 sm:w-full">
                         <img
-                            src={props.avatar ?? 'https://randomuser.me/api/portraits/men/32.jpg'}
+                            src={props.avatar ?? 'https://www.gravatar.com/avatar/?d=mp&s=300'}
                             alt={props.assignee}
                             className="h-14 w-14 rounded-full object-cover border sm:h-12 sm:w-12"
                         />
                         <div>
-                            <div className="text-[16px] md:text-[18px] font-medium text-[#0A2D50] truncate">
-                                {props.assignee}
+                            <div className="text-[15px] md:text-[16px] font-medium text-[#0A2D50] truncate">
+                                {props.ownerName}
                             </div>
-                            <div className="text-[14px] md:text-[16px] text-[#6B7280] truncate">{props.property}</div>
+                            <div className="text-[15px] sm:text-[13px] text-[#6B7280] truncate">{props.property}</div>
                         </div>
                     </div>
                     {/* Service Cost */}
+                    {props.status !== 'Pending' && (
                     <div className="flex items-center gap-3 min-w-[150px] sm:min-w-0 sm:w-full">
                         <span className="flex items-center justify-center h-12 w-12 sm:h-10 sm:w-10 rounded-full bg-[#F3F6F9]">
                             <img src={amountIcon} alt="Service Cost" className="h-12 w-12 sm:h-10 sm:w-10" />
@@ -100,19 +103,24 @@ const SharedRequestCard: React.FC<RequestCardProps> = (props) => {
                             <div className="text-[15px] text-[#6B7280] sm:text-[13px] truncate">Service Cost</div>
                         </div>
                     </div>
+                      )}
                     {/* Service Type */}
                     <div className="flex items-center gap-3 min-w-[150px] sm:min-w-0 sm:w-full">
                         <span className="flex items-center justify-center h-12 w-12 sm:h-10 sm:w-10 rounded-full bg-[#F3F6F9]">
                             <img src={serviceIcon} alt="Service Type" className="h-12 w-12 sm:h-10 sm:w-10" />
                         </span>
                         <div>
-                            <div className="text-[20px] font-medium text-[#0A2D50] sm:text-[16px] transition-transform duration-300 group-hover:-translate-y-0.5 truncate">
+                            <div className="text-[15px] font-medium text-[#0A2D50] sm:text-[16px] transition-transform duration-300 group-hover:-translate-y-0.5 truncate">
                                 {props.serviceType}
                             </div>
                             <div className="text-[15px] text-[#6B7280] sm:text-[13px] truncate">Service Type</div>
                         </div>
                     </div>
                 </div>
+                <div className="mt-6 text-[14px] text-[#0A2D50] font-semibold">
+                        Raised On:{' '}
+                        <span className="font-normal text-[#6B7280]">{props.createdAt}</span>
+                    </div>
                 {/* assignedTo/scheduled block should be rendered for all statuses except Pending */}
                 {props.status !== 'Pending' && (
                     <div className="flex flex-col gap-2 md:gap-8 mt-2  sm:flex-row">
