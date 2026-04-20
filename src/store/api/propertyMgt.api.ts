@@ -5,7 +5,7 @@ import { baseApi } from "./baseApi";
 ======================= */
 
 export interface CreatePropertyPayload {
-    role: "estate_manager" | "owner";
+    role: "property_manager" | "owner" | "tenant";
     name: string;
     categoryType: string;
     address: string;
@@ -95,16 +95,35 @@ export interface UpdateMaintenanceStatusPayload {
 }
 
 export interface UpdateSettingsPayload {
-    propertyId: string;
-    BankName?: string;
-    AccountNumber?: string;
-    AccountName?: string;
+    bankName?: string;
+    accountNumber?: string;
+    accountName?: string;
     autoPaymentReminder?: boolean;
     emailNewMaintenanceRequests?: boolean;
     emailPaymentNotifications?: boolean;
     emailRentExpiryAlerts?: boolean;
     emailInspectionReminders?: boolean;
     smsEmergencyMaintenance?: boolean;
+}
+
+export interface SettingsData {
+    bankName: string;
+    accountNumber: string;
+    accountName: string;
+    autoPaymentReminder: boolean;
+    emailNewMaintenanceRequests: boolean;
+    emailPaymentNotifications: boolean;
+    emailRentExpiryAlerts: boolean;
+    emailInspectionReminders: boolean;
+    smsEmergencyMaintenance: boolean;
+}
+
+export interface GetAllSettingsResponse {
+    success: boolean;
+    statusCode: number;
+    message: string;
+    data: SettingsData;
+    errors: any;
 }
 /* =======================
    API
@@ -217,6 +236,13 @@ export const propertyMgtApi = baseApi.injectEndpoints({
             }),
             providesTags: ["PropertyMgt"],
         }),
+        getAllSettings: builder.query<GetAllSettingsResponse, void>({
+            query: () => ({
+                url: `/api/v1/management/settings/`,
+                method: "GET",
+            }),
+            providesTags: ["PropertyMgt"],
+        }),
 
         updateInspectionStatus: builder.mutation<CreatePropertyResponse, UpdateInspectionStatusPayload>({
             query: ({ inspectionId, status }) => ({
@@ -275,8 +301,8 @@ export const propertyMgtApi = baseApi.injectEndpoints({
             providesTags: ["PropertyMgt"],
         }),
         updateSettings: builder.mutation<CreatePropertyResponse, UpdateSettingsPayload>({
-            query: ({ propertyId, ...payload }) => ({
-                url: `/api/v1/management/update-settings/${propertyId}`,
+            query: ({ ...payload }) => ({
+                url: `/api/v1/management/update-settings`,
                 method: "PATCH",
                 body: payload,
             }),
@@ -312,4 +338,5 @@ export const {
     useGetAllInspectionsQuery,
     useGetAllMaintenancesQuery,
     useGetAllDocumentsQuery,
+    useGetAllSettingsQuery,
 } = propertyMgtApi;

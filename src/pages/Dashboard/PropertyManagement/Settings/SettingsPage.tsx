@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import UpdateAccountModal from './components/UpdateAccountModal';
-import { useGetManagedPropertiesQuery, useUpdateSettingsMutation, type UpdateSettingsPayload } from '@store/api/propertyMgt.api';
+import { useGetAllSettingsQuery, useUpdateSettingsMutation, type UpdateSettingsPayload } from '@store/api/propertyMgt.api';
 import { House, Landmark, Mail, MessageSquareText } from 'lucide-react';
 
 
@@ -76,11 +76,6 @@ const notificationSettings = [
     },
 ];
 
-const bankAccount = {
-    bankName: 'Wema Bank',
-    accountNumber: '0151198210',
-    accountName: 'Hilltop Property',
-};
 
 const toggleKeyMap: Record<string, keyof UpdateSettingsPayload> = {
     'Auto Payment Reminder': 'autoPaymentReminder',
@@ -95,24 +90,44 @@ const SettingsPage: React.FC = () => {
     const [toggles, setToggles] = useState<{ [key: string]: boolean }>({});
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
 
-    const { data: propertiesData } = useGetManagedPropertiesQuery();
-    const propertyId = propertiesData?.data?.[0]?.id ?? '';
+    const { data: settingsData } = useGetAllSettingsQuery();
 
     const [updateSettings, { isLoading: isUpdating }] = useUpdateSettingsMutation();
 
-    // Local state for UI representation of bank details, since there isn't a get endpoint shown
-    const [localBankAccount, setLocalBankAccount] = useState(bankAccount);
+    // Local state for UI representation of bank details
+    const [localBankAccount, setLocalBankAccount] = useState({
+        bankName: '',
+        accountNumber: '',
+        accountName: '',
+    });
+
+    useEffect(() => {
+        if (settingsData?.success && settingsData.data) {
+            const data = settingsData.data;
+            setToggles({
+                'Auto Payment Reminder': data.autoPaymentReminder,
+                'New Maintenance Requests': data.emailNewMaintenanceRequests,
+                'Payment Notifications': data.emailPaymentNotifications,
+                'Rent Expiry Alerts': data.emailRentExpiryAlerts,
+                'Inspection Reminders': data.emailInspectionReminders,
+                'Emergency Maintenance': data.smsEmergencyMaintenance,
+            });
+            setLocalBankAccount({
+                bankName: data.bankName,
+                accountNumber: data.accountNumber,
+                accountName: data.accountName,
+            });
+        }
+    }, [settingsData]);
 
     const handleToggle = async (label: string) => {
         const newValue = !toggles[label];
         setToggles((prev) => ({ ...prev, [label]: newValue }));
 
-        if (!propertyId) return;
-
         const apiField = toggleKeyMap[label];
         if (apiField) {
             try {
-                await updateSettings({ propertyId, [apiField]: newValue }).unwrap();
+                await updateSettings({ [apiField]: newValue }).unwrap();
                 console.log(`Updated setting ${label} to ${newValue}`);
             } catch (error) {
                 console.error(`Failed to update setting ${label}:`, error);
@@ -123,17 +138,11 @@ const SettingsPage: React.FC = () => {
     };
 
     const handleUpdateBankDetails = async (data: { bankName: string; accountNumber: string; accountName: string }) => {
-        if (!propertyId) {
-            console.error("No property ID available");
-            return;
-        }
-
         try {
             await updateSettings({
-                propertyId,
-                BankName: data.bankName,
-                AccountNumber: data.accountNumber,
-                AccountName: data.accountName,
+                bankName: data.bankName,
+                accountNumber: data.accountNumber,
+                accountName: data.accountName,
             }).unwrap();
             
             setLocalBankAccount({
@@ -318,7 +327,6 @@ const SettingsPage: React.FC = () => {
                                 <button 
                                     className="px-4 py-2 rounded-md border border-[#004493] bg-[#E6F1FE] text-[#002E62] font-medium hover:bg-[#F4F8FF] transition-colors text-[14px] shadow-sm"
                                     onClick={() => setIsUpdateModalOpen(true)}
-                                    disabled={!propertyId}
                                 >
                                     Update Bank Details
                                 </button>

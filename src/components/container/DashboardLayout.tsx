@@ -64,7 +64,6 @@ const userMenuItems = [
     {
         label: 'Settings',
         icon: <img src="/assets/icons/settings2.svg" alt="Settings" className="h-6 w-6" />,
-         disabled: true,
         path: '/dashboard/settings',
     },
     {

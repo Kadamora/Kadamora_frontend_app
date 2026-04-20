@@ -74,6 +74,45 @@ function formatScheduledDate(date: string, time: string): string {
     return d.toLocaleDateString('en-US', { day: '2-digit', month: 'long', year: 'numeric' }) + ' at ' + formatTime12(time);
 }
 
+const CalendarSkeleton = () => (
+    <div className="animate-pulse w-full border border-[#E4E7EC] rounded-lg overflow-hidden mt-4">
+        <div className="flex border-b border-[#E4E7EC] bg-[#F9FBFC]">
+            <div className="w-[80px] p-3"><div className="h-4 bg-gray-200 rounded w-full"></div></div>
+            {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                <div key={i} className="flex-1 p-3"><div className="h-4 bg-gray-200 rounded w-full"></div></div>
+            ))}
+        </div>
+        {[1, 2, 3, 4].map((row) => (
+            <div key={row} className="flex border-b border-[#F1F4F7]">
+                <div className="w-[80px] p-3 border-r border-[#E4E7EC]"><div className="h-4 bg-gray-200 rounded w-full"></div></div>
+                {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                    <div key={i} className="flex-1 border-r border-[#F1F4F7] p-2 h-24">
+                        {(row + i) % 5 === 0 ? <div className="w-full h-full bg-gray-100 rounded"></div> : null}
+                    </div>
+                ))}
+            </div>
+        ))}
+    </div>
+);
+
+const GridSkeleton = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mt-4">
+        {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="animate-pulse flex items-start gap-4 p-5 border border-[#E4E4E7] rounded-xl bg-white shadow-sm">
+                <div className="w-10 h-10 rounded-full bg-gray-200 shrink-0"></div>
+                <div className="flex-1">
+                    <div className="h-4 bg-gray-200 rounded w-1/2 mb-3"></div>
+                    <div className="space-y-2">
+                        <div className="h-3 bg-gray-100 rounded w-3/4"></div>
+                        <div className="h-3 bg-gray-100 rounded w-2/3"></div>
+                        <div className="h-3 bg-gray-100 rounded w-1/2"></div>
+                    </div>
+                </div>
+            </div>
+        ))}
+    </div>
+);
+
 const InspectionPage: React.FC = () => {
     const [tab, setTab] = useState<'calendar' | 'grid'>('calendar');
     const [weekOffset, setWeekOffset] = useState(0);
@@ -199,7 +238,7 @@ const InspectionPage: React.FC = () => {
                     {tab === 'calendar' ? (
                         <div className="overflow-x-auto px-4">
                             {isLoading ? (
-                                <div className="flex items-center justify-center py-20 text-[#71717A]">Loading inspections...</div>
+                                <CalendarSkeleton />
                             ) : (
                                 <table className="min-w-full text-left text-[14px] border-collapse">
                                     <thead>
@@ -288,7 +327,7 @@ const InspectionPage: React.FC = () => {
                         /* =========== GRID VIEW =========== */
                         <div className="px-3">
                             {isLoading ? (
-                                <div className="flex items-center justify-center py-20 text-[#71717A]">Loading inspections...</div>
+                                <GridSkeleton />
                             ) : gridInspections.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center py-16 text-[#71717A]">
                                     <svg className="h-12 w-12 mb-3 text-[#CBD5E1]" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
