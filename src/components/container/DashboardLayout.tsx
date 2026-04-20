@@ -387,8 +387,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                     aria-haspopup="menu"
                                 >
                                     <span className="flex h-12 w-12 items-center justify-center rounded-full border border-[#CCD5DD] bg-white text-sm font-semibold text-[#093154] overflow-hidden">
-                                        {/* Fallback initials if no avatar image */}
-                                        {derivedInitials}
+                                        {account?.imgUrl ? (
+                                            <img
+                                                src={account.imgUrl}
+                                                alt={derivedName}
+                                                className="h-full w-full object-cover"
+                                            />
+                                        ) : (
+                                            derivedInitials
+                                        )}
                                     </span>
                                     <span className="hidden md:flex flex-col text-left leading-tight">
                                         <span className="text-sm font-bold text-[#091E42]">{derivedName}</span>
