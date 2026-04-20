@@ -77,15 +77,6 @@ const notificationSettings = [
 ];
 
 
-const toggleKeyMap: Record<string, keyof UpdateSettingsPayload> = {
-    'Auto Payment Reminder': 'autoPaymentReminder',
-    'New Maintenance Requests': 'emailNewMaintenanceRequests',
-    'Payment Notifications': 'emailPaymentNotifications',
-    'Rent Expiry Alerts': 'emailRentExpiryAlerts',
-    'Inspection Reminders': 'emailInspectionReminders',
-    'Emergency Maintenance': 'smsEmergencyMaintenance',
-};
-
 const SettingsPage: React.FC = () => {
     const [toggles, setToggles] = useState<{ [key: string]: boolean }>({});
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
@@ -122,28 +113,42 @@ const SettingsPage: React.FC = () => {
 
     const handleToggle = async (label: string) => {
         const newValue = !toggles[label];
-        setToggles((prev) => ({ ...prev, [label]: newValue }));
+        const newToggles = { ...toggles, [label]: newValue };
+        setToggles(newToggles);
 
-        const apiField = toggleKeyMap[label];
-        if (apiField) {
-            try {
-                await updateSettings({ [apiField]: newValue }).unwrap();
-                console.log(`Updated setting ${label} to ${newValue}`);
-            } catch (error) {
-                console.error(`Failed to update setting ${label}:`, error);
-                // Revert local state on failure
-                setToggles((prev) => ({ ...prev, [label]: !newValue }));
-            }
+        const payload: UpdateSettingsPayload = {
+            ...localBankAccount,
+            autoPaymentReminder: newToggles['Auto Payment Reminder'],
+            emailNewMaintenanceRequests: newToggles['New Maintenance Requests'],
+            emailPaymentNotifications: newToggles['Payment Notifications'],
+            emailRentExpiryAlerts: newToggles['Rent Expiry Alerts'],
+            emailInspectionReminders: newToggles['Inspection Reminders'],
+            smsEmergencyMaintenance: newToggles['Emergency Maintenance'],
+        };
+
+        try {
+            await updateSettings(payload).unwrap();
+            console.log(`Updated settings including ${label} to ${newValue}`);
+        } catch (error) {
+            console.error(`Failed to update setting ${label}:`, error);
+            // Revert local state on failure
+            setToggles((prev) => ({ ...prev, [label]: !newValue }));
         }
     };
 
     const handleUpdateBankDetails = async (data: { bankName: string; accountNumber: string; accountName: string }) => {
+        const payload: UpdateSettingsPayload = {
+            ...data,
+            autoPaymentReminder: toggles['Auto Payment Reminder'],
+            emailNewMaintenanceRequests: toggles['New Maintenance Requests'],
+            emailPaymentNotifications: toggles['Payment Notifications'],
+            emailRentExpiryAlerts: toggles['Rent Expiry Alerts'],
+            emailInspectionReminders: toggles['Inspection Reminders'],
+            smsEmergencyMaintenance: toggles['Emergency Maintenance'],
+        };
+
         try {
-            await updateSettings({
-                bankName: data.bankName,
-                accountNumber: data.accountNumber,
-                accountName: data.accountName,
-            }).unwrap();
+            await updateSettings(payload).unwrap();
             
             setLocalBankAccount({
                 bankName: data.bankName,
@@ -151,7 +156,7 @@ const SettingsPage: React.FC = () => {
                 accountName: data.accountName,
             });
             setIsUpdateModalOpen(false);
-            console.log("Bank details updated successfully");
+            console.log("Bank details and settings updated successfully");
         } catch (error) {
             console.error('Failed to update bank details:', error);
         }

@@ -68,11 +68,13 @@ const NotificationSettings: React.FC = () => {
 
     const handleToggle = async (id: string) => {
         const newValue = !toggles[id];
+        const newToggles = { ...toggles, [id]: newValue };
+        
         // Optimistic update
-        setToggles(prev => ({ ...prev, [id]: newValue }));
+        setToggles(newToggles);
 
         try {
-            await updateGeneralNotifications({ [id]: newValue }).unwrap();
+            await updateGeneralNotifications(newToggles).unwrap();
         } catch (err) {
             // Revert on failure
             setToggles(prev => ({ ...prev, [id]: !newValue }));

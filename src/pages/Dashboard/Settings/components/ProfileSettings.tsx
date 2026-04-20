@@ -59,9 +59,8 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user, isLoading }) =>
             await updateProfile({ 
                 firstName, 
                 lastName, 
-                email, 
+                // email, 
                 phoneNumber: phone, 
-                // state: stateVal, // Commented out state as per request
                 imgUrl 
             }).unwrap();
         } catch (err) {
