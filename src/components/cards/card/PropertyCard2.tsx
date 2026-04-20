@@ -7,14 +7,14 @@ export interface PropertyCard2Props {
     id: number | string;
     name: string;
     address?: string;
-    tenants?: number | string;
+    tenantCount?: number | string;
     // optional callbacks
     onEdit?: (id: number | string) => void;
     onAddTenant?: (id: number | string) => void;
     onDelete?: (id: number | string) => void;
 }
 
-const PropertyCard2: React.FC<PropertyCard2Props> = ({ id, name, address, tenants, onEdit, onAddTenant, onDelete }) => {
+const PropertyCard2: React.FC<PropertyCard2Props> = ({ id, name, address, tenantCount, onEdit, onAddTenant, onDelete }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const menuRef = useRef<HTMLDivElement | null>(null);
@@ -131,7 +131,7 @@ const PropertyCard2: React.FC<PropertyCard2Props> = ({ id, name, address, tenant
                     {tenantsIcon}
                     <div>
                         <div className="text-[16px] font-medium text-[#002E62]">
-                            {tenants?.toString().padStart(3, '0')}
+                            {tenantCount?.toString().padStart(3, '0')}
                         </div>
                         <div className="text-[14px] text-[#6B7280]">Tenants</div>
                     </div>

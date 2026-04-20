@@ -12,6 +12,30 @@ import Input from '@components/forms/Input';
 
 const tabList = ['Pending', 'In-Progress', 'Scheduled', 'Completed'] as const;
 
+const CardsSkeleton = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mt-4">
+        {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="animate-pulse bg-white border border-[#E4E7EC] rounded-xl p-5 shadow-sm">
+                <div className="flex items-start gap-4 mb-4">
+                    <div className="w-12 h-12 bg-gray-200 rounded-full shrink-0" />
+                    <div className="flex-1 space-y-2 py-1">
+                        <div className="h-4 bg-gray-200 rounded w-3/4" />
+                        <div className="h-3 bg-gray-100 rounded w-1/2" />
+                    </div>
+                </div>
+                <div className="space-y-2 mb-5">
+                    <div className="h-3 bg-gray-100 rounded w-full" />
+                    <div className="h-3 bg-gray-100 rounded w-4/5" />
+                </div>
+                <div className="border-t border-[#F1F4F7] pt-4 flex gap-4">
+                    <div className="h-4 bg-gray-200 rounded w-1/3" />
+                    <div className="h-4 bg-gray-200 rounded w-1/3" />
+                </div>
+            </div>
+        ))}
+    </div>
+);
+
 const MaintenancePage: React.FC = () => {
     const [activeTab, setActiveTab] = useState<(typeof tabList)[number]>('Pending');
     const [search, setSearch] = useState('');
@@ -130,9 +154,7 @@ const MaintenancePage: React.FC = () => {
                     </div>
 
                     {isLoading ? (
-                        <div className="flex justify-center items-center py-20">
-                            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#002E62]"></div>
-                        </div>
+                        <CardsSkeleton />
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {mappedRequests.length > 0 ? (

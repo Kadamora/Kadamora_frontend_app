@@ -9,6 +9,24 @@ import Input from '@components/forms/Input';
 import Select from '@components/forms/Select';
 import Table, { type TableHeader } from '@components/ui/Table/Table';
 import { useGetAllDocumentsQuery } from '@store/api/propertyMgt.api';
+import DocumentDetailsPanel from './components/DocumentDetailsPanel';
+
+const TableSkeleton = () => (
+    <div className="animate-pulse w-full mt-4">
+        <div className="h-12 bg-gray-100 rounded-t-xl border-b border-gray-200 w-full mb-2" />
+        {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="flex items-center justify-between py-4 px-2 border-b border-gray-50">
+                <div className="flex items-center gap-3 w-1/3">
+                    <div className="h-8 w-8 bg-gray-200 rounded" />
+                    <div className="h-4 bg-gray-200 rounded w-2/3" />
+                </div>
+                <div className="h-4 bg-gray-100 rounded w-1/6" />
+                <div className="h-4 bg-gray-100 rounded w-1/6" />
+                <div className="h-6 bg-gray-200 rounded-full w-16" />
+            </div>
+        ))}
+    </div>
+);
 
 // Map the API response to a flat display shape
 function mapDocument(doc: any, idx: number) {
@@ -37,6 +55,7 @@ const DocumentPage: React.FC = () => {
     const menuRef = useRef<HTMLDivElement | null>(null);
 
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [selectedDoc, setSelectedDoc] = useState<any>(null);
     // const [ setDeleteCandidate] = useState<string | null>(null);
 
     const { data: allDocumentsData, isLoading } = useGetAllDocumentsQuery();
@@ -70,11 +89,9 @@ const DocumentPage: React.FC = () => {
         // setDeleteCandidate(null);
     };
 
-    // View: open file in a new tab
+    // View: open slide-in details panel
     const handleView = (doc: any) => {
-        if (doc.fileUrl) {
-            window.open(doc.fileUrl, '_blank', 'noopener,noreferrer');
-        }
+        setSelectedDoc(doc);
         setOpenMenuFor(null);
     };
 
@@ -135,6 +152,12 @@ const DocumentPage: React.FC = () => {
 
     return (
         <div className="pb-10">
+            <DocumentDetailsPanel
+                isOpen={!!selectedDoc}
+                onClose={() => setSelectedDoc(null)}
+                document={selectedDoc}
+                onDownload={handleDownload}
+            />
             <div className="mb-6 mt-4 max-w-300 mx-auto">
                 <div className="mt-8 rounded-xl border border-[#E8F4F8] bg-white p-6 shadow-sm">
                     <div className="flex flex-col gap-3 mb-6 sm:flex-row sm:items-center">
@@ -177,9 +200,7 @@ const DocumentPage: React.FC = () => {
                     </div>
 
                     {isLoading ? (
-                        <div className="flex justify-center items-center py-20">
-                            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#002E62]"></div>
-                        </div>
+                        <TableSkeleton />
                     ) : (
                         <Table
                             className="text-[14px]"

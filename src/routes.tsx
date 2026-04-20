@@ -49,6 +49,7 @@ const DashboardTimelinePage = lazy(() => import('@pages/Dashboard/Timeline/Dashb
 const ChatListPage = lazy(() => import('@pages/Dashboard/Chat/ChatListPage'));
 const ChatDetailPage = lazy(() => import('@pages/Dashboard/Chat/ChatDetailPage'));
 const VerifySubscription = lazy(() => import('@pages/Dashboard/subscription/VerifySubscription'));
+const GlobalSettingsPage = lazy(() => import('@pages/Dashboard/Settings/GlobalSettingsPage'));
 
 // admin dashboard
 const AdminDashboard = lazy(() => import('@pages/Admin/Dashboard'));
@@ -143,6 +144,7 @@ export default function AppRoutes(){
                         <Route path="timeline" element={<DashboardTimelinePage />} />
                         <Route path="chat" element={<ChatListPage />} />
                         <Route path="chat/:userId" element={<ChatDetailPage />} />
+                        <Route path="settings" element={<GlobalSettingsPage />} />
                     </Route>
                      <Route
                         path="admin"
