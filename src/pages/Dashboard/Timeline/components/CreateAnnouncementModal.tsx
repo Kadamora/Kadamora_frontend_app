@@ -12,6 +12,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ isOpe
     const [priority, setPriority] = useState('high');
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
+    const [submitError, setSubmitError] = useState<string | null>(null);
     const [images, setImages] = useState<File[]>([]);
     const [previews, setPreviews] = useState<string[]>([]);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -45,6 +46,7 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ isOpe
 
     const handleSubmit = async () => {
         if (!title || !content || !priority) return;
+        setSubmitError(null);
 
         try {
             const formData = new FormData();
@@ -68,8 +70,27 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ isOpe
             setPreviews([]);
             
             handleClose();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to create announcement:', error);
+            const fieldErrors = error?.data?.errors;
+            let errorMessage = 'Failed to create announcement. Please try again.';
+            if (fieldErrors && typeof fieldErrors === 'object') {
+                const messages: string[] = [];
+                for (const field of Object.keys(fieldErrors)) {
+                    const fieldMessages = fieldErrors[field];
+                    if (Array.isArray(fieldMessages)) {
+                        messages.push(...fieldMessages);
+                    } else if (typeof fieldMessages === 'string') {
+                        messages.push(fieldMessages);
+                    }
+                }
+                if (messages.length > 0) {
+                    errorMessage = messages.join(' • ');
+                }
+            } else if (error?.data?.message) {
+                errorMessage = error.data.message;
+            }
+            setSubmitError(errorMessage);
         }
     };
 
@@ -168,6 +189,12 @@ const CreateAnnouncementModal: React.FC<CreateAnnouncementModalProps> = ({ isOpe
                     />
                     <p className="text-xs text-gray-500 mt-2">Upload up to 10 images.</p>
                 </div>
+
+                {submitError && (
+                    <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+                        {submitError}
+                    </div>
+                )}
 
                 <div className="pt-4">
                     <button 

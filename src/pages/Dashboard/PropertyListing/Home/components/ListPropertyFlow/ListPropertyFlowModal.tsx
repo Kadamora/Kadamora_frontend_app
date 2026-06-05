@@ -618,6 +618,24 @@ function toNumber(value: string | number | undefined, defaultValue = 0): number 
 }
 
 function resolveCreateError(error: any): string {
+    // Extract field-level validation errors first (e.g. { paymentTerm: ["paymentTerm must be ..."] })
+    const fieldErrors = error?.data?.errors;
+    if (fieldErrors && typeof fieldErrors === 'object') {
+        const messages: string[] = [];
+        for (const field of Object.keys(fieldErrors)) {
+            const fieldMessages = fieldErrors[field];
+            if (Array.isArray(fieldMessages)) {
+                messages.push(...fieldMessages);
+            } else if (typeof fieldMessages === 'string') {
+                messages.push(fieldMessages);
+            }
+        }
+        if (messages.length > 0) {
+            return messages.join(' • ');
+        }
+    }
+
+    // Fall back to top-level message
     if (error?.data?.message) {
         return error.data.message;
     }
