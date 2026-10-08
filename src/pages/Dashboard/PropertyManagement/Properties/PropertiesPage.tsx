@@ -69,7 +69,7 @@ const PropertiesPage: React.FC = () => {
                                 id={p.id} 
                                 name={p.name} 
                                 address={p.address} 
-                                tenants={p.tenants?.length || 0} 
+                                tenantCount={p.tenantCount || 0} 
                                 onAddTenant={handleAddTenant}
                                 onDelete={handleDeleteProperty}
                             />

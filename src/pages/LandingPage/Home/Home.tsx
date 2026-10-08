@@ -5,7 +5,7 @@ import Listings from "./components/Listings";
 import Features from "./components/Features";
 import Why from "./components/Why";
 import Testimonials from "./components/Testimonials";
-import ContactForm from "@components/landingPage/ContactForm";
+// import ContactForm from "@components/landingPage/ContactForm";
 import Hero from "./components/Hero";
 import FAQ from "@components/landingPage/FAQ";
 import Assistance from "./components/Assistance";
@@ -23,7 +23,7 @@ export default function Home() {
                     <FAQ />
                 </div>
                 <Testimonials />
-                <ContactForm />
+                {/* <ContactForm /> */}
                 <Assistance/>
             </LandingPageContainer>
         </>

@@ -15,6 +15,7 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
     const [eventDate, setEventDate] = useState('');
     const [eventTime, setEventTime] = useState('');
     const [description, setDescription] = useState('');
+    const [submitError, setSubmitError] = useState<string | null>(null);
     const [images, setImages] = useState<File[]>([]);
     const [previews, setPreviews] = useState<string[]>([]);
     
@@ -49,6 +50,7 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
 
     const handleSubmit = async () => {
         if (!title || !location || !maxAttendees || !eventDate || !eventTime || !description) return;
+        setSubmitError(null);
 
         try {
             const formData = new FormData();
@@ -78,8 +80,27 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
             setPreviews([]);
             
             handleClose();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to create event:', error);
+            const fieldErrors = error?.data?.errors;
+            let errorMessage = 'Failed to create event. Please try again.';
+            if (fieldErrors && typeof fieldErrors === 'object') {
+                const messages: string[] = [];
+                for (const field of Object.keys(fieldErrors)) {
+                    const fieldMessages = fieldErrors[field];
+                    if (Array.isArray(fieldMessages)) {
+                        messages.push(...fieldMessages);
+                    } else if (typeof fieldMessages === 'string') {
+                        messages.push(fieldMessages);
+                    }
+                }
+                if (messages.length > 0) {
+                    errorMessage = messages.join(' • ');
+                }
+            } else if (error?.data?.message) {
+                errorMessage = error.data.message;
+            }
+            setSubmitError(errorMessage);
         }
     };
 
@@ -211,6 +232,12 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
                     />
                     <p className="text-xs text-gray-500 mt-2">Upload up to 10 images.</p>
                 </div>
+
+                {submitError && (
+                    <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+                        {submitError}
+                    </div>
+                )}
 
                 <div className="pt-4">
                     <button 

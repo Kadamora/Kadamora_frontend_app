@@ -12,6 +12,16 @@ export interface SignupResponse {
     message?: string;
 }
 
+export interface ContactUsPayload {
+    fullName: string;
+    email: string;
+    subject: string;
+    message: string;
+}
+export interface ContactUsResponse {
+    message?: string;
+}
+
 export interface VerifyAccountPayload {
     token: string;
     email: string;
@@ -77,6 +87,13 @@ export const authApi = baseApi.injectEndpoints({
                 body: payload,
             }),
         }),
+        contactUs: builder.mutation<ContactUsResponse, ContactUsPayload>({
+            query: (payload) => ({
+                url: '/api/v1/contact',
+                method: 'POST',
+                body: payload,
+            }),
+        }),
         verifyAccount: builder.mutation<VerifyAccountResponse, VerifyAccountPayload>({
             query: (payload) => ({
                 url: '/api/v1/auth/verify-account',
@@ -121,4 +138,5 @@ export const {
     useRequestPasswordResetMutation,
     useResetPasswordMutation,
     useGetAccountQuery,
+    useContactUsMutation,
 } = authApi

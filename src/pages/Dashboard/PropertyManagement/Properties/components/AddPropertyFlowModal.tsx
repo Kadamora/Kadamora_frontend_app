@@ -38,7 +38,7 @@ const AddPropertyFlowModal: React.FC<{ open: boolean; onClose: () => void }> = (
     const [currentIdx, setCurrentIdx] = useState(0);
 
     // Form State
-    const [role, setRole] = useState<'owner' | 'estate_manager'>('owner');
+    const [role, setRole] = useState<'owner' | 'property_manager' | 'tenant'>('owner');
     const [category, setCategory] = useState('');
     const [propertyName, setPropertyName] = useState('');
     const [address, setAddress] = useState('');
@@ -72,7 +72,6 @@ const AddPropertyFlowModal: React.FC<{ open: boolean; onClose: () => void }> = (
 
         try {
             await createProperty({
-                // role: role === 'owner' ? 'admin' : 'agent',
                 role: role,
                 name: propertyName,
                 categoryType: category,
@@ -178,7 +177,8 @@ const PropertyDetailsStep: React.FC<any> = ({ role, setRole, category, setCatego
                 onChange={setRole}
                 options={[
                     { label: 'Owner', value: 'owner' },
-                    { label: 'Estate Manager', value: 'estate_manager' },
+                    { label: 'Property Manager', value: 'property_manager' },
+                    { label: 'Tenant', value: 'tenant' },
                 ]}
                 className="mb-2"
             />
@@ -199,9 +199,9 @@ const PropertyDetailsStep: React.FC<any> = ({ role, setRole, category, setCatego
             />
             <Input title="Address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="12, Amino Kano Crescent, Wuse 2, Abuja" name="address" required />
              <Input
-            title="Estate Manager Email"
+            title="Property Manager Email"
             type="email"
-            placeholder="Enter estate manager email"
+            placeholder="Enter property manager email"
             name="estateManagerEmail"
             value={estateManagerEmail}
             onChange={(e) => setEstateManagerEmail(e.target.value)}

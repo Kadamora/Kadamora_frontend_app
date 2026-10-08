@@ -7,13 +7,6 @@ import { services } from './service';
 export default function Dashboard() {
     const [searchQuery] = useState('');
     const [showWelcome, setShowWelcome] = useState(true);
-    // const { account } = useAuth();
-
-    // const displayName = useMemo(() => {
-    //     if (!account) return '';
-    //     const fullName = `${account.firstName ?? ''} ${account.lastName ?? ''}`.trim();
-    //     return fullName || '';
-    // }, [account]);
 
     // Basic client-side filter (optional enhancement)
     const filtered = services.filter(

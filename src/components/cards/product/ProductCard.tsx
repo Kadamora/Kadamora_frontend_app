@@ -87,14 +87,14 @@ export default function ProductCard({
 
             <div className="p-4">
                 <div className="mb-2">
-                    <h3 className="font-semibold text-secondary transition-transform duration-300 group-hover:-translate-y-0.5">
+                    <h3 className="font-semibold text-secondary transition-transform duration-300 group-hover:-translate-y-0.5 line-clamp-1">
                         {property.name}
                     </h3>
                     <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">
                         {property.price}
                     </span>
                 </div>
-                <p className="text-gray-500 text-xs mb-3 transition-colors duration-300 group-hover:text-gray-600">
+                <p className="text-gray-500 text-xs mb-3 transition-colors duration-300 group-hover:text-gray-600 line-clamp-2 min-h-[2.20rem]">
                     {property.description}
                 </p>
                 <div className="flex gap-2 transition-transform duration-300 group-hover:-translate-y-0.5">

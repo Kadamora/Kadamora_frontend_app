@@ -35,6 +35,7 @@ const LeasePricingStep: React.FC = () => {
                         { label: 'Select payment term', value: '' },
                         { label: 'Monthly', value: 'monthly' },
                         { label: 'Quarterly', value: 'quarterly' },
+                        { label: 'Biannually', value: 'biannually' },
                         { label: 'Annually', value: 'annually' },
                     ]}
                 />
@@ -96,9 +97,9 @@ const LeasePricingStep: React.FC = () => {
                     options={[
                         { label: 'Select property condition', value: '' },
                         { label: 'New', value: 'new' },
-                        { label: 'Good', value: 'good' },
                         { label: 'Renovated', value: 'renovated' },
-                        { label: 'Needs Renovation', value: 'needs_renovation' },
+                        { label: 'Fairly Used', value: 'fairly_used' },
+                        { label: 'Under Construction', value: 'under_construction' },
                     ]}
                 />
                 <Textarea

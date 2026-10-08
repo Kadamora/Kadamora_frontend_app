@@ -19,6 +19,8 @@ const Timeline = lazy(() => import('@pages/LandingPage/Timeline'))
 const ContactUs = lazy(() => import('@pages/LandingPage/ContactUs'));
 const UnAuthPropertyListing = lazy(() => import('@pages/LandingPage/PropertyListing'));
 const UnAuthPropertyView = lazy(() => import('@pages/LandingPage/PropertyView'));
+const Blogs = lazy(() => import('@pages/LandingPage/Blogs/Blogs'));
+const Pricing = lazy(() => import('@pages/LandingPage/Pricing/Pricing'));
 
 // auth
 const Login = lazy(() => import('@pages/Auth/Login'))
@@ -27,6 +29,7 @@ const SignupVerify = lazy(() => import('@pages/Auth/SignupVerify'))
 const SignupVerified = lazy(() => import('@pages/Auth/SignupVerified'))
 const ForgotPassword = lazy(() => import('@pages/Auth/ForgotPassword'))
 const ResetPassword = lazy(() => import('@pages/Auth/ResetPassword'))
+const VerifyTenantAcceptance = lazy(() => import('@pages/Auth/VerifyTenantAcceptance'))
 
 // admin auth
 const AdminLogin = lazy(() => import('@pages/Auth/AdminLogin'))
@@ -46,6 +49,7 @@ const DashboardTimelinePage = lazy(() => import('@pages/Dashboard/Timeline/Dashb
 const ChatListPage = lazy(() => import('@pages/Dashboard/Chat/ChatListPage'));
 const ChatDetailPage = lazy(() => import('@pages/Dashboard/Chat/ChatDetailPage'));
 const VerifySubscription = lazy(() => import('@pages/Dashboard/subscription/VerifySubscription'));
+const GlobalSettingsPage = lazy(() => import('@pages/Dashboard/Settings/GlobalSettingsPage'));
 
 // admin dashboard
 const AdminDashboard = lazy(() => import('@pages/Admin/Dashboard'));
@@ -76,6 +80,8 @@ export default function AppRoutes(){
                     <Route path="contact" element={<ContactUs />} />
                     <Route path="property-listing" element={<UnAuthPropertyListing />} />
                     <Route path="property-view/:agentId" element={<UnAuthPropertyView />} />
+                    <Route path="blogs" element={<Blogs />} />
+                    <Route path="pricing" element={<Pricing />} />
                     <Route 
                         path="verify" 
                         element={
@@ -83,6 +89,10 @@ export default function AppRoutes(){
                                 <VerifySubscription />
                             </RequireAuth>
                         } 
+                    />
+                    <Route 
+                        path="verify-acceptance/:tenantId" 
+                        element={<VerifyTenantAcceptance />} 
                     />
 
                     <Route
@@ -134,6 +144,7 @@ export default function AppRoutes(){
                         <Route path="timeline" element={<DashboardTimelinePage />} />
                         <Route path="chat" element={<ChatListPage />} />
                         <Route path="chat/:userId" element={<ChatDetailPage />} />
+                        <Route path="settings" element={<GlobalSettingsPage />} />
                     </Route>
                      <Route
                         path="admin"

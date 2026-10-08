@@ -51,8 +51,8 @@ const PricingStep: React.FC = () => {
                         { value: '', label: 'Select property condition' },
                         { value: 'new', label: 'New' },
                         { value: 'renovated', label: 'Recently Renovated' },
-                        { value: 'good', label: 'Good Condition' },
-                        { value: 'needs_repair', label: 'Needs Repairs' },
+                        { value: 'fairly_used', label: 'Fairly Used' },
+                        { value: 'under_construction', label: 'Under Construction' },
                     ]}
                 />
             </div>

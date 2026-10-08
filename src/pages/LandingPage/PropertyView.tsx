@@ -1,9 +1,8 @@
 import Gallery from "@components/cards/gallery/Gallery";
 import ProductCard from "@components/cards/product/ProductCard";
 import LandingPageContainer from "@components/container/LandingPage/LandingPageContainer";
-import { fakeDb } from "@components/fakeDB/fakeDb";
 import { useParams } from 'react-router';
-import { useGetAgentPropertyListingsByIdQuery } from '@store/api/propertyListings.api';
+import { useGetAgentPropertyListingsByIdQuery, useGetAllPropertyListingsQuery } from '@store/api/propertyListings.api';
 import { MdOutlineLocationOn } from "react-icons/md";
 import CategoryCard from "@pages/Dashboard/PropertyListing/PropertyView/components/CategoryCard";
 
@@ -14,6 +13,7 @@ export default function PropertyView() {
         const {data: propertyListings} = useGetAgentPropertyListingsByIdQuery(agentId!, {
             skip: !agentId,
         });
+        const {data: allProperties} = useGetAllPropertyListingsQuery();
         const property = propertyListings?.data;
         console.log(propertyListings)
         const formatCurrency = (amount: string | number | null | undefined) => {
@@ -54,6 +54,15 @@ export default function PropertyView() {
         { label: 'Other Charges', value: property?.otherCharges ? formatCurrency(property?.otherCharges) : 'None' },
     ].filter((item) => item.value && item.value !== 'None' && item.value !== 'N/A');
 
+    if (!property) {
+        return (
+            <LandingPageContainer>
+                <div className="flex items-center justify-center py-20">
+                    <div className="h-10 w-10 animate-spin rounded-full border-2 border-gray-300 border-t-[#002E62]" />
+                </div>
+            </LandingPageContainer>
+        );
+    }
 
     return (
         <LandingPageContainer>
@@ -72,7 +81,7 @@ export default function PropertyView() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Left Column - Images / Video */}
-                        <Gallery />
+                        <Gallery media={property.media} />
 
                         {/* Right Column - Property Details */}
                         <div className="bg-white p-6 rounded-lg shadow-border">
@@ -175,60 +184,23 @@ export default function PropertyView() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <h2 className="text-3xl md:text-[40px] font-bold text-secondary mb-8">Similar Properties</h2>
 
-                    {/* First Row */}
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        {fakeDb.listings.slice(0, 4).map((property) => (
-                            <ProductCard key={property.id} property={property} landingPage />
-                        ))}
-                    </div>
-
-                    {/* Second Row */}
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {fakeDb.listings.slice(4, 8).map((property) => (
-                            <ProductCard key={property.id} property={property} landingPage />
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* Verified Users */}
-            <section className="py-16 bg-[#f7f8fa]">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <h2 className="text-3xl md:text-[40px] font-bold text-secondary mb-8">Verified Users</h2>
-
-                    <div className="grid md:grid-cols-3 gap-6">
-                        {/* Card 1 */}
-                        <div className="bg-white rounded-xl overflow-hidden shadow-border shadow-border-cce3fd">
-                            <div className="h-64 w-full">
-                                <img
-                                    src="/assets/african_lady.png"
-                                    alt="Benita Ayobami Gbemi"
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-                            <div className="p-5">
-                                <h3 className="font-semibold text-secondary">Benita Ayobami Gbemi</h3>
-                                <p className="text-sm text-[#6E6D6D]">Broker - Brick&Bettle Co Limited</p>
-                            </div>
-                        </div>
-
-                        {/* Card 2 */}
-                        <div className="bg-white rounded-xl overflow-hidden shadow-border shadow-border-cce3fd">
-                            <div className="h-64 w-full bg-[#FADBD2]"></div>
-                            <div className="p-5">
-                                <h3 className="font-semibold text-secondary">Michael John Felix</h3>
-                                <p className="text-sm text-[#6E6D6D]">Agent - Felix Oak Limited</p>
-                            </div>
-                        </div>
-
-                        {/* Card 3 */}
-                        <div className="bg-white rounded-xl overflow-hidden shadow-border shadow-border-cce3fd">
-                            <div className="h-64 w-full bg-gray-100"></div>
-                            <div className="p-5">
-                                <h3 className="font-semibold text-secondary">James Tony Garuba</h3>
-                                <p className="text-sm text-[#6E6D6D]">Agent - Bannylin Construction Limited</p>
-                            </div>
-                        </div>
+                        {allProperties?.data
+                            ?.filter((p: any) => p.id !== property.id)
+                            .slice(0, 8)
+                            .map((p: any) => {
+                                // Map API structure to ProductCard props
+                                const mappedProperty = {
+                                    id: p.id,
+                                    name: p.title,
+                                    price: formatCurrency(p.price),
+                                    description: p.description?.slice(0, 100) + (p.description?.length > 100 ? '...' : ''),
+                                    category: humanize(p.propertyType), // e.g., "Rent", "Sell"
+                                    subCategory: humanize(p.propertySubType || p.propertyType),
+                                    image: p.media?.[0]?.url || '/assets/images/placeholder.png',
+                                };
+                                return <ProductCard key={p.id} property={mappedProperty} landingPage />;
+                            })}
                     </div>
                 </div>
             </section>

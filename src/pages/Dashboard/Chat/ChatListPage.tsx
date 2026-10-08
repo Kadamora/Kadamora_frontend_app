@@ -231,11 +231,11 @@ export default function ChatListPage() {
                                     <span className="text-xs text-gray-400 whitespace-nowrap">
                                         {formatRelativeTime(chat.lastMessage?.createdAt ?? '')}
                                     </span>
-                                    {chat.unreadCount > 0 && (
+                                    {/* {chat.unreadCount > 0 && (
                                         <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[var(--color-primary)] text-white text-[11px] font-bold">
                                             {chat.unreadCount}
                                         </span>
-                                    )}
+                                    )} */}
                                 </div>
                             </button>
                         );

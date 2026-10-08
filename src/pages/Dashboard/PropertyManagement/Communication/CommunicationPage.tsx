@@ -2,128 +2,59 @@ import React, { useState } from 'react';
 import StatCard from './StatCard';
 import Chat from './Chat';
 import AnnouncementCard from './AnnouncementCard';
+import { Mail, Megaphone, MessageSquare, Users } from 'lucide-react';
+import { useGetAnnouncementsQuery } from '@store/api/announcement.api';
 
 const statData = [
     {
         label: 'Today Messages',
         value: 8,
-        icon: (
-            <svg
-                className="h-7 w-7 text-[#0A66B2]"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-            >
-                <rect x="4" y="4" width="16" height="16" rx="4" />
-                <path d="M8 2v4M16 2v4" />
-            </svg>
-        ),
+        icon: <MessageSquare className="w-[18px] h-[18px] text-[#A5EEFD]" />,
     },
     {
         label: 'Active Announcements',
         value: 4,
-        icon: (
-            <svg
-                className="h-7 w-7 text-[#0B7A52]"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-            >
-                <path d="M12 19V5M5 12h14" />
-            </svg>
-        ),
+        icon: <Megaphone className="w-[18px] h-[18px] text-[#17c964]" />,
     },
     {
         label: 'Unread Messages',
         value: 3,
-        icon: (
-            <svg
-                className="h-7 w-7 text-[#0A66B2]"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-            >
-                <rect x="4" y="4" width="16" height="16" rx="4" />
-                <path d="M8 2v4M16 2v4" />
-            </svg>
-        ),
+        icon: <Mail className="w-[18px] h-[18px] text-[#006fee]" />,
     },
     {
         label: 'Total Recipients',
         value: 9,
-        icon: (
-            <svg
-                className="h-7 w-7 text-[#F9B233]"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-            >
-                <circle cx="12" cy="12" r="10" />
-                <path d="M9 12l2 2 4-4" />
-            </svg>
-        ),
+        icon: <Users className="w-[18px] h-[18px] text-[#f5a524]" />,
     },
 ];
 
 const tabList = ['Messages', 'Announcements'] as const;
 
-// const messages = [
-//     {
-//         name: 'Rent Remainder',
-//         subtitle: 'John Smith',
-//         lastMessage: 'Hi John, this is a friendly reminder that your rent payment for unit Diamond A is due tomorrow',
-//         time: '19 July,2025 11:30 AM',
-//         unreadCount: 0,
-//     },
-//     {
-//         name: 'AC Issue follow up',
-//         subtitle: 'Sarah Johnson',
-//         lastMessage: 'Thank you for scheduling the AC repair. When can I expect the technician to arrive?',
-//         time: '19 July,2025 1:30 PM',
-//         unreadCount: 1,
-//     },
-//     {
-//         name: 'Rent Remainder',
-//         subtitle: 'Charles David',
-//         lastMessage: 'Hi John, this is a friendly reminder that your rent payment for unit Diamond A is due tomorrow',
-//         time: '18 July,2025 11:30 AM',
-//         unreadCount: 0,
-//     },
-// ];
-
-const announcements = [
-    {
-        title: 'Building Maintenance Notice',
-        to: 'All Tenants - Hilltop Terrace',
-        content:
-            'We will be performing a routine maintenance check on the elevator system this Saturday from 10 AM to 3 PM',
-        date: '19 July,2025',
-        time: '11:30 AM',
-    },
-    {
-        title: 'Building Maintenance Notice',
-        to: 'All Tenants - Dominion Duplex',
-        content:
-            'We will be performing a routine maintenance check on the water system this Saturday from 10 AM to 3 PM',
-        date: '19 July,2025',
-        time: '11:30 AM',
-    },
-    {
-        title: 'Building Maintenance Notice',
-        to: 'All Tenants - Hilton Estate',
-        content:
-            'We will be performing a routine maintenance check on the Drainage system this Friday from 12 PM to 5 PM',
-        date: '19 July,2025',
-        time: '11:30 AM',
-    },
-];
+const AnnouncementSkeleton = () => (
+    <div className="animate-pulse flex items-start gap-4 p-4 border border-[#EDF1F5] rounded-xl mb-4 bg-white">
+        <div className="w-[45px] h-[45px] rounded-full bg-gray-200 shrink-0" />
+        <div className="flex-1">
+            <div className="h-5 bg-gray-200 rounded w-1/3 mb-2" />
+            <div className="h-4 bg-gray-100 rounded w-1/4 mb-3" />
+            <div className="space-y-2">
+                <div className="h-3 bg-gray-100 rounded w-full" />
+                <div className="h-3 bg-gray-100 rounded w-5/6" />
+            </div>
+            <div className="mt-4 flex gap-4">
+                <div className="h-3 bg-gray-100 rounded w-20" />
+                <div className="h-3 bg-gray-100 rounded w-16" />
+            </div>
+        </div>
+    </div>
+);
 
 const CommunicationPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState<(typeof tabList)[number]>('Messages');
+    const { data: announcementsRes, isLoading: isLoadingAnnouncements } = useGetAnnouncementsQuery('');
+    
+    // Fallback array if no data
+    const apiAnnouncements = announcementsRes?.data || [];
+
     return (
         <div className="pb-10">
             <div className="mb-6 mt-4 max-w-300 mx-auto">
@@ -137,7 +68,7 @@ const CommunicationPage: React.FC = () => {
                         {tabList.map((tab) => (
                             <button
                                 key={tab}
-                                className={`px-3 py-1.5 text-sm font-semibold rounded-md border-b-2 ${activeTab === tab ? 'border-[#0A66B2] text-[#0A66B2] bg-[#F1F9FF]' : 'border-transparent text-[#475467] bg-[#FAFBFC]'}`}
+                                className={`px-3 py-1.5 text-sm font-semibold  border-b-2 ${activeTab === tab ? 'border-[#0A66B2] text-[#0A66B2] bg-[#F1F9FF]' : 'border-transparent text-[#475467] bg-[#FAFBFC]'}`}
                                 onClick={() => setActiveTab(tab)}
                             >
                                 {tab}
@@ -148,23 +79,31 @@ const CommunicationPage: React.FC = () => {
                         {activeTab === 'Messages' && <Chat />}
                         {activeTab === 'Announcements' && (
                             <div>
-                                {announcements.map((a, idx) => (
-                                    <AnnouncementCard
-                                        key={idx}
-                                        icon={
-                                            <svg
-                                                className="h-6 w-6 text-[#0A66B2]"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth={2}
-                                            >
-                                                <path d="M12 19V5M5 12h14" />
-                                            </svg>
-                                        }
-                                        {...a}
-                                    />
-                                ))}
+                                {isLoadingAnnouncements ? (
+                                    <>
+                                        <AnnouncementSkeleton />
+                                        <AnnouncementSkeleton />
+                                        <AnnouncementSkeleton />
+                                    </>
+                                ) : apiAnnouncements.length === 0 ? (
+                                    <div className="py-10 text-center text-[#71717A] text-[15px]">
+                                        No announcements found.
+                                    </div>
+                                ) : (
+                                    apiAnnouncements.map((a: any) => (
+                                        <AnnouncementCard
+                                            key={a.id}
+                                            icon={
+                                                <Megaphone className="w-[18px] h-[18px] text-[#17c964]" />
+                                            }
+                                            title={a.title || 'Announcement'}
+                                            to={a.targetAudience ? `All ${a.targetAudience}` : 'All Tenants'}
+                                            content={a.body || ''}
+                                            date={new Date(a.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+                                            time={new Date(a.createdAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                                        />
+                                    ))
+                                )}
                             </div>
                         )}
                     </div>
