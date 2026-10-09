@@ -1,32 +1,3 @@
-// {
-//   "compilerOptions": {
-//     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-//     "target": "ES2022",
-//     "useDefineForClassFields": true,
-//     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-//     "module": "ESNext",
-//     "types": ["vite/client"],
-//     "skipLibCheck": true,
-
-//     /* Bundler mode */
-//     "moduleResolution": "bundler",
-//     "allowImportingTsExtensions": true,
-//     "verbatimModuleSyntax": true,
-//     "moduleDetection": "force",
-//     "noEmit": true,
-//     "jsx": "react-jsx",
-
-//     /* Linting */
-//     "strict": true,
-//     "noUnusedLocals": true,
-//     "noUnusedParameters": true,
-//     "erasableSyntaxOnly": true,
-//     "noFallthroughCasesInSwitch": true,
-//     "noUncheckedSideEffectImports": true
-//   },
-//   "include": ["src"]
-// }
-
 {
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
@@ -55,11 +26,13 @@
     /* Path mapping */
     "baseUrl": ".",
     "paths": {
-      "@components/*": ["src/components/*"],
-      "@pages/*": ["src/pages/*"],
-      "@utils/*": ["src/utils/*"],
-      "@store/*": ["src/store/*"],
-      "@hooks/*": ["src/hooks/*"]
+      "@app/*":        ["src/app/*"],
+      "@modules/*":    ["src/modules/*"],
+      "@shared/*":     ["src/shared/*"],
+      "@store/*":      ["src/store/*"],
+      "@components/*": ["src/shared/components/*"],
+      "@hooks/*":      ["src/shared/hooks/*"],
+      "@utils/*":      ["src/shared/*"]
 }
   },
   "include": ["src"]

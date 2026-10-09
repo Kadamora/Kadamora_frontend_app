@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter } from 'react-router';
 import { HelmetProvider } from 'react-helmet-async';
-import Routes from './routes';
-import ScrollToTop from '@components/ScrollToTop';
-import './index.css';
-import Preloader from '@components/Preloader/Preloader';
-import { useGetAccountQuery } from '@store/api/auth.api';
+import AppRoutes from '@app/router/index';
+import ScrollToTop from '@shared/components/ScrollToTop/ScrollToTop';
+import './styles/index.css';
+import Preloader from '@shared/components/Preloader/Preloader';
+import { Toaster } from 'react-hot-toast';
+import { useGetAccountQuery } from '@shared/api/auth.api';
 import { useAppSelector } from '@store/hooks';
 
 export default function App() {
@@ -56,9 +57,10 @@ export default function App() {
 
     return (
         <HelmetProvider>
+            <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
             <BrowserRouter>
                 <ScrollToTop />
-                <Routes />
+                <AppRoutes />
             </BrowserRouter>
         </HelmetProvider>
     );
