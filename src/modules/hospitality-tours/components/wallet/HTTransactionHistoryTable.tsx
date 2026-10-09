@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { FiArrowDownLeft, FiArrowUpRight, FiEye } from 'react-icons/fi';
 import Table, { type Column } from '@shared/components/Table/Table';
 import StatusBadge from '@shared/components/Tag/StatusBadge';
@@ -36,10 +36,15 @@ export default function HTTransactionHistoryTable({
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 8;
 
-    // Reset pagination to first page whenever search or filter changes
-    useEffect(() => {
+    const handleSearchChange = (value: string) => {
+        setSearch(value);
         setCurrentPage(1);
-    }, [search, filterStatus]);
+    };
+
+    const handleFilterChange = (value: string) => {
+        setFilterStatus(value);
+        setCurrentPage(1);
+    };
 
     const filterOptions: FilterOption[] = [
         { label: 'All Transactions', value: 'all' },
@@ -163,11 +168,11 @@ export default function HTTransactionHistoryTable({
                 boldTitle="Transaction History"
                 subTitle="Recent transaction in your wallet"
                 searchValue={search}
-                onSearchChange={setSearch}
+                onSearchChange={handleSearchChange}
                 searchPlaceholder="Search "
                 selectedFilter={filterStatus}
                 filterOptions={filterOptions}
-                onFilterChange={setFilterStatus}
+                onFilterChange={handleFilterChange}
             />
             <div className="p-2 sm:p-4">
                 <Table

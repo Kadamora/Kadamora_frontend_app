@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { transactions as mockTransactions } from '../../data/mock';
 import type { Transaction } from '../../types';
 import HTPaymentOverviewCard from '@modules/hospitality-tours/components/wallet/HTPaymentOverviewCard';

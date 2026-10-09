@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { FiSearch, FiChevronDown, FiChevronLeft, FiChevronRight, FiX, FiClock, FiMapPin, FiUser } from 'react-icons/fi';
 
 interface CalendarEvent {
@@ -181,8 +181,10 @@ const HOURS = [
     { label: '10 PM', hour: 22 },
 ];
 
+type ViewMode = 'Week' | 'Day' | 'Month';
+
 export default function HTCalendarPage() {
-    const [viewMode, setViewMode] = useState<'Week' | 'Day' | 'Month'>('Week');
+    const [viewMode, setViewMode] = useState<ViewMode>('Week');
     const [search, setSearch] = useState('');
     const [selectedBusiness, setSelectedBusiness] = useState('all');
     const [selectedListing, setSelectedListing] = useState('all');
@@ -220,7 +222,7 @@ export default function HTCalendarPage() {
                         <div className="relative">
                             <select
                                 value={viewMode}
-                                onChange={(e) => setViewMode(e.target.value as any)}
+                                onChange={(e) => setViewMode(e.target.value as ViewMode)}
                                 className="appearance-none pl-3.5 pr-8 py-1.5 text-xs sm:text-sm font-semibold bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-[#0F172A] cursor-pointer focus:outline-none focus:border-[#002E62]"
                             >
                                 <option value="Week">Week</option>

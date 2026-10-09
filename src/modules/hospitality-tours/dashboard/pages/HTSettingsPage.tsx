@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import ProfileTabView from '../../components/settings/ProfileTabView';
 import SupportTabView from '../../components/settings/SupportTabView';
 import UserManagementTabView from '../../components/settings/UserManagementTabView';

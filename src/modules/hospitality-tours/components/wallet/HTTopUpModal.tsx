@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { FiX, FiCheck, FiInfo, FiCopy } from 'react-icons/fi';
 import { HiArrowsRightLeft } from 'react-icons/hi2';
 import { BsCreditCard2Back } from 'react-icons/bs';

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { FiGitPullRequest, FiCreditCard, FiMessageSquare, FiThumbsUp, FiInfo } from 'react-icons/fi';
 
 export default function NotificationsTabView() {

@@ -1,4 +1,3 @@
-import React from 'react';
 import { FiEye, FiClock, FiPlay } from 'react-icons/fi';
 import type { TimelinePost } from '../types';
 

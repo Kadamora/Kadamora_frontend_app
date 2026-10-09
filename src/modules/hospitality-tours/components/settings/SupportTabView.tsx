@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { FiSearch, FiChevronDown, FiMessageSquare, FiInfo, FiClock, FiCheckCircle, FiEye } from 'react-icons/fi';
 import Table, { type Column } from '@shared/components/Table/Table';
 import HTTicketDetailView from './HTTicketDetailView';
@@ -283,7 +283,7 @@ export default function SupportTabView() {
             </div>
 
             {/* Ticket Details Modal */}
-            {viewTicket && (
+            {/* {viewTicket && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-fade-in">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 space-y-4 animate-scale-in">
                         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -332,7 +332,7 @@ export default function SupportTabView() {
                         </div>
                     </div>
                 </div>
-            )}
+            )} */}
         </div>
     );
 }

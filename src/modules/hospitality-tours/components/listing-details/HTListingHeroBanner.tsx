@@ -1,4 +1,3 @@
-import React from 'react';
 import { FiMapPin, FiCalendar, FiClock, FiUsers, FiEdit2, FiTrash2 } from 'react-icons/fi';
 import type { ListingMetadataBadge, CountdownTimerData } from '../../types/listingDetailsTypes';
 

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { FiSearch, FiChevronDown, FiMoreHorizontal, FiXCircle, FiMessageSquare } from 'react-icons/fi';
 import ContextMenu from '@shared/components/ContextMenu/ContextMenu';
 import Table, { type Column } from '@shared/components/Table/Table';

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import type { ListingDetailData, ListingTabKey } from '../../types/listingDetailsTypes';
 import HTListingHeroBanner from './HTListingHeroBanner';
 import HTListingTabNav from './HTListingTabNav';

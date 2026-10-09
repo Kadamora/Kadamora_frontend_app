@@ -1,4 +1,3 @@
-import React from 'react';
 import type { ScheduleItemData } from '../../types/listingDetailsTypes';
 
 interface HTListingScheduleSectionProps {

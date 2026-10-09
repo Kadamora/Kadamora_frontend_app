@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { FiPlayCircle, FiYoutube, FiBell, FiCheck } from 'react-icons/fi';
 import type { LiveStreamData } from '../../types/listingDetailsTypes';
 

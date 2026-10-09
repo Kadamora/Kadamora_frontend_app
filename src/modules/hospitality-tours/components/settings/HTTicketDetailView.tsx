@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { FiArrowLeft, FiCalendar, FiSend, FiXCircle } from 'react-icons/fi';
 
 interface TicketDetailProps {
@@ -23,7 +23,7 @@ export default function HTTicketDetailView({
     ]);
     const [ticketStatus, setTicketStatus] = useState<'Open' | 'Closed'>('Open');
 
-    const handleSendReply = (e: React.FormEvent) => {
+    const handleSendReply = (e: FormEvent) => {
         e.preventDefault();
         if (!replyText.trim()) return;
 

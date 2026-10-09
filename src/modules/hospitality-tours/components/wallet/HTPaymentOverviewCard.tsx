@@ -1,4 +1,3 @@
-import React from 'react';
 import { FiInfo, FiArrowDownLeft, FiArrowUpRight } from 'react-icons/fi';
 import { HiArrowTrendingUp } from 'react-icons/hi2';
 import HTButton from '../HTButton';

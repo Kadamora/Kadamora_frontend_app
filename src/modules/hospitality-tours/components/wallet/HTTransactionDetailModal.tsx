@@ -1,4 +1,3 @@
-import React from 'react';
 import { FiX, FiCheckCircle, FiClock, FiArrowDownLeft, FiArrowUpRight } from 'react-icons/fi';
 import type { Transaction } from '../../types';
 

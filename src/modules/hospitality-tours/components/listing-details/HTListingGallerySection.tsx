@@ -1,4 +1,3 @@
-import React from 'react';
 import type { ListingGalleryPhoto } from '../../types/listingDetailsTypes';
 
 interface HTListingGallerySectionProps {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Input from '@shared/components/Forms/Input';
 import Select from '@shared/components/Forms/Select';
 import ChangePasswordModal from './ChangePasswordModal';

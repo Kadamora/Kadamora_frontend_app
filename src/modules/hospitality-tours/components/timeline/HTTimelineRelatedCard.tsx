@@ -1,4 +1,3 @@
-import React from 'react';
 import { FiMoreHorizontal, FiSlash, FiFlag } from 'react-icons/fi';
 import type { TimelinePost } from '../../types';
 import ContextMenu from '@shared/components/ContextMenu/ContextMenu';

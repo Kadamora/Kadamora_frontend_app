@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { FiSearch, FiPlus } from 'react-icons/fi';
 import Input from '@shared/components/Forms/Input';
 import type { TimelinePost } from '../../types';
@@ -59,7 +59,7 @@ export default function HTTimelineFeedView({
             id: newPostData.id || `post-${Date.now()}`,
             title: newPostData.title || 'New Timeline Post',
             channel: newPostData.channel || 'Events TV',
-            category: (newPostData.category as any) || 'Events',
+            category: newPostData.category || 'Events',
             coverUrl: newPostData.coverUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80',
             views: newPostData.views || 0,
             postedAgo: newPostData.postedAgo || 'Just now',
