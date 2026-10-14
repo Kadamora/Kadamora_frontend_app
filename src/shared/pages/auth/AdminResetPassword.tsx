@@ -1,13 +1,16 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { IoEye } from 'react-icons/io5';
 import { IoIosEyeOff } from 'react-icons/io';
 import { useResetPasswordMutation } from '@shared/api/auth.api';
+import { useAppDispatch } from '@store/hooks';
+import { logout } from '@store/auth/auth.slice';
 import logo from '/assets/images/logo.png';
 
 
 export default function AdminResetPassword() {
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
     const { code } = useParams<{ code: string }>();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
@@ -56,16 +59,23 @@ export default function AdminResetPassword() {
         setErrorMessage(null);
 
         try {
-            const response = await triggerResetPassword({ 
+            await triggerResetPassword({ 
                  email,
                 newPassword: password, 
                 confirmPassword: confirm,
                 otp: code as string 
              }).unwrap();
-            setSuccessMessage(response.message || 'Password reset successful. You can now sign in.');
+            dispatch(logout());
+            sessionStorage.setItem('authSuccessMessage', 'Password changed. Please log in again.');
+            setSuccessMessage('Password changed. Please log in again.');
             form.reset();
             sessionStorage.removeItem('resetEmail');
-            setTimeout(() => navigate('/admin/auth/login'), 2000);
+            setTimeout(() => {
+                navigate('/admin/auth/login', {
+                    replace: true,
+                    state: { message: 'Password changed. Please log in again.' },
+                });
+            }, 1500);
         } catch (err: any) {
             const message =
             err?.data?.message ||

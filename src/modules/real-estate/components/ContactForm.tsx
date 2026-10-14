@@ -1,4 +1,4 @@
-﻿
+
 import Input from '@shared/components/Forms/Input';
 import Textarea from '@shared/components/Forms/Textarea';
 import { useState } from 'react';
@@ -6,7 +6,11 @@ import { useContactUsMutation } from '@shared/api/auth.api';
 import toast from 'react-hot-toast';
 
 
-export default function ContactForm() {
+interface ContactFormProps {
+    source?: string;
+}
+
+export default function ContactForm({ source = 'contact-page' }: ContactFormProps) {
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
@@ -27,8 +31,11 @@ export default function ContactForm() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-           const response = await contactUs(formData).unwrap();
-           console.log("contact us response", response)
+            const response = await contactUs({
+                ...formData,
+                source,
+            }).unwrap();
+            console.log("contact us response", response);
             toast.success('Your message has been sent successfully!');
             setFormData({ fullName: '', email: '', subject: '', message: '' });
         } catch (error: any) {

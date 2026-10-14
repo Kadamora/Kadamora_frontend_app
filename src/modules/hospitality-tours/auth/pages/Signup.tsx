@@ -6,7 +6,8 @@ import Step3VerificationSuccess from '../components/Step3VerificationSuccess';
 import Step4BusinessDetails, { type BusinessDetailsFormData } from '../components/Step4BusinessDetails';
 import Step5AccountDetails, { type AccountDetailsFormData } from '../components/Step5AccountDetails';
 import Step6AlmostDone from '../components/Step6AlmostDone';
-import { useSignupMutation } from '@shared/api/auth.api';
+import { useSignupMutation, useVerifyAccountMutation, useResendVerificationMutation } from '@shared/api/auth.api';
+import { saveTokens } from '@shared/services/auth/authStorage';
 import { showSuccessToast, showErrorToast } from '@shared/components/Toast/Toast';
 
 type RegistrationStep = 'user-details' | 'email-otp' | 'otp-success' | 'business-details' | 'account-details' | 'almost-done';
@@ -15,6 +16,7 @@ export default function HTSignupPage() {
     const navigate = useNavigate();
     const [currentStep, setCurrentStep] = useState<RegistrationStep>('user-details');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [signupMessage, setSignupMessage] = useState<string | null>(null);
 
     // Form data state
     const [userData, setUserData] = useState<UserDetailsFormData>({
@@ -38,6 +40,8 @@ export default function HTSignupPage() {
     });
 
     const [triggerSignup] = useSignupMutation();
+    const [triggerVerifyAccount] = useVerifyAccountMutation();
+    const [triggerResendVerification] = useResendVerificationMutation();
 
     // Step 1 Submission -> Triggers initial user signup & moves to OTP
     const handleStep1Submit = async (data: UserDetailsFormData) => {
@@ -45,7 +49,7 @@ export default function HTSignupPage() {
         setIsSubmitting(true);
 
         try {
-            await triggerSignup({
+            const result = await triggerSignup({
                 firstName: data.firstName,
                 lastName: data.lastName,
                 email: data.email,
@@ -54,13 +58,13 @@ export default function HTSignupPage() {
                 isTermsAccepted: true,
             }).unwrap();
 
-            showSuccessToast("Account Registered", "Verification PIN has been sent to your email.");
+            const message = result?.data?.message || result?.message || "Verification code has been sent to your email.";
+            setSignupMessage(message);
+            showSuccessToast("Account Registered", message);
             setCurrentStep('email-otp');
         } catch (err: any) {
             const message = err?.data?.message || err?.error || "Registration failed. Please try again.";
             showErrorToast("Registration Error", message);
-            // Allow proceeding to OTP step for UI flow testing
-            setCurrentStep('email-otp');
         } finally {
             setIsSubmitting(false);
         }
@@ -68,7 +72,26 @@ export default function HTSignupPage() {
 
     // Step 2 OTP Verification
     const handleOTPVerify = async (code: string) => {
-        console.log("Verifying code:", code);
+        const result = await triggerVerifyAccount({
+            email: userData.email,
+            otp: code.toUpperCase(),
+        }).unwrap();
+
+        const data = result?.data;
+        if (data?.accessToken && data?.refreshToken) {
+            saveTokens({ accessToken: data.accessToken, refreshToken: data.refreshToken });
+        }
+    };
+
+    // Resend OTP
+    const handleResendOTP = async () => {
+        if (!userData.email) return;
+        try {
+            const result = await triggerResendVerification({ email: userData.email }).unwrap();
+            showSuccessToast("Code Resent", result?.message || "A new verification code has been sent to your email.");
+        } catch (err: any) {
+            showErrorToast("Resend Failed", err?.data?.message || err?.error || "Failed to resend verification code.");
+        }
     };
 
     // Step 4 Business Details Submission
@@ -116,11 +139,12 @@ export default function HTSignupPage() {
             {currentStep === 'email-otp' && (
                 <OTPVerification
                     title="Just One More Step !"
-                    subtitle={`We've sent a 4-digit code to ${userData.email || 'your email'}. Enter it below to verify your account.`}
-                    pinLength={4}
+                    subtitle={signupMessage || `We've sent a 6-character code to ${userData.email || 'your email'}. Enter it below to verify your account.`}
+                    pinLength={6}
                     expiresInSeconds={60}
                     buttonText="Verify Now"
                     onVerify={handleOTPVerify}
+                    onResend={handleResendOTP}
                     onSuccessToastTitle="Account Verified!"
                     onSuccessToastMessage="Email verification successful."
                     nextUrlPattern={() => {

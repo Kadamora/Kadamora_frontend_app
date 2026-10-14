@@ -14,6 +14,11 @@ import AddDocumentModal from './Document/components/AddDocumentModal';
 import SettingsPage from './Settings/SettingsPage';
 import InspectionPage from './Inspection/InspectionPage';
 import AddInspectionModal from './Inspection/components/AddInspectionModal';
+import OnboardingAgentFlowModal from '../PropertyListing/Home/components/OnboardingAgent/OnboardingAgentFlowModal';
+import VerificationInProgressModal from '../PropertyListing/Home/components/VerificationInProgressModal';
+import { useAgentStatus } from '@modules/real-estate/hooks/useAgentStatus';
+import { AgentApprovalBanner } from '@modules/real-estate/components/AgentApprovalBanner';
+import { showErrorToast } from '@shared/components/Toast/Toast';
 
 // const tabs = ['Overview', 'Properties', 'Tenants'];
 const tabs = ['Overview', 'Properties', 'Tenants', 'Maintenance', 'Communication', 'Documents', 'Inspection', 'Settings'];
@@ -68,6 +73,27 @@ const PropertyManagementRoot: React.FC = () => {
 
     const action = actionsMap[activeSegment];
 
+    const {
+        isApproved,
+        isUnderReview,
+        explanation,
+        determineOnboardingEntryStep,
+        isLoading: isLoadingStatus,
+    } = useAgentStatus();
+
+    const [onboardingOpen, setOnboardingOpen] = React.useState(false);
+    const [onboardingStep, setOnboardingStep] = React.useState(0);
+    const [verificationInProgressOpen, setVerificationInProgressOpen] = React.useState(false);
+
+    const handleOpenUploadDocs = React.useCallback(() => {
+        if (isUnderReview) {
+            setVerificationInProgressOpen(true);
+            return;
+        }
+        setOnboardingStep(determineOnboardingEntryStep());
+        setOnboardingOpen(true);
+    }, [isUnderReview, determineOnboardingEntryStep]);
+
     const [modals, setModals] = React.useState({
         addProperty: false,
         addTenant: false,
@@ -78,6 +104,22 @@ const PropertyManagementRoot: React.FC = () => {
     });
 
     const handleAction = () => {
+        if (!action) return;
+
+        const isRestrictedAction = action.label === 'Add Property' || action.label === 'Add Tenant';
+        if (isRestrictedAction && !isApproved) {
+            if (isUnderReview) {
+                setVerificationInProgressOpen(true);
+            } else {
+                showErrorToast(
+                    'Verification Required',
+                    explanation || `Only approved agents can ${action.label.toLowerCase()}. Please upload documents to verify your account.`
+                );
+                handleOpenUploadDocs();
+            }
+            return;
+        }
+
         const modalKey = modalActions[action.label];
         if (modalKey) {
             setModals((prev) => ({ ...prev, [modalKey]: true }));
@@ -101,12 +143,31 @@ const PropertyManagementRoot: React.FC = () => {
 
     return (
         <div className="pb-10">
-            <AddPropertyFlowModal open={modals.addProperty} onClose={() => closeModal('addProperty')} />
-            <AddTenantModal open={modals.addTenant} onClose={() => closeModal('addTenant')} />
+            <AddPropertyFlowModal
+                open={modals.addProperty}
+                onClose={() => closeModal('addProperty')}
+                onUploadDocs={handleOpenUploadDocs}
+            />
+            <AddTenantModal
+                open={modals.addTenant}
+                onClose={() => closeModal('addTenant')}
+                onUploadDocs={handleOpenUploadDocs}
+            />
             <CreateAnnouncementModal open={modals.announcement} onClose={() => closeModal('announcement')} />
             <AddInspectionModal open={modals.inspection} onClose={() => closeModal('inspection')} />
             <AddMaintenanceModal open={modals.maintenance} onClose={() => closeModal('maintenance')} />
             <AddDocumentModal open={modals.document} onClose={() => closeModal('document')} />
+
+            <OnboardingAgentFlowModal
+                open={onboardingOpen}
+                step={onboardingStep}
+                goTo={setOnboardingStep}
+                onClose={() => setOnboardingOpen(false)}
+            />
+            <VerificationInProgressModal
+                open={verificationInProgressOpen}
+                onClose={() => setVerificationInProgressOpen(false)}
+            />
             <div className="mb-6 mt-4 max-w-300 mx-auto">
                 <div className="flex items-center justify-between">
                     <div>
@@ -127,6 +188,17 @@ const PropertyManagementRoot: React.FC = () => {
                     </nav>
                     </div>
                 </div>
+
+                {!isApproved && !isLoadingStatus && (
+                    <div className="mt-4">
+                        <AgentApprovalBanner
+                            explanation={explanation}
+                            isUnderReview={isUnderReview}
+                            isApproved={isApproved}
+                            onUploadDocs={handleOpenUploadDocs}
+                        />
+                    </div>
+                )}
 
                 <div className="mt-4 flex items-center gap-2 flex-wrap  p-2 md:justify-between">
                     <div className="w-full md:flex-1 overflow-x-auto scrollbar-hide md:overflow-visible">
@@ -157,7 +229,16 @@ const PropertyManagementRoot: React.FC = () => {
                             <div className="hidden md:flex ml-4 items-center">
                                 <button
                                     onClick={handleAction}
-                                    className="px-4 py-2 rounded-md border border-[#002E62] bg-[#002E62] text-[#fff] hover:bg-[#002E62]"
+                                    title={
+                                        (action.label === 'Add Property' || action.label === 'Add Tenant') && !isApproved
+                                            ? (explanation || 'Verification required')
+                                            : undefined
+                                    }
+                                    className={`px-4 py-2 rounded-md border border-[#002E62] bg-[#002E62] text-[#fff] hover:bg-[#002E62] transition-opacity ${
+                                        (action.label === 'Add Property' || action.label === 'Add Tenant') && !isApproved
+                                            ? 'opacity-80'
+                                            : ''
+                                    }`}
                                     aria-label={action.label}
                                 >
                                     {getButtonLabel(action.label)}
@@ -167,7 +248,16 @@ const PropertyManagementRoot: React.FC = () => {
                             <div className="md:hidden w-full mt-3 flex justify-center">
                                 <button
                                     onClick={handleAction}
-                                    className="w-full max-w-xs px-4 py-2 rounded-md border border-[#CCE3FD] bg-[#002E62] text-[#fff] hover:bg-[#002E62]"
+                                    title={
+                                        (action.label === 'Add Property' || action.label === 'Add Tenant') && !isApproved
+                                            ? (explanation || 'Verification required')
+                                            : undefined
+                                    }
+                                    className={`w-full max-w-xs px-4 py-2 rounded-md border border-[#CCE3FD] bg-[#002E62] text-[#fff] hover:bg-[#002E62] transition-opacity ${
+                                        (action.label === 'Add Property' || action.label === 'Add Tenant') && !isApproved
+                                            ? 'opacity-80'
+                                            : ''
+                                    }`}
                                     aria-label={action.label}
                                 >
                                     {action.label}

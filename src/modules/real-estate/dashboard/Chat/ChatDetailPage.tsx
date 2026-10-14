@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useLocation, Link } from 'react-router';
 import { MoreVertical, Send, ChevronRight } from 'lucide-react';
 import EmojiPicker, { Theme } from 'emoji-picker-react';
@@ -13,6 +13,7 @@ import {
 import { useAppSelector, useAppDispatch } from '@store/hooks';
 import type {  ChatMessage } from '@shared/api/messages.api';
 import { useChatSocket } from '@shared/hooks/useChatSocket';
+import { showErrorToast } from '@shared/components/Toast/Toast';
 
 function formatTime(dateStr: string): string {
     if (!dateStr) return '';
@@ -41,6 +42,7 @@ export default function ChatDetailPage() {
 
     const currentUserId = useAppSelector((s) => s.auth.user?.id);
     const dispatch = useAppDispatch();
+    const isSelfChat = Boolean(currentUserId && userId === currentUserId);
 
     const [message, setMessage] = useState('');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -123,39 +125,47 @@ export default function ChatDetailPage() {
     //     }
     // };
     const handleSend = async () => {
-    const text = message.trim();
-    if (!text || !userId || sending) return;
+        const text = message.trim();
+        if (!text || !userId || sending || isSelfChat || text.length > 5000) return;
 
-    setMessage('');
+        setMessage('');
 
-    const optimisticMessage: ChatMessage = {
-        id: `temp-${Date.now()}`,
-        content: text,
-        createdAt: new Date().toISOString(),
-        sender: {
-            id: currentUserId!,
-            firstName: '',
-            lastName: '',
-        },
-    } as ChatMessage;
-
-    // Optimistically update cache (add to the top of the newest-first array)
-    dispatch(
-        messagesApi.util.updateQueryData('getChatWithUser', userId, (draft) => {
-            draft.data.messages.unshift(optimisticMessage);
-        })
-    );
-
-    try {
-        await sendMessage({
-            recipientId: userId,
+        const optimisticMessage: ChatMessage = {
+            id: `temp-${Date.now()}`,
             content: text,
-            propertyId: chatPreview?.propertyId,
-        }).unwrap();
-    } catch {
-        console.error("Message failed to send");
-    }
-};
+            createdAt: new Date().toISOString(),
+            sender: {
+                id: currentUserId!,
+                firstName: '',
+                lastName: '',
+            },
+        } as ChatMessage;
+
+        // Optimistically update cache (add to the top of the newest-first array)
+        dispatch(
+            messagesApi.util.updateQueryData('getChatWithUser', userId, (draft) => {
+                draft.data.messages.unshift(optimisticMessage);
+            })
+        );
+
+        try {
+            await sendMessage({
+                recipientId: userId,
+                content: text,
+                propertyId: chatPreview?.propertyId,
+            }).unwrap();
+        } catch (err: any) {
+            // Revert optimistic update on failure
+            dispatch(
+                messagesApi.util.updateQueryData('getChatWithUser', userId, (draft) => {
+                    draft.data.messages = (draft.data?.messages ?? []).filter((m) => m.id !== optimisticMessage.id);
+                })
+            );
+            setMessage(text);
+            const msg = err?.data?.message || err?.message || 'Message failed to send';
+            showErrorToast('Message Failed', msg);
+        }
+    };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -293,66 +303,51 @@ export default function ChatDetailPage() {
 
             {/* Input bar */}
             <div className="border-t border-gray-100 bg-white px-4 pb-4 pt-3">
+                {isSelfChat && (
+                    <div className="mb-2 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800 text-center font-medium">
+                        You cannot send messages to yourself.
+                    </div>
+                )}
                 <div className="rounded-xl border border-gray-200 bg-gray-50 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/20 transition overflow-hidden">
                     <textarea
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         onKeyDown={handleKeyDown}
                         rows={2}
-                        placeholder="Write a message ..."
-                        className="w-full bg-transparent px-4 pt-3 pb-1 text-sm resize-none outline-none text-gray-700 placeholder-gray-400"
+                        maxLength={5000}
+                        disabled={isSelfChat}
+                        placeholder={isSelfChat ? "You cannot message yourself" : "Write a message ..."}
+                        className="w-full bg-transparent px-4 pt-3 pb-1 text-sm resize-none outline-none text-gray-700 placeholder-gray-400 disabled:opacity-60"
                     />
                     <div className="flex items-center justify-between px-3 pb-2.5">
                         <div className="flex items-center gap-3 text-gray-400">
-                            {/* <button title="Add attachment" type="button" className="hover:text-gray-600 transition-colors">
-                                <Plus size={18} />
-                            </button>
-                            <button title="Record audio" type="button" className="hover:text-gray-600 transition-colors">
-                                <Mic size={18} />
-                            </button>
-                            <button title="Add image" type="button" className="hover:text-gray-600 transition-colors">
-                                <Image size={18} />
-                            </button> */}
                             <div className="relative" ref={emojiPickerRef}>
-                                {/* <button
-                                    onClick={() => setShowEmojiPicker((p) => !p)}
-                                    title="Add emoji"
-                                    type="button"
-                                    className={`transition-colors ${showEmojiPicker ? 'text-[var(--color-primary)]' : 'hover:text-gray-600'}`}
-                                >
-                                    <Smile size={18} />
-                                </button> */}
-                                
                                 {showEmojiPicker && (
                                     <div className="absolute bottom-full left-0 mb-2 z-50 w-[320px]">
-                                        {/* <EmojiPicker 
-                                            onEmojiClick={onEmojiClick}
-                                            theme={Theme.LIGHT}
-                                            lazyLoadEmojis={true}
-                                            searchDisabled={true}
-                                            skinTonesDisabled={true}
-                                            width={300}
-                                            height={350}
-                                        /> */}
                                         <EmojiPicker
                                             onEmojiClick={onEmojiClick}
                                             theme={Theme.LIGHT}
                                             emojiStyle={EmojiStyle.NATIVE}
                                             width={300}
                                             height={100}
-                                            />
+                                        />
                                     </div>
                                 )}
                             </div>
                         </div>
-                        <button
-                            onClick={handleSend}
-                            disabled={!message.trim() || sending}
-                            className="flex items-center gap-2 px-4 py-1.5 bg-[var(--color-primary)] text-white text-sm font-semibold rounded-lg hover:opacity-90 active:scale-95 transition disabled:opacity-50"
-                        >
-                            Send
-                            <Send size={14} />
-                        </button>
+                        <div className="flex items-center gap-3">
+                            <span className={`text-xs ${message.length > 4900 ? 'text-red-500 font-semibold' : 'text-gray-400'}`}>
+                                {message.length.toLocaleString()} / 5,000
+                            </span>
+                            <button
+                                onClick={handleSend}
+                                disabled={!message.trim() || sending || isSelfChat || message.length > 5000}
+                                className="flex items-center gap-2 px-4 py-1.5 bg-[var(--color-primary)] text-white text-sm font-semibold rounded-lg hover:opacity-90 active:scale-95 transition disabled:opacity-50"
+                            >
+                                Send
+                                <Send size={14} />
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

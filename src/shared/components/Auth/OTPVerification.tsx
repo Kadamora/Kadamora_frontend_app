@@ -8,8 +8,9 @@ export interface OTPVerificationProps {
     pinLength?: number;
     expiresInSeconds?: number;
     buttonText?: string;
+    inputMode?: 'text' | 'numeric';
     onVerify?: (code: string) => Promise<void> | void;
-    onResend?: () => Promise<void> | void;
+    onResend?: () => Promise<any> | any;
     nextUrlPattern?: (code: string) => string;
     onSuccessToastTitle?: string;
     onSuccessToastMessage?: string;
@@ -21,6 +22,7 @@ export default function OTPVerification({
     pinLength = 4,
     expiresInSeconds = 60,
     buttonText = "Continue",
+    inputMode = "text",
     onVerify,
     onResend,
     nextUrlPattern,
@@ -41,7 +43,7 @@ export default function OTPVerification({
     }, [seconds]);
 
     const handleChange = (idx: number, value: string) => {
-        const char = value.replace(/[^a-zA-Z0-9]/g, '').slice(-1);
+        const char = value.replace(/[^a-zA-Z0-9]/g, '').slice(-1).toUpperCase();
         const next = [...code];
         next[idx] = char;
         setCode(next);
@@ -59,7 +61,12 @@ export default function OTPVerification({
 
     const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
         e.preventDefault();
-        const pasted = e.clipboardData.getData('text').trim().slice(0, pinLength);
+        const pasted = e.clipboardData
+            .getData('text')
+            .replace(/[^a-zA-Z0-9]/g, '')
+            .trim()
+            .slice(0, pinLength)
+            .toUpperCase();
         if (!pasted) return;
 
         const next = [...code];
@@ -79,15 +86,17 @@ export default function OTPVerification({
     const handleResendClick = async () => {
         if (seconds > 0) return;
         try {
+            let resMsg: string | undefined;
             if (onResend) {
-                await onResend();
+                const res = await onResend();
+                resMsg = (res as any)?.message;
             }
             setCode(Array(pinLength).fill(''));
             setSeconds(expiresInSeconds);
             inputs.current[0]?.focus();
-            showSuccessToast("Code Resent", "A new verification PIN has been sent to your email.");
+            showSuccessToast("Code Resent", resMsg || "A new verification code has been sent to your email.");
         } catch (err: any) {
-            showErrorToast("Resend Failed", err?.message || "Failed to resend verification code.");
+            showErrorToast("Resend Failed", err?.data?.message || err?.message || "Failed to resend verification code.");
         }
     };
 
@@ -110,7 +119,7 @@ export default function OTPVerification({
                 navigate(nextUrlPattern(pinCode));
             }
         } catch (err: any) {
-            const msg = err?.data?.message || err?.message || "Invalid PIN code. Please try again.";
+            const msg = err?.data?.message || err?.message || "Invalid verification code. Please try again.";
             setErrorMessage(msg);
         } finally {
             setIsSubmitting(false);
@@ -140,7 +149,7 @@ export default function OTPVerification({
                 ) : null}
 
                 {/* PIN Input grid */}
-                <div className="flex justify-center gap-3 sm:gap-4 my-6">
+                <div className="flex justify-center gap-2 sm:gap-3 my-6">
                     {code.map((digit, idx) => (
                         <input
                             key={idx}
@@ -148,14 +157,15 @@ export default function OTPVerification({
                                 inputs.current[idx] = el;
                             }}
                             type="text"
-                            inputMode="numeric"
+                            inputMode={inputMode}
+                            autoCapitalize="characters"
                             maxLength={1}
                             value={digit}
                             onChange={(e) => handleChange(idx, e.target.value)}
                             onKeyDown={(e) => handleKeyDown(idx, e)}
                             onPaste={handlePaste}
                             aria-label={`Digit ${idx + 1}`}
-                            className="w-13 h-13 sm:w-16 sm:h-16 text-center font-bold text-lg sm:text-xl text-secondary rounded-xl bg-[#F7F7FD] border border-[#E4E4E8] focus:border-secondary focus:bg-white focus:ring-2 focus:ring-secondary/15 outline-none transition-all"
+                            className="w-11 h-12 sm:w-14 sm:h-14 text-center font-bold text-lg sm:text-xl text-secondary rounded-xl bg-[#F7F7FD] border border-[#E4E4E8] focus:border-secondary focus:bg-white focus:ring-2 focus:ring-secondary/15 outline-none transition-all uppercase"
                         />
                     ))}
                 </div>
@@ -163,23 +173,26 @@ export default function OTPVerification({
                 {/* Expiry & Resend Line */}
                 <div className="flex items-center justify-between text-xs sm:text-sm text-[#52525B]">
                     <div>
-                        Your verification code expires in:{' '}
+                        Expires in:{' '}
                         <span className="text-[#43CC88] font-medium font-mono">
                             {mm}:{ss}
                         </span>
                     </div>
-                    <button
-                        type="button"
-                        onClick={handleResendClick}
-                        disabled={seconds > 0}
-                        className={`transition-colors  ${
-                            seconds > 0
-                                ? 'text-[#52525B] cursor-not-allowed'
-                                : 'text-gray-600 hover:text-secondary hover:underline cursor-pointer'
-                        }`}
-                    >
-                        Resend Code
-                    </button>
+                    <div className="flex items-center gap-1">
+                        <span className="text-gray-500">Didn’t get a code?</span>
+                        <button
+                            type="button"
+                            onClick={handleResendClick}
+                            disabled={seconds > 0}
+                            className={`transition-colors font-semibold underline ${
+                                seconds > 0
+                                    ? 'text-gray-400 cursor-not-allowed'
+                                    : 'text-secondary hover:text-black cursor-pointer'
+                            }`}
+                        >
+                            Resend
+                        </button>
+                    </div>
                 </div>
 
                 {/* Primary Button */}

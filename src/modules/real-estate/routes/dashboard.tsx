@@ -1,8 +1,9 @@
-﻿import { lazy } from 'react';
+import { lazy } from 'react';
 import { Route } from 'react-router';
 import RequireAuth from '@shared/guards/RequireAuth';
 import DashboardLayout from '@shared/layouts/DashboardLayout/DashboardLayout';
 
+const Dashboard           = lazy(() => import('../dashboard/Home/Dashboard'));
 const PropertyListing     = lazy(() => import('../dashboard/PropertyListing/Home/PropertyManagementPage'));
 const PropertyManagement  = lazy(() => import('../dashboard/PropertyManagement/PropertyManagementRoot'));
 const PropertyView        = lazy(() => import('../dashboard/PropertyListing/PropertyView/PropertyView'));
@@ -21,13 +22,14 @@ export function RealEstateDashboardRoutes() {
         <Route
             path="dashboard"
             element={
-                // <RequireAuth>
+                <RequireAuth>
                     <DashboardLayout />
-                // </RequireAuth>
+                </RequireAuth>
             }
         >
-            <Route index element={<PropertyListing />} />
-            <Route path="home" element={<PropertyListing />} />
+            <Route index element={<Dashboard />} />
+            <Route path="home" element={<Dashboard />} />
+            <Route path="services" element={<Dashboard />} />
             <Route path="property-listing" element={<PropertyListing />} />
             <Route path="property-management/*" element={<PropertyManagement />} />
             <Route path="my-listing" element={<MyListing />} />

@@ -1,7 +1,11 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router';
 import { X, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useChangePasswordMutation } from '@shared/api/agentSettings.api';
 import Input from '@shared/components/Forms/Input';
+import { useAppDispatch } from '@store/hooks';
+import { logout } from '@store/auth/auth.slice';
+import { showSuccessToast } from '@shared/components/Toast/Toast';
 
 interface ChangePasswordModalProps {
     isOpen: boolean;
@@ -9,6 +13,8 @@ interface ChangePasswordModalProps {
 }
 
 const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClose }) => {
+    const navigate = useNavigate();
+    const dispatch = useAppDispatch();
     const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -45,9 +51,16 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
             const response = await changePassword({ oldPassword, newPassword }).unwrap();
             if (response.success) {
                 setSuccess(true);
+                sessionStorage.setItem('authSuccessMessage', 'Password changed. Please log in again.');
+                showSuccessToast('Password Changed', 'Password changed. Please log in again.');
                 setTimeout(() => {
+                    dispatch(logout());
                     handleClose();
-                }, 2000);
+                    navigate('/auth/login', {
+                        replace: true,
+                        state: { message: 'Password changed. Please log in again.' },
+                    });
+                }, 1500);
             }
         } catch (err: any) {
             setError(err?.data?.message || 'Failed to update password. Please try again.');
@@ -95,8 +108,8 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
                                     <polyline points="20 6 9 17 4 12" />
                                 </svg>
                             </div>
-                            <h3 className="text-[18px] font-bold text-[#002E62]">Password Updated!</h3>
-                            <p className="text-[#71717A] mt-2 text-[14.5px]">Your security settings have been updated successfully.</p>
+                            <h3 className="text-[18px] font-bold text-[#002E62]">Password Changed!</h3>
+                            <p className="text-[#71717A] mt-2 text-[14.5px]">Password changed. Please log in again.</p>
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit} className="space-y-5">

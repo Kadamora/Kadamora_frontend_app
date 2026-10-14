@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { IoEye } from 'react-icons/io5';
 import { IoIosEyeOff } from 'react-icons/io';
@@ -11,14 +11,44 @@ import logo from '/assets/images/logo.png';
 
 
 export default function AdminLogin() {
-    const [showPassword, setShowPassword] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
     const navigate = useNavigate();
     const location = useLocation();
     const dispatch = useAppDispatch();
     const [triggerLogin] = useLoginMutation();
+
+    const [showPassword, setShowPassword] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(() => {
+        const fromState = (location.state as { errorMessage?: string } | null)?.errorMessage;
+        if (fromState) return fromState;
+        const fromSession = sessionStorage.getItem('authErrorMessage');
+        if (fromSession) {
+            sessionStorage.removeItem('authErrorMessage');
+            return fromSession;
+        }
+        return null;
+    });
+
+    const [infoMessage, setInfoMessage] = useState<string | null>(() => {
+        const fromState = (location.state as { message?: string } | null)?.message;
+        if (fromState) return fromState;
+        const fromSession = sessionStorage.getItem('authSuccessMessage');
+        if (fromSession) {
+            sessionStorage.removeItem('authSuccessMessage');
+            return fromSession;
+        }
+        return null;
+    });
+
+    useEffect(() => {
+        const fromState = location.state as { message?: string; errorMessage?: string } | null;
+        if (fromState?.errorMessage) {
+            setErrorMessage(fromState.errorMessage);
+        }
+        if (fromState?.message) {
+            setInfoMessage(fromState.message);
+        }
+    }, [location.state]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -31,6 +61,7 @@ export default function AdminLogin() {
 
         setIsSubmitting(true);
         setErrorMessage(null);
+        setInfoMessage(null);
 
         try {
             const response = await triggerLogin(payload).unwrap();
@@ -88,6 +119,14 @@ export default function AdminLogin() {
                     </p>
 
                     <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+                        {infoMessage && !errorMessage && (
+                            <div
+                                role="status"
+                                className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+                            >
+                                {infoMessage}
+                            </div>
+                        )}
                         {errorMessage && (
                             <div
                                 role="alert"

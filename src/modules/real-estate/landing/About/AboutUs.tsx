@@ -1,4 +1,4 @@
-﻿import LandingPageContainer from "@shared/layouts/LandingLayout/LandingPageContainer";
+import LandingPageContainer from "@shared/layouts/LandingLayout/LandingPageContainer";
 import { AboutSEO } from "@shared/components/SEO/SEO";
 import Stats from "./components/Stats";
 import Teams from "./components/Teams";
@@ -14,7 +14,7 @@ export default function AboutUs() {
             <LandingPageContainer hero={Hero}>
                 <Stats />
                 <Teams />
-                <ContactForm />
+                <ContactForm source="about-page" />
                 <div className="bg-[#ffffff]">
                     <FAQ />
                 </div>

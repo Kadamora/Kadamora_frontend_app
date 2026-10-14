@@ -4,6 +4,8 @@ import { IoEye } from 'react-icons/io5';
 import { IoIosEyeOff } from 'react-icons/io';
 import { useResetPasswordMutation } from '@shared/api/auth.api';
 import { showSuccessToast, showErrorToast } from '@shared/components/Toast/Toast';
+import { useAppDispatch } from '@store/hooks';
+import { logout } from '@store/auth/auth.slice';
 
 export interface ResetPasswordProps {
     title?: string;
@@ -21,6 +23,7 @@ export default function ResetPassword({
     customResetMutation,
 }: ResetPasswordProps) {
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
     const { code } = useParams<{ code: string }>();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
@@ -65,21 +68,28 @@ export default function ResetPassword({
         setErrorMessage(null);
 
         try {
-            const response = await triggerResetPassword({
+            await triggerResetPassword({
                 email,
                 newPassword: password,
                 confirmPassword: confirm,
                 otp: code || '',
             }).unwrap();
 
+            dispatch(logout());
+            sessionStorage.setItem('authSuccessMessage', 'Password changed. Please log in again.');
             showSuccessToast(
                 "Password Reset Successful",
-                response.message || "Your password has been updated successfully."
+                "Password changed. Please log in again."
             );
 
             form.reset();
             sessionStorage.removeItem('resetEmail');
-            setTimeout(() => navigate(loginUrl), 1500);
+            setTimeout(() => {
+                navigate(loginUrl, {
+                    replace: true,
+                    state: { message: 'Password changed. Please log in again.' },
+                });
+            }, 1200);
         } catch (err: any) {
             const message =
                 err?.data?.message ||

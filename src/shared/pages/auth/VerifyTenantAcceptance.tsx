@@ -1,10 +1,10 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAcceptInvitationMutation } from '@modules/real-estate/api/tenant.api';
 import toast from 'react-hot-toast';
 
 const VerifyTenantAcceptance = () => {
-    const { tenantId } = useParams();
+    const { token } = useParams();
     const navigate = useNavigate();
     const [acceptInvitation] = useAcceptInvitationMutation();
     const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
@@ -12,13 +12,14 @@ const VerifyTenantAcceptance = () => {
 
     useEffect(() => {
         const verify = async () => {
-            if (!tenantId) {
+            if (!token) {
                 setStatus('error');
-                setErrorMessage('Invalid invitation link.');
+                setErrorMessage('Invalid invitation link. The token is missing.');
                 return;
             }
+
             try {
-                await acceptInvitation(tenantId).unwrap();
+                await acceptInvitation(token).unwrap();
                 setStatus('success');
                 toast.success('Invitation accepted successfully!');
                 // Automatically redirect to home/login after a delay
@@ -27,13 +28,27 @@ const VerifyTenantAcceptance = () => {
                 }, 3000);
             } catch (error: any) {
                 setStatus('error');
-                setErrorMessage(error?.data?.message || 'Failed to accept invitation. The link may have expired or is invalid.');
-                toast.error(error?.data?.message || 'Failed to accept invitation.');
+
+                // Backend security spec:
+                // On 400 ("invalid or has expired"), tell the user to ask their agent to re-send the invite.
+                const isExpiredOrInvalid =
+                    error?.status === 400 ||
+                    error?.data?.statusCode === 400 ||
+                    (typeof error?.data?.message === 'string' &&
+                        (error.data.message.toLowerCase().includes('expired') ||
+                         error.data.message.toLowerCase().includes('invalid')));
+
+                const msg = isExpiredOrInvalid
+                    ? 'This invitation link is invalid or has expired. Please contact your property agent to re-send a new invitation link.'
+                    : (error?.data?.message || 'Failed to accept invitation. Please try again later.');
+
+                setErrorMessage(msg);
+                toast.error(msg);
             }
         };
 
         verify();
-    }, [tenantId, acceptInvitation, navigate]);
+    }, [token, acceptInvitation, navigate]);
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-4">
@@ -56,7 +71,7 @@ const VerifyTenantAcceptance = () => {
                         <p className="text-[#64748B] mb-6">You have successfully accepted the tenant invitation.</p>
                         <button
                             onClick={() => navigate('/auth/login')}
-                            className="w-full py-3 px-4 bg-[#002E62] text-white rounded-xl font-medium hover:bg-[#002E62]/90 transition-colors"
+                            className="w-full py-3 px-4 bg-[#002E62] text-white rounded-xl font-medium hover:bg-[#002E62]/90 transition-colors cursor-pointer"
                         >
                             Go to Login
                         </button>
@@ -69,14 +84,22 @@ const VerifyTenantAcceptance = () => {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </div>
-                        <h2 className="text-2xl font-semibold text-[#0F172A] mb-2">Verification Failed</h2>
-                        <p className="text-[#64748B] mb-6">{errorMessage}</p>
-                        <button
-                            onClick={() => navigate('/')}
-                            className="w-full py-3 px-4 bg-[#F1F5F9] text-[#0F172A] rounded-xl font-medium hover:bg-[#E2E8F0] transition-colors"
-                        >
-                            Return to Home
-                        </button>
+                        <h2 className="text-2xl font-semibold text-[#0F172A] mb-2">Invitation Expired or Invalid</h2>
+                        <p className="text-[#64748B] mb-6 leading-relaxed">{errorMessage}</p>
+                        <div className="space-y-3">
+                            <button
+                                onClick={() => navigate('/auth/login')}
+                                className="w-full py-3 px-4 bg-[#002E62] text-white rounded-xl font-medium hover:bg-[#002E62]/90 transition-colors cursor-pointer"
+                            >
+                                Go to Login
+                            </button>
+                            <button
+                                onClick={() => navigate('/')}
+                                className="w-full py-3 px-4 bg-[#F1F5F9] text-[#0F172A] rounded-xl font-medium hover:bg-[#E2E8F0] transition-colors cursor-pointer"
+                            >
+                                Return to Home
+                            </button>
+                        </div>
                     </>
                 )}
             </div>

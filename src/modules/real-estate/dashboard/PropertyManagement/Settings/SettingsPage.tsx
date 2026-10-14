@@ -1,7 +1,8 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import UpdateAccountModal from './components/UpdateAccountModal';
 import { useGetAllSettingsQuery, useUpdateSettingsMutation, type UpdateSettingsPayload } from '@modules/real-estate/api/propertyMgt.api';
 import { House, Landmark, Mail, MessageSquareText } from 'lucide-react';
+import { showSuccessToast, showErrorToast } from '@shared/components/Toast/Toast';
 
 
 const notificationSettings = [
@@ -116,8 +117,9 @@ const SettingsPage: React.FC = () => {
         const newToggles = { ...toggles, [label]: newValue };
         setToggles(newToggles);
 
+        // Security rule: Only send toggle fields. Do NOT send bank fields when toggling,
+        // otherwise the backend requires a currentPassword.
         const payload: UpdateSettingsPayload = {
-            ...localBankAccount,
             autoPaymentReminder: newToggles['Auto Payment Reminder'],
             emailNewMaintenanceRequests: newToggles['New Maintenance Requests'],
             emailPaymentNotifications: newToggles['Payment Notifications'],
@@ -128,37 +130,61 @@ const SettingsPage: React.FC = () => {
 
         try {
             await updateSettings(payload).unwrap();
-            console.log(`Updated settings including ${label} to ${newValue}`);
-        } catch (error) {
+            showSuccessToast('Setting Updated', `${label} updated successfully.`);
+        } catch (error: any) {
             console.error(`Failed to update setting ${label}:`, error);
             // Revert local state on failure
             setToggles((prev) => ({ ...prev, [label]: !newValue }));
+            showErrorToast('Update Failed', error?.data?.message || `Failed to update ${label}`);
         }
     };
 
-    const handleUpdateBankDetails = async (data: { bankName: string; accountNumber: string; accountName: string }) => {
+    const handleUpdateBankDetails = async (data: {
+        bankName: string;
+        accountNumber: string;
+        accountName: string;
+        currentPassword: string;
+    }) => {
+        const trimmedBank = data.bankName.trim();
+        const trimmedAccountNum = data.accountNumber.trim();
+        const trimmedAccountName = data.accountName.trim();
+
+        const hasChanged =
+            trimmedBank !== localBankAccount.bankName.trim() ||
+            trimmedAccountNum !== localBankAccount.accountNumber.trim() ||
+            trimmedAccountName !== localBankAccount.accountName.trim();
+
+        if (!hasChanged) {
+            setIsUpdateModalOpen(false);
+            return;
+        }
+
+        // Security rule: When bank fields change, currentPassword is required.
         const payload: UpdateSettingsPayload = {
-            ...data,
-            autoPaymentReminder: toggles['Auto Payment Reminder'],
-            emailNewMaintenanceRequests: toggles['New Maintenance Requests'],
-            emailPaymentNotifications: toggles['Payment Notifications'],
-            emailRentExpiryAlerts: toggles['Rent Expiry Alerts'],
-            emailInspectionReminders: toggles['Inspection Reminders'],
-            smsEmergencyMaintenance: toggles['Emergency Maintenance'],
+            bankName: trimmedBank,
+            accountNumber: trimmedAccountNum,
+            accountName: trimmedAccountName,
+            currentPassword: data.currentPassword,
         };
 
         try {
             await updateSettings(payload).unwrap();
-            
+
             setLocalBankAccount({
-                bankName: data.bankName,
-                accountNumber: data.accountNumber,
-                accountName: data.accountName,
+                bankName: trimmedBank,
+                accountNumber: trimmedAccountNum,
+                accountName: trimmedAccountName,
             });
             setIsUpdateModalOpen(false);
-            console.log("Bank details and settings updated successfully");
-        } catch (error) {
+            showSuccessToast('Bank Details Updated', 'Your bank details have been updated successfully.');
+        } catch (error: any) {
             console.error('Failed to update bank details:', error);
+            const msg =
+                error?.data?.message ||
+                error?.error ||
+                'Failed to update bank details. Please check your password.';
+            showErrorToast('Update Failed', msg);
+            throw error;
         }
     };
 

@@ -1,57 +1,82 @@
 export interface ServiceItem {
-    id: number;
+    id: number | string;
     title: string;
+    category?: string;
     description: string;
     icon: string;
     active: boolean;
     url?: string;
+    badge?: string;
+    ctaText?: string;
 }
 
 export const services: ServiceItem[] = [
     {
-        id: 1,
-        title: 'Property listing, management and investment',
-        description: 'Professionals listing properties on behalf of others or managing sales/rentals.',
+        id: 'real-estate',
+        title: 'Property Listing, Management & Investment',
+        category: 'Real Estate',
+        description:
+            'Explore verified property listings, manage tenants, handle maintenance and leases, and monitor your real estate portfolio.',
         icon: '/assets/icons/property_listing.svg',
         active: true,
         url: '/dashboard/property-listing',
+        badge: 'Available',
+        ctaText: 'Open Real Estate',
     },
-//     {
-//         id: 2,
-//         title: 'Facility Management',
-//         description: 'Individuals or firms interested in purchasing or investing in properties.',
-//         icon: '/assets/icons/facility_management.svg',
-//         active: false,
-//     },
-//     {
-//         id: 3,
-//         title: 'Professional Services Marketplace',
-//         description:
-//             'Individuals or businesses actively searching for residential or commercial properties to rent or lease.',
-//         icon: '/assets/icons/professional_service.svg',
-//         active: false,
-//     },
-//     {
-//         id: 4,
-//         title: 'Construction Supplies & Equipment Hubs',
-//         description:
-//             'Vendors offering services like facility management, procurement, cleaning, security, repairs, etc.',
-//         icon: '/assets/icons/construction_supplies.svg',
-//         active: false,
-//     },
-//     {
-//         id: 5,
-//         title: 'Project Constructions Management',
-//         description: 'Firms involved in construction, project management, or estate development.',
-//         icon: '/assets/icons/project_constructions.svg',
-//         active: false,
-//     },
-//     {
-//         id: 6,
-//         title: 'Hospitality and Tour',
-//         description:
-//             'Vendors offering services like facility management, procurement, cleaning, security, repairs, etc.',
-//         icon: '/assets/icons/hospitality.svg',
-//         active: false,
-//     },
+    {
+        id: 'hospitality-tours',
+        title: 'Hospitality & Tours',
+        category: 'Travel & Stays',
+        description:
+            'Book luxury short-lets, boutique stays, curated tour packages, and manage guest reservations and travel wallets.',
+        icon: '/assets/icons/hospitality.svg',
+        active: true,
+        url: '/hospitality-tours/dashboard',
+        badge: 'Available',
+        ctaText: 'Open Hospitality',
+    },
+    {
+        id: 'facility-management',
+        title: 'Facility Management',
+        category: 'Operations',
+        description:
+            'Comprehensive facility maintenance, asset tracking, utility monitoring, security, and premises management.',
+        icon: '/assets/icons/facility_management.svg',
+        active: false,
+        badge: 'Coming Soon',
+        ctaText: 'Coming Soon',
+    },
+    {
+        id: 'services-marketplace',
+        title: 'Professional Services Marketplace',
+        category: 'Services',
+        description:
+            'Connect with verified industry professionals including certified architects, legal consultants, and building surveyors.',
+        icon: '/assets/icons/professional_service.svg',
+        active: false,
+        badge: 'Coming Soon',
+        ctaText: 'Coming Soon',
+    },
+    {
+        id: 'construction-supplies',
+        title: 'Construction Supplies & Equipment Hubs',
+        category: 'Procurement',
+        description:
+            'Direct procurement of certified building materials, heavy construction machinery, and industrial contractor equipment.',
+        icon: '/assets/icons/construction_supplies.svg',
+        active: false,
+        badge: 'Coming Soon',
+        ctaText: 'Coming Soon',
+    },
+    {
+        id: 'project-constructions',
+        title: 'Project Constructions Management',
+        category: 'Development',
+        description:
+            'End-to-end development oversight, architectural milestones, contractor task management, and progress reporting.',
+        icon: '/assets/icons/project_constructions.svg',
+        active: false,
+        badge: 'Coming Soon',
+        ctaText: 'Coming Soon',
+    },
 ];

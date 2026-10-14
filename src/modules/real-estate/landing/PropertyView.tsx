@@ -1,13 +1,16 @@
-﻿import Gallery from "@modules/real-estate/components/Gallery";
+import Gallery from "@modules/real-estate/components/Gallery";
 import ProductCard from "@modules/real-estate/components/ProductCard";
 import LandingPageContainer from "@shared/layouts/LandingLayout/LandingPageContainer";
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import { useGetAgentPropertyListingsByIdQuery, useGetAllPropertyListingsQuery } from '@modules/real-estate/api/propertyListings.api';
 import { MdOutlineLocationOn } from "react-icons/md";
 import CategoryCard from "@modules/real-estate/dashboard/PropertyListing/PropertyView/components/CategoryCard";
+import { useAppSelector } from '@store/hooks';
 
 
 export default function PropertyView() {    
+        const navigate = useNavigate();
+        const currentUserId = useAppSelector((s) => s.auth.user?.id);
         const {agentId} = useParams<{agentId: string}>();
         console.log("one", agentId)
         const {data: propertyListings} = useGetAgentPropertyListingsByIdQuery(agentId!, {
@@ -15,6 +18,13 @@ export default function PropertyView() {
         });
         const {data: allProperties} = useGetAllPropertyListingsQuery();
         const property = propertyListings?.data;
+        const isOwnListing = Boolean(
+            currentUserId && (
+                currentUserId === property?.agent?.user?.id ||
+                currentUserId === property?.agent?.userId ||
+                currentUserId === (property as any)?.userId
+            )
+        );
         console.log(propertyListings)
         const formatCurrency = (amount: string | number | null | undefined) => {
             if (!amount) return 'N/A';
@@ -168,12 +178,36 @@ export default function PropertyView() {
                             </div>
 
                             {/* Interest Button */}
-                            <div className="mb-6">
-                                <p className="font-medium mb-2 text-secondary">Are you interested in this Property?</p>
-                                <button className="w-37.5 h-11.25 bg-secondary text-white rounded-lg font-medium">
-                                    Message Agent
-                                </button>
-                            </div>
+                            {!isOwnListing && (
+                                <div className="mb-6">
+                                    <p className="font-medium mb-2 text-secondary">Are you interested in this Property?</p>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const agentUserId = property?.agent?.user?.id;
+                                            if (!agentUserId) return;
+                                            navigate(`/dashboard/chat/${agentUserId}`, {
+                                                state: {
+                                                    chat: {
+                                                        userId: agentUserId,
+                                                        userName: `${property?.agent?.user?.firstName ?? ''} ${property?.agent?.user?.lastName ?? ''}`.trim(),
+                                                        userAvatar: property?.agent?.user?.imgUrl,
+                                                        propertyId: property?.id,
+                                                        propertyName: property?.title,
+                                                        propertyImage: property?.media?.[0]?.url,
+                                                        lastMessage: '',
+                                                        lastMessageAt: '',
+                                                        unreadCount: 0,
+                                                    },
+                                                },
+                                            });
+                                        }}
+                                        className="w-37.5 h-11.25 bg-secondary text-white rounded-lg font-medium hover:bg-secondary/90 transition-colors"
+                                    >
+                                        Message Agent
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

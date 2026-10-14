@@ -3,6 +3,10 @@ import PropertyCard2 from '@modules/real-estate/components/PropertyCard2';
 import { useGetManagedPropertiesQuery, useDeletePropertyMutation } from '@modules/real-estate/api/propertyMgt.api';
 import AddTenantModal from '../Tenant/components/AddTenantModal';
 import EmptyState from '../../PropertyListing/Home/components/EmptyState';
+import OnboardingAgentFlowModal from '../../PropertyListing/Home/components/OnboardingAgent/OnboardingAgentFlowModal';
+import VerificationInProgressModal from '../../PropertyListing/Home/components/VerificationInProgressModal';
+import { useAgentStatus } from '@modules/real-estate/hooks/useAgentStatus';
+import { showErrorToast } from '@shared/components/Toast/Toast';
 
 const PropertySkeleton = () => (
     <div className="rounded-2xl border border-gray-100 bg-white p-4 animate-pulse flex flex-col gap-4 min-w-[320px] h-40">
@@ -27,9 +31,35 @@ const PropertiesPage: React.FC = () => {
     const [addTenantModalOpen, setAddTenantModalOpen] = useState(false);
     const [selectedPropertyId, setSelectedPropertyId] = useState<string | undefined>(undefined);
 
+    const { isApproved, isUnderReview, explanation, determineOnboardingEntryStep } = useAgentStatus();
+    const [onboardingOpen, setOnboardingOpen] = useState(false);
+    const [onboardingStep, setOnboardingStep] = useState(0);
+    const [verificationInProgressOpen, setVerificationInProgressOpen] = useState(false);
+
+    const handleOpenUploadDocs = () => {
+        if (isUnderReview) {
+            setVerificationInProgressOpen(true);
+            return;
+        }
+        setOnboardingStep(determineOnboardingEntryStep());
+        setOnboardingOpen(true);
+    };
+
     const properties = propertiesData?.data || [];
     
     const handleAddTenant = (id: number | string) => {
+        if (!isApproved) {
+            if (isUnderReview) {
+                setVerificationInProgressOpen(true);
+            } else {
+                showErrorToast(
+                    'Verification Required',
+                    explanation || 'Only approved agents can invite tenants. Please upload verification documents.'
+                );
+                handleOpenUploadDocs();
+            }
+            return;
+        }
         setSelectedPropertyId(id.toString());
         setAddTenantModalOpen(true);
     };
@@ -47,7 +77,19 @@ const PropertiesPage: React.FC = () => {
             <AddTenantModal 
                 open={addTenantModalOpen} 
                 onClose={() => setAddTenantModalOpen(false)} 
-                defaultPropertyId={selectedPropertyId} 
+                defaultPropertyId={selectedPropertyId}
+                onUploadDocs={handleOpenUploadDocs}
+            />
+
+            <OnboardingAgentFlowModal
+                open={onboardingOpen}
+                step={onboardingStep}
+                goTo={setOnboardingStep}
+                onClose={() => setOnboardingOpen(false)}
+            />
+            <VerificationInProgressModal
+                open={verificationInProgressOpen}
+                onClose={() => setVerificationInProgressOpen(false)}
             />
             <div className="mb-6 mt-4 max-w-300 mx-auto">
                 {/* Remove grid class if empty state is showing to allow centering */}

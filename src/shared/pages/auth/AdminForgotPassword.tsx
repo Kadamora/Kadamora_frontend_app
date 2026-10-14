@@ -1,10 +1,12 @@
-﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { useRequestPasswordResetMutation } from '@shared/api/auth.api';
 import Input from '@shared/components/Forms/Input';
 import logo from '/assets/images/logo.png';
 
 
 export default function AdminForgotPassword() {
+    const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -49,14 +51,16 @@ export default function AdminForgotPassword() {
         try {
             const response = await triggerPasswordReset({ email }).unwrap();
             showToast(response.message || 'Password reset link sent. Please check your email.');
+            sessionStorage.setItem('resetEmail', email);
             form.reset();
+            setTimeout(() => navigate('/admin/auth/forgot-password/verify'), 1500);
         } catch (err: any) {
             const message =
-            err?.data?.message ||
-            err?.error ||
-            'Unable to log you in with those details. Please try again.';
+                err?.data?.message ||
+                err?.error ||
+                'Unable to process password reset request. Please try again.';
 
-        setErrorMessage(message);
+            setErrorMessage(message);
         } finally {
             setIsSubmitting(false);
         }

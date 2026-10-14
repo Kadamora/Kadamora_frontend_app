@@ -1,4 +1,4 @@
-﻿import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { MoreVertical, Search } from 'lucide-react';
 import { useGetUserChatsQuery, messagesApi } from '@shared/api/messages.api';
@@ -51,7 +51,10 @@ export default function ChatListPage() {
     // Fetch once on mount â€” WebSocket keeps it live
     const { data, isLoading, isError } = useGetUserChatsQuery();
 
-    const chats: ChatPartner[] = data?.data?.chatPartners ?? [];
+    const chats: ChatPartner[] = useMemo(() => {
+        const list = data?.data?.chatPartners ?? [];
+        return currentUserId ? list.filter((c) => c.partner.id !== currentUserId) : list;
+    }, [data?.data?.chatPartners, currentUserId]);
 
     // Real-time: update the chat list when a new message arrives on any conversation
     const handleNewMessage = useCallback(

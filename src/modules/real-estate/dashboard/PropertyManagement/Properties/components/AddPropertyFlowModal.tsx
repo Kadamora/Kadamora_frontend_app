@@ -1,12 +1,14 @@
-﻿import Input from '@shared/components/Forms/Input';
+import Input from '@shared/components/Forms/Input';
 import RadioGroup from '@shared/components/Forms/RadioGroup';
 import Select from '@shared/components/Forms/Select';
 import StepsSidebar from '@modules/real-estate/dashboard/PropertyListing/Home/components/ListPropertyFlow/components/StepsSidebar';
 import CloseButton from '@modules/real-estate/dashboard/PropertyListing/Home/components/OnboardingAgent/components/CloseButton';
 import React, { useState, useCallback, useEffect } from 'react';
 import { useCreatePropertyMutation } from '@modules/real-estate/api/propertyMgt.api';
-
-
+import { useAgentStatus } from '@modules/real-estate/hooks/useAgentStatus';
+import { AgentApprovalBanner } from '@modules/real-estate/components/AgentApprovalBanner';
+import { showErrorToast, showSuccessToast } from '@shared/components/Toast/Toast';
+import { extractApiErrorMessage } from '@modules/real-estate/utils/errorUtils';
 
 interface StepDef {
     id: string;
@@ -34,7 +36,13 @@ const steps: StepDef[] = [
     },
 ];
 
-const AddPropertyFlowModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
+interface AddPropertyFlowModalProps {
+    open: boolean;
+    onClose: () => void;
+    onUploadDocs?: () => void;
+}
+
+const AddPropertyFlowModal: React.FC<AddPropertyFlowModalProps> = ({ open, onClose, onUploadDocs }) => {
     const [currentIdx, setCurrentIdx] = useState(0);
 
     // Form State
@@ -46,7 +54,9 @@ const AddPropertyFlowModal: React.FC<{ open: boolean; onClose: () => void }> = (
     const [bankName, setBankName] = useState('');
     const [accountName, setAccountName] = useState('');
     const [accountNumber, setAccountNumber] = useState('');
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
+    const { isApproved, isUnderReview, explanation } = useAgentStatus();
     const [createProperty, { isLoading }] = useCreatePropertyMutation();
 
     const handleClose = useCallback(() => {
@@ -61,12 +71,21 @@ const AddPropertyFlowModal: React.FC<{ open: boolean; onClose: () => void }> = (
             setBankName('');
             setAccountName('');
             setAccountNumber('');
+            setSubmitError(null);
         }, 250);
     }, [onClose]);
 
     const handleSubmit = async () => {
+        setSubmitError(null);
         if (currentIdx < steps.length - 1) {
             setCurrentIdx((idx) => Math.min(idx + 1, steps.length - 1));
+            return;
+        }
+
+        if (!isApproved) {
+            const msg = explanation || 'Only verified agents can create properties. Please upload verification documents.';
+            setSubmitError(msg);
+            showErrorToast('Verification Required', msg);
             return;
         }
 
@@ -79,12 +98,19 @@ const AddPropertyFlowModal: React.FC<{ open: boolean; onClose: () => void }> = (
                 estateManagerEmail,
                 bankName,
                 accountNumber,
-                accountName
+                accountName,
             }).unwrap();
-            
+
+            showSuccessToast('Property Created', 'Property created successfully');
             handleClose();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to create property:', error);
+            const errorMsg = extractApiErrorMessage(error, 'Failed to create property');
+            setSubmitError(errorMsg);
+            showErrorToast(
+                error?.status === 403 ? 'Verification Required' : 'Creation Failed',
+                errorMsg
+            );
         }
     };
 
@@ -124,6 +150,23 @@ const AddPropertyFlowModal: React.FC<{ open: boolean; onClose: () => void }> = (
                             <CloseButton onClick={handleClose} />
                         </div>
                         <div className="flex-1 overflow-y-auto md:px-10 px-6 md:pt-10 pt-2 md:pb-8 pb-2">
+                            {!isApproved && (
+                                <AgentApprovalBanner
+                                    explanation={explanation}
+                                    isUnderReview={isUnderReview}
+                                    isApproved={isApproved}
+                                    onUploadDocs={onUploadDocs}
+                                    className="mb-4"
+                                />
+                            )}
+                            {submitError && (
+                                <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2">
+                                    <svg className="w-5 h-5 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>{submitError}</span>
+                                </div>
+                            )}
                             {currentIdx === 0 && <PropertyDetailsStep 
                                 role={role} setRole={setRole} 
                                 category={category} setCategory={setCategory} 
@@ -151,10 +194,11 @@ const AddPropertyFlowModal: React.FC<{ open: boolean; onClose: () => void }> = (
                                     <button
                                         type="button"
                                         onClick={handleSubmit}
-                                        disabled={isLoading}
-                                        className="px-6 py-3 rounded-lg bg-[#002E62] text-white text-[14px] font-semibold transition-colors hover:bg-[#002E62]/90 focus:ring-2 focus:ring-[#002E62]/70 focus:ring-offset-2 outline-none disabled:opacity-50"
+                                        disabled={isLoading || (currentIdx === steps.length - 1 && !isApproved)}
+                                        title={currentIdx === steps.length - 1 && !isApproved ? (explanation || 'Verification required') : undefined}
+                                        className="px-6 py-3 rounded-lg bg-[#002E62] text-white text-[14px] font-semibold transition-colors hover:bg-[#002E62]/90 focus:ring-2 focus:ring-[#002E62]/70 focus:ring-offset-2 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        {isLoading ? 'Loading...' : currentIdx === steps.length - 1 ? 'Submit' : 'Save & Continue'}
+                                        {isLoading ? 'Loading...' : currentIdx === steps.length - 1 ? (isApproved ? 'Submit' : 'Verification Required') : 'Save & Continue'}
                                     </button>
                                 </div>
                             </div>

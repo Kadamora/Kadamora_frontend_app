@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { SignupSEO } from '@shared/components/SEO/SEO';
 import { IoEye } from 'react-icons/io5';
@@ -41,8 +41,14 @@ export default function Signup() {
         setIsSubmitting(true);
 
         try {
-            await triggerSignup(payload).unwrap();
-            navigate('/auth/signup/verify', { state: { email: payload.email } });
+            const result = await triggerSignup(payload).unwrap();
+            const serverMessage = result?.data?.message || result?.message;
+            navigate('/auth/signup/verify', {
+                state: {
+                    email: payload.email,
+                    message: serverMessage,
+                },
+            });
         } catch (err: any) {
             let msg = 'Something went wrong. Please try again later.';
             const errorResponse = err?.data || err;

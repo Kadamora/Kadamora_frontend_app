@@ -1,10 +1,10 @@
-﻿import { useEffect, useRef } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { useEffect, useRef } from 'react';
+import type { Socket } from 'socket.io-client';
 import { useAppSelector } from '@store/hooks';
 import type { Notification } from '@shared/api/notification.api';
+import { createAuthenticatedSocket, WS_BASE_URL } from '@shared/services/socket/socketClient';
 
 // Real event names provided by the backend
-const WS_URL = import.meta.env.VITE_WS_URL;
 const NOTIFICATION_EVENT = 'notification_received';
 const UNREAD_COUNT_EVENT = 'unread_count_update';
 
@@ -24,7 +24,7 @@ export function useNotificationSocket({
     const socketRef = useRef<Socket | null>(null);
     const onNotificationRef = useRef(onNotification);
     const onUnreadCountRef = useRef(onUnreadCountUpdate);
-    const token = useAppSelector((state) => state.auth.accessToken);
+    const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
     // Keep refs up to date without triggering re-subscriptions
     useEffect(() => {
@@ -33,10 +33,9 @@ export function useNotificationSocket({
     }, [onNotification, onUnreadCountUpdate]);
 
     useEffect(() => {
-        if (!token) return;
+        if (!isAuthenticated) return;
 
-        const socket = io(WS_URL, {
-            auth: { token },
+        const socket = createAuthenticatedSocket(WS_BASE_URL, {
             autoConnect: true,
         });
 
@@ -51,14 +50,16 @@ export function useNotificationSocket({
         });
 
         socket.on('connect_error', (err) => {
-            console.warn('[NotificationSocket] Connection error:', err.message);
+            if (!err.message?.startsWith('Authentication error')) {
+                console.warn('[NotificationSocket] Connection error:', err.message);
+            }
         });
 
         return () => {
             socket.disconnect();
             socketRef.current = null;
         };
-    }, [token]); // disconnect and reconnect if token changes
+    }, [isAuthenticated]);
 
     return socketRef;
 }

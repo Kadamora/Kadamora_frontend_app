@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import logo from '/assets/images/logo.png';
+import { useRequestPasswordResetMutation } from '@shared/api/auth.api';
+import { showSuccessToast, showErrorToast } from '@shared/components/Toast/Toast';
 
 
 export default function AdminForgotPasswordVerify() {
@@ -8,6 +10,7 @@ export default function AdminForgotPasswordVerify() {
     const [code, setCode] = useState<string[]>(['', '', '', '']);
     const [seconds, setSeconds] = useState(60);
     const inputs = useRef<Array<HTMLInputElement | null>>([]);
+    const [triggerPasswordReset] = useRequestPasswordResetMutation();
 
     useEffect(() => {
         if (seconds <= 0) return;
@@ -33,16 +36,27 @@ export default function AdminForgotPasswordVerify() {
 
     const canContinue = code.every((c) => c.length === 1);
 
-    const handleResend = () => {
-        setCode(['', '', '', '']);
-        setSeconds(60);
-        inputs.current[0]?.focus();
+    const handleResend = async () => {
+        const email = sessionStorage.getItem('resetEmail') || '';
+        if (!email) {
+            showErrorToast('Error', 'No email found in session. Please restart password reset.');
+            return;
+        }
+        try {
+            const res = await triggerPasswordReset({ email }).unwrap();
+            setCode(['', '', '', '']);
+            setSeconds(60);
+            inputs.current[0]?.focus();
+            showSuccessToast('Code Resent', res.message || 'A new verification code has been sent to your email.');
+        } catch (err: any) {
+            showErrorToast('Resend Failed', err?.data?.message || err?.message || 'Failed to resend code.');
+        }
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // TODO: verify and navigate to reset page
-        navigate('/admin/auth/forgot-password/reset');
+        const pinCode = code.join('');
+        navigate(`/admin/auth/reset-password/${pinCode}`);
     };
 
     const mm = String(Math.floor(seconds / 60)).padStart(2, '0');

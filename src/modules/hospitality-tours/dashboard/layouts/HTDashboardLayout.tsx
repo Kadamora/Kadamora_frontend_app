@@ -19,6 +19,16 @@ import type { Notification } from '@shared/api/notification.api';
 
 const htUserMenuItems: UserMenuItem[] = [
     {
+        label: 'All Services',
+        icon: <img src="/assets/icons/services.svg" alt="All Services" className="h-5 w-5" />,
+        path: '/dashboard',
+    },
+    {
+        label: 'Real Estate Portal',
+        icon: <img src="/assets/icons/property_listing.svg" alt="Real Estate" className="h-5 w-5" />,
+        path: '/dashboard/property-listing',
+    },
+    {
         label: 'Profile',
         icon: <img src="/assets/icons/circle-user-round.svg" alt="Profile" className="h-5 w-5" />,
         disabled: true,

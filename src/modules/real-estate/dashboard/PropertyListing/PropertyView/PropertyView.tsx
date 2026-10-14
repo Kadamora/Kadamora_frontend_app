@@ -17,6 +17,13 @@ export default function PropertyView() {
     });
     const {data: allProperties} = useGetAllPropertyListingsQuery();
     const property = propertyListings?.data;
+    const isOwnListing = Boolean(
+        currentUserId && (
+            currentUserId === property?.agent?.user?.id ||
+            currentUserId === property?.agent?.userId ||
+            currentUserId === (property as any)?.userId
+        )
+    );
     const formatCurrency = (amount: string | number | null | undefined) => {
         if (!amount) return 'N/A';
         return `₦ ${Number(amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -200,7 +207,7 @@ export default function PropertyView() {
                             </ul>
                         </div>
 
-                        {currentUserId !== property.agent?.user?.id && (
+                        {!isOwnListing && property?.agent?.user?.id && (
                             <div className="rounded-[18px] border border-[#E2E8F0] bg-white flex items-center">
                                 <div className="flex items-center justify-between w-full p-3.75">
                                     <div>

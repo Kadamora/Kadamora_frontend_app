@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
@@ -21,6 +21,9 @@ import CloseButton from '../OnboardingAgent/components/CloseButton.tsx';
 import { PropertyListingFormProvider, usePropertyListingForm, type FacilitySelection, type PropertyListingFormState } from './formContext.tsx';
 import { type CreatePropertyListingPayload, type PropertyFacilitiesPayload, type PropertyMediaPayload, useCreatePropertyListingMutation, useUpdatePropertyListingMutation, type AgentPropertyListing } from '@modules/real-estate/api/propertyListings.api.ts';
 import { useUploadFilesMutation } from '@shared/api/upload.api';
+import { useAgentStatus } from '@modules/real-estate/hooks/useAgentStatus';
+import { AgentApprovalBanner } from '@modules/real-estate/components/AgentApprovalBanner';
+import { showErrorToast } from '@shared/components/Toast/Toast';
 
 // Listing types
 const LISTING_TYPES: ListingTypeInfo[] = [
@@ -55,6 +58,7 @@ interface Props {
     editingProperty?: AgentPropertyListing | null;
     onClose: () => void;
     goTo?: (s: number) => void;
+    onUploadDocs?: () => void;
 }
 
 const getStepsForType = (type: ListingType): StepDef[] => {
@@ -139,7 +143,7 @@ const getStepsForType = (type: ListingType): StepDef[] => {
     }
 };
 
-const ListPropertyFlowModal: React.FC<Props> = ({ open, editingProperty, onClose }) => {
+const ListPropertyFlowModal: React.FC<Props> = ({ open, editingProperty, onClose, onUploadDocs }) => {
     const [listingType, setListingType] = useState<ListingType | null>(null);
     const [currentIdx, setCurrentIdx] = useState(0);
     const [showSuccessPrompt, setShowSuccessPrompt] = useState(false);
@@ -227,6 +231,7 @@ const ListPropertyFlowModal: React.FC<Props> = ({ open, editingProperty, onClose
                         token={token}
                         videoUploadProgress={videoUploadProgress}
                         setVideoUploadProgress={setVideoUploadProgress}
+                        onUploadDocs={onUploadDocs}
                     />
                 </PropertyListingFormProvider>
             )}
@@ -249,6 +254,7 @@ interface ListingFormContentProps {
     token: string | null;
     videoUploadProgress: number;
     setVideoUploadProgress: (progress: number) => void;
+    onUploadDocs?: () => void;
 }
 
 const ListingFormContent: React.FC<ListingFormContentProps> = ({
@@ -262,8 +268,10 @@ const ListingFormContent: React.FC<ListingFormContentProps> = ({
     token,
     videoUploadProgress,
     setVideoUploadProgress,
+    onUploadDocs,
 }) => {
     const { state, resetForm } = usePropertyListingForm();
+    const { isApproved, isUnderReview, explanation } = useAgentStatus();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [createPropertyListing] = useCreatePropertyListingMutation();
@@ -284,6 +292,13 @@ const ListingFormContent: React.FC<ListingFormContentProps> = ({
         if (!isLast) {
             setSubmitError(null);
             setCurrentIdx((index) => Math.min(index + 1, steps.length - 1));
+            return;
+        }
+
+        if (!isApproved) {
+            const msg = explanation || 'Only verified agents can list or update properties.';
+            setSubmitError(msg);
+            showErrorToast('Verification Required', msg);
             return;
         }
 
@@ -337,7 +352,12 @@ const ListingFormContent: React.FC<ListingFormContentProps> = ({
                 onSuccess(response?.message || 'Property listed successfully');
             }
         } catch (error) {
-            setSubmitError(resolveCreateError(error));
+            const errorMsg = resolveCreateError(error);
+            setSubmitError(errorMsg);
+            showErrorToast(
+                (error as any)?.status === 403 ? 'Verification Required' : 'Submission Failed',
+                errorMsg
+            );
         } finally {
             setIsSubmitting(false);
             setVideoUploadProgress(0);
@@ -368,6 +388,15 @@ const ListingFormContent: React.FC<ListingFormContentProps> = ({
 
                 {/* ... steps content ... */}
                  <div className="flex-1 overflow-y-auto md:px-10 px-6 md:pt-10 pt-2 md:pb-8 pb-2">
+                    {!isApproved && (
+                        <AgentApprovalBanner
+                            explanation={explanation}
+                            isUnderReview={isUnderReview}
+                            isApproved={isApproved}
+                            onUploadDocs={onUploadDocs}
+                            className="mb-4"
+                        />
+                    )}
                     {activeStep?.id === 'details' && <DetailsStep />}
                     {activeStep?.id === 'rent_payment' && <RentPaymentStep />}
                     {activeStep?.id === 'lease_pricing' && <LeasePricingStep />}
@@ -422,10 +451,11 @@ const ListingFormContent: React.FC<ListingFormContentProps> = ({
                             <button
                                 type="button"
                                 onClick={goNext}
-                                disabled={isSubmitting}
+                                disabled={isSubmitting || (isLast && !isApproved)}
+                                title={isLast && !isApproved ? (explanation || 'Verification required') : undefined}
                                 className="px-6 py-3 rounded-lg bg-[#002E62] text-white text-[14px] font-semibold transition-colors hover:bg-[#002E62]/90 focus:ring-2 focus:ring-[#002E62]/70 focus:ring-offset-2 outline-none disabled:bg-[#7B8AA0] disabled:cursor-not-allowed"
                             >
-                                {isLast ? (isSubmitting ? 'Submitting...' : 'Submit') : 'Proceed'}
+                                {isLast ? (isSubmitting ? 'Submitting...' : !isApproved ? 'Verification Required' : 'Submit') : 'Proceed'}
                             </button>
                         </div>
                     </div>

@@ -28,9 +28,10 @@ const ResetPassword        = lazy(() => import('@shared/pages/auth/ResetPassword
 const VerifyTenantAcceptance = lazy(() => import('@shared/pages/auth/VerifyTenantAcceptance'));
 
 //  Admin auth pages 
-const AdminLogin           = lazy(() => import('@shared/pages/auth/AdminLogin'));
-const AdminForgotPassword  = lazy(() => import('@shared/pages/auth/AdminForgotPassword'));
-const AdminResetPassword   = lazy(() => import('@shared/pages/auth/AdminResetPassword'));
+const AdminLogin                 = lazy(() => import('@shared/pages/auth/AdminLogin'));
+const AdminForgotPassword        = lazy(() => import('@shared/pages/auth/AdminForgotPassword'));
+const AdminForgotPasswordVerify  = lazy(() => import('@shared/pages/auth/AdminForgetPasswordVerify'));
+const AdminResetPassword         = lazy(() => import('@shared/pages/auth/AdminResetPassword'));
 
 //  Misc 
 const NotFound = lazy(() => import('@shared/pages/misc/NotFound'));
@@ -59,7 +60,7 @@ export default function AppRoutes() {
                     {RealEstateVerifyRoute()}
 
                     {/*  Tenant acceptance (shared invite flow) */}
-                    <Route path="verify-acceptance/:tenantId" element={<VerifyTenantAcceptance />} />
+                    <Route path="verify-acceptance/:token" element={<VerifyTenantAcceptance />} />
 
                     {/*  Shared: User Auth */}
                     <Route
@@ -92,6 +93,7 @@ export default function AppRoutes() {
                         <Route index element={<AdminLogin />} />
                         <Route path="login" element={<AdminLogin />} />
                         <Route path="forgot-password" element={<AdminForgotPassword />} />
+                        <Route path="forgot-password/verify" element={<AdminForgotPasswordVerify />} />
                         <Route path="reset-password/:code" element={<AdminResetPassword />} />
                     </Route>
 

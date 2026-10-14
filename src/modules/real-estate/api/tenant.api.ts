@@ -1,4 +1,4 @@
-﻿import { baseApi } from "@shared/api/baseApi";
+import { baseApi } from "@shared/api/baseApi";
 
 /* =======================
    Types
@@ -133,8 +133,8 @@ export const tenantApi = baseApi.injectEndpoints({
         }),
 
         acceptInvitation: builder.mutation<TenantResponse, string>({
-            query: (tenantId) => ({
-                url: `/api/v1/tenants/accept-invitation/${tenantId}`,
+            query: (token) => ({
+                url: `/api/v1/tenants/accept-invitation/${encodeURIComponent(token)}`,
                 method: "PUT",
             }),
             invalidatesTags: ["PropertyMgt"],

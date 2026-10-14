@@ -7,7 +7,7 @@ export default function HTLoginPage() {
             subtitle="Sign in to Kadamora by entering your details below or continue with Google."
             forgotPasswordUrl="/hospitality-tours/auth/forgot-password"
             signupUrl="/hospitality-tours/auth/signup"
-            defaultRedirectPath="/hospitality-tours/dashboard"
+            defaultRedirectPath="/dashboard"
             onSuccessToastTitle="Logged In Successfully"
             onSuccessToastMessage="Welcome to Kadamora Hospitality & Tours"
         />

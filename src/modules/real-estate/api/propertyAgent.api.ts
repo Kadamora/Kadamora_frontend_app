@@ -1,10 +1,10 @@
-﻿import { baseApi } from "@shared/api/baseApi";
+import { baseApi } from "@shared/api/baseApi";
 
 /* =======================
    Types
 ======================= */
 
-export type AgentStatus = "pending" | "approved" | "rejected";
+export type AgentStatus = "pending" | "under_review" | "approved" | "rejected" | "suspended";
 
 export type AgentDocumentsMap = Record<string, string[] | null | undefined>;
 
@@ -20,7 +20,7 @@ export interface AgentProfile {
     website?: string | null;
     linkedinProfile?: string | null;
     status?: AgentStatus | Uppercase<AgentStatus>;
-    verificationStatus?: "PENDING" | "APPROVED" | "REJECTED";
+    verificationStatus?: "PENDING" | "UNDER_REVIEW" | "APPROVED" | "REJECTED" | "SUSPENDED";
     isVerified?: boolean;
     canListProperties?: boolean;
     approvedAt?: string | null;

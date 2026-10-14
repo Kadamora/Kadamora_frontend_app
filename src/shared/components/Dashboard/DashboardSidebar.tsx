@@ -23,7 +23,7 @@ export default function DashboardSidebar({
     onClose,
     logoUrl = '/assets/logo/logo-small-black.png',
     logoAlt = 'Kadamora Logo',
-    logoLink = '/dashboard/property-listing',
+    logoLink = '/dashboard',
     navItems,
     customLogoNode,
 }: DashboardSidebarProps) {
@@ -38,8 +38,12 @@ export default function DashboardSidebar({
         }
     }, [isOpen]);
 
-    const isNavItemActive = (path: string) =>
-        location.pathname === path || location.pathname.startsWith(path + '/');
+    const isNavItemActive = (path: string) => {
+        if (path === '/dashboard' || path === '/dashboard/home') {
+            return location.pathname === '/dashboard' || location.pathname === '/dashboard/home';
+        }
+        return location.pathname === path || location.pathname.startsWith(path + '/');
+    };
 
     return (
         <>

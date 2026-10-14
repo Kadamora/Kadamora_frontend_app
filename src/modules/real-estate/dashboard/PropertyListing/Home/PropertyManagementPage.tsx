@@ -250,9 +250,9 @@ const PropertyManagementPage: React.FC = () => {
                 </h1>
                  <nav className="flex">
                         <span onClick={() => navigate('/')} className="cursor-pointer text-sm">Home</span>
-                        <span className="mx-2 text-sm">â€º</span>
+                        <span className="mx-2 text-sm">›</span>
                         {/* <span onClick={() => navigate(-1)} className="cursor-pointer text-sm">Listings</span> */}
-                        {/* <span className="mx-2 text-sm">â€º</span> */}
+                        {/* <span className="mx-2 text-sm">›</span> */}
                         <span className="text-primary text-sm">Property listing</span>
                     </nav>
             </div>
@@ -434,7 +434,7 @@ const PropertyManagementPage: React.FC = () => {
                 </div>
             </section>
             <MobileFilterModal open={mobileFiltersOpen} onClose={() => setMobileFiltersOpen(false)} counts={filtercount?.data} />
-            <ListPropertyFlowModal open={listFlowOpen} onClose={() => setListFlowOpen(false)} />
+            <ListPropertyFlowModal open={listFlowOpen} onClose={() => setListFlowOpen(false)} onUploadDocs={openOnboardingFlow} />
             <OnboardingAgentFlowModal
                 open={onboardingOpen}
                 step={onboardingStep}

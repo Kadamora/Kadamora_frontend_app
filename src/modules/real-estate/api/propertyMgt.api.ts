@@ -1,4 +1,4 @@
-﻿import { baseApi } from "@shared/api/baseApi";
+import { baseApi } from "@shared/api/baseApi";
 
 /* =======================
    Types
@@ -95,9 +95,11 @@ export interface UpdateMaintenanceStatusPayload {
 }
 
 export interface UpdateSettingsPayload {
+    propertyId?: string;
     bankName?: string;
     accountNumber?: string;
     accountName?: string;
+    currentPassword?: string;
     autoPaymentReminder?: boolean;
     emailNewMaintenanceRequests?: boolean;
     emailPaymentNotifications?: boolean;
@@ -301,8 +303,10 @@ export const propertyMgtApi = baseApi.injectEndpoints({
             providesTags: ["PropertyMgt"],
         }),
         updateSettings: builder.mutation<CreatePropertyResponse, UpdateSettingsPayload>({
-            query: ({ ...payload }) => ({
-                url: `/api/v1/management/update-settings`,
+            query: ({ propertyId, ...payload }) => ({
+                url: propertyId
+                    ? `/api/v1/management/update-settings/${propertyId}`
+                    : `/api/v1/management/update-settings`,
                 method: "PATCH",
                 body: payload,
             }),

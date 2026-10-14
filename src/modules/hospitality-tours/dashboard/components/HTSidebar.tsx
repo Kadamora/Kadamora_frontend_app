@@ -9,6 +9,7 @@ export interface HTNavItem {
 }
 
 const HT_NAV_ITEMS: HTNavItem[] = [
+    { label: 'All Services', path: '/dashboard', iconClass: 'icon-services' },
     { label: 'Dashboard', path: '/hospitality-tours/dashboard', iconClass: 'icon-home' },
     { label: 'Timeline', path: '/hospitality-tours/dashboard/timeline', iconClass: 'icon-timeline' },
     { label: 'My Listings', path: '/hospitality-tours/dashboard/my-listings', iconClass: 'icon-listings' },
@@ -17,12 +18,12 @@ const HT_NAV_ITEMS: HTNavItem[] = [
     { label: 'Calendar', path: '/hospitality-tours/dashboard/calendar', iconClass: 'icon-calendar' },
     { label: 'Reviews', path: '/hospitality-tours/dashboard/reviews', iconClass: 'icon-reviews' },
     { label: 'Settings', path: '/hospitality-tours/dashboard/settings', iconClass: 'icon-settings' },
-    { label: 'Storybook', path: '/hospitality-tours/dashboard/storybook', iconClass: 'icon-settings' },
+    // { label: 'Storybook', path: '/hospitality-tours/dashboard/storybook', iconClass: 'icon-settings' },
 ];
 
 export default function HTSidebar() {
     return (
-        <aside className="w-64 h-full bg-white border-r border-[#D6DBD8] flex flex-col py-6 px-4 select-none flex-shrink-0 overflow-y-auto">
+        <aside className="w-64 h-full bg-white border-r border-[#D6DBD8] flex flex-col py-6 px-4 select-none flex-shrink-0 overflow-y-auto hide-scrollbar">
             {/* Top Brand Logo */}
             <div className="px-3 mb-8">
                 <a href="/hospitality-tours/dashboard">

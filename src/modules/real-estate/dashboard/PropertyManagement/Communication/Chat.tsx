@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import MessageCard from './MessageCard';
 import './styles/chat.css';
 import Input from '@shared/components/Forms/Input';
@@ -13,6 +13,7 @@ import {
 import type { ChatMessage, ChatPartner } from '@shared/api/messages.api';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
 import { useChatSocket } from '@shared/hooks/useChatSocket';
+import { showErrorToast } from '@shared/components/Toast/Toast';
 
 function formatTime(dateStr: string): string {
     if (!dateStr) return '';
@@ -58,7 +59,12 @@ const Chat: React.FC = () => {
 
     // Queries
     const { data: chatsData, isLoading: isLoadingChats } = useGetUserChatsQuery();
-    const partners: ChatPartner[] = chatsData?.data?.chatPartners || [];
+    const rawPartners: ChatPartner[] = chatsData?.data?.chatPartners || [];
+    const partners = useMemo(() => {
+        return currentUserId ? rawPartners.filter((p) => p.partner.id !== currentUserId) : rawPartners;
+    }, [rawPartners, currentUserId]);
+
+    const isSelfChat = Boolean(currentUserId && activeChatId === currentUserId);
 
     const { data: messagesData, isLoading: isLoadingMessages } = useGetChatWithUserQuery(activeChatId as string, {
         skip: !activeChatId,
@@ -133,16 +139,19 @@ const Chat: React.FC = () => {
 
     const handleSend = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (!messageText.trim() || !activeChatId) return;
+        const text = messageText.trim();
+        if (!text || !activeChatId || isSelfChat || text.length > 5000) return;
 
         try {
             await sendMessage({
                 recipientId: activeChatId,
-                content: messageText.trim(),
+                content: text,
             }).unwrap();
             setMessageText('');
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to send message', error);
+            const msg = error?.data?.message || error?.message || 'Failed to send message.';
+            showErrorToast('Message Failed', msg);
         }
     };
 
@@ -285,11 +294,17 @@ const Chat: React.FC = () => {
                     onSubmit={handleSend}
                     style={{ boxShadow: '0px -1px 0px #EDF1F5' }}
                 >
+                    {isSelfChat && (
+                        <div className="px-4 py-2 bg-amber-50 border-b border-amber-200 text-amber-800 text-xs font-medium">
+                            You cannot send messages to yourself.
+                        </div>
+                    )}
                     <textarea
-                        className="w-full resize-none border-none outline-none bg-transparent px-4 md:px-8 pt-4 text-[15px] text-[#101828] placeholder-[#98A2B3] min-h-[60px] max-h-[120px] focus:ring-0"
-                        placeholder="Write a message ..."
+                        className="w-full resize-none border-none outline-none bg-transparent px-4 md:px-8 pt-4 text-[15px] text-[#101828] placeholder-[#98A2B3] min-h-[60px] max-h-[120px] focus:ring-0 disabled:opacity-50"
+                        placeholder={isSelfChat ? "You cannot send messages to yourself." : "Write a message ..."}
                         value={messageText}
                         onChange={(e) => setMessageText(e.target.value)}
+                        maxLength={5000}
                         rows={2}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter' && !e.shiftKey) {
@@ -297,7 +312,7 @@ const Chat: React.FC = () => {
                                 handleSend(e as unknown as React.FormEvent<HTMLFormElement>);
                             }
                         }}
-                        disabled={!activeChatId}
+                        disabled={!activeChatId || isSelfChat}
                     />
                     <div className="flex items-center justify-between px-4 md:px-8 py-3 bg-white border-t border-[#F2F4F7]">
                         <div className="flex items-center gap-2">
@@ -313,22 +328,27 @@ const Chat: React.FC = () => {
                                 </button>
                             ))}
                         </div>
-                        <button
-                            type="submit"
-                            disabled={!activeChatId || !messageText.trim()}
-                            className="h-10 px-6 rounded-lg bg-[#002E62] text-white font-semibold flex items-center gap-2 hover:bg-[#002E62]/90 disabled:opacity-50 transition-colors"
-                        >
-                            Send
-                            <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
-                                <path
-                                    d="M3.75 10h8.75m0 0l-3.5-3.5m3.5 3.5l-3.5 3.5"
-                                    stroke="#fff"
-                                    strokeWidth="1.5"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                />
-                            </svg>
-                        </button>
+                        <div className="flex items-center gap-4">
+                            <span className={`text-xs ${messageText.length > 4900 ? 'text-amber-600 font-medium' : 'text-gray-400'}`}>
+                                {messageText.length.toLocaleString()} / 5,000
+                            </span>
+                            <button
+                                type="submit"
+                                disabled={!activeChatId || !messageText.trim() || isSelfChat || messageText.length > 5000}
+                                className="h-10 px-6 rounded-lg bg-[#002E62] text-white font-semibold flex items-center gap-2 hover:bg-[#002E62]/90 disabled:opacity-50 transition-colors"
+                            >
+                                Send
+                                <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
+                                    <path
+                                        d="M3.75 10h8.75m0 0l-3.5-3.5m3.5 3.5l-3.5 3.5"
+                                        stroke="#fff"
+                                        strokeWidth="1.5"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </form>
             </section>

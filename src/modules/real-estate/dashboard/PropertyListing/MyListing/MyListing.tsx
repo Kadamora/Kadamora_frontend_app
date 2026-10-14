@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import Select from '@shared/components/Forms/Select';
@@ -14,6 +14,11 @@ import {
 import { Search } from 'lucide-react';
 import DeleteConfirmationModal from '@shared/components/Modal/DeleteConfirmationModal';
 import ListPropertyFlowModal from '../Home/components/ListPropertyFlow/ListPropertyFlowModal';
+import OnboardingAgentFlowModal from '../Home/components/OnboardingAgent/OnboardingAgentFlowModal';
+import VerificationInProgressModal from '../Home/components/VerificationInProgressModal';
+import { useAgentStatus } from '@modules/real-estate/hooks/useAgentStatus';
+import { AgentApprovalBanner } from '@modules/real-estate/components/AgentApprovalBanner';
+import { showErrorToast } from '@shared/components/Toast/Toast';
 
 const normalize = (value?: string | null) => value?.trim().toLowerCase() ?? '';
 
@@ -22,6 +27,27 @@ export default function MyListing() {
     const [typeFilter, setTypeFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
     const navigate = useNavigate();
+
+    const {
+        isApproved,
+        isUnderReview,
+        explanation,
+        determineOnboardingEntryStep,
+        isLoading: isLoadingStatus,
+    } = useAgentStatus();
+
+    const [onboardingOpen, setOnboardingOpen] = useState(false);
+    const [onboardingStep, setOnboardingStep] = useState(0);
+    const [verificationInProgressOpen, setVerificationInProgressOpen] = useState(false);
+
+    const handleOpenUploadDocs = () => {
+        if (isUnderReview) {
+            setVerificationInProgressOpen(true);
+            return;
+        }
+        setOnboardingStep(determineOnboardingEntryStep());
+        setOnboardingOpen(true);
+    };
 
     // Modal States
     const [propertyToDelete, setPropertyToDelete] = useState<AgentPropertyListing | null>(null);
@@ -132,6 +158,18 @@ export default function MyListing() {
     };
 
     const handleEditClick = (property: AgentPropertyListing) => {
+        if (!isApproved) {
+            if (isUnderReview) {
+                setVerificationInProgressOpen(true);
+            } else {
+                showErrorToast(
+                    'Verification Required',
+                    explanation || 'Only approved agents can edit property listings. Please upload verification documents.'
+                );
+                handleOpenUploadDocs();
+            }
+            return;
+        }
         setPropertyToEdit(property);
         setIsEditModalOpen(true);
     };
@@ -228,12 +266,21 @@ export default function MyListing() {
                     </h1>
                      <nav className="flex">
                         <span onClick={() => navigate('/')} className="cursor-pointer text-sm">Home</span>
-                        <span className="mx-2 text-sm">â€º</span>
+                        <span className="mx-2 text-sm">›</span>
                         <span onClick={() => navigate(-1)} className="cursor-pointer text-sm">Listings</span>
-                        <span className="mx-2 text-sm">â€º</span>
+                        <span className="mx-2 text-sm">›</span>
                         <span className="text-primary text-sm">My Listing</span>
                     </nav>
                 </div>
+
+                {!isApproved && !isLoadingStatus && (
+                    <AgentApprovalBanner
+                        explanation={explanation}
+                        isUnderReview={isUnderReview}
+                        isApproved={isApproved}
+                        onUploadDocs={handleOpenUploadDocs}
+                    />
+                )}
                 
                 <div className="flex gap-4 items-center justify-between">
                     <h1 className="text-[23px] font-semibold text-[#002E62]">All Listing</h1>
@@ -307,6 +354,18 @@ export default function MyListing() {
                     setIsEditModalOpen(false);
                     setPropertyToEdit(null);
                 }}
+                onUploadDocs={handleOpenUploadDocs}
+            />
+
+            <OnboardingAgentFlowModal
+                open={onboardingOpen}
+                step={onboardingStep}
+                goTo={setOnboardingStep}
+                onClose={() => setOnboardingOpen(false)}
+            />
+            <VerificationInProgressModal
+                open={verificationInProgressOpen}
+                onClose={() => setVerificationInProgressOpen(false)}
             />
         </div>
     );

@@ -1,16 +1,18 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { authApi, type AccountData } from "@shared/api/auth.api";
-import { clearTokens, getAccessToken, saveTokens } from "@shared/services/auth/authStorage";
+import { clearTokens, getAccessToken, getRefreshToken, saveTokens } from "@shared/services/auth/authStorage";
 
 interface AuthState {
     user: AccountData | null;
     accessToken: string | null;
+    refreshToken: string | null;
     isAuthenticated: boolean;
 }
 
 const initialState : AuthState = {
     user: null,
     accessToken: getAccessToken(),
+    refreshToken: getRefreshToken(),
     isAuthenticated: Boolean(getAccessToken()),
 };
 
@@ -21,6 +23,7 @@ const authSlice = createSlice({
         logout(state) {
             state.user = null;
             state.accessToken = null;
+            state.refreshToken = null;
             state.isAuthenticated = false;
             clearTokens();
         },
@@ -32,7 +35,19 @@ const authSlice = createSlice({
             if (!accessToken || !refreshToken) return;
             saveTokens({ accessToken, refreshToken });
             state.accessToken = accessToken;
+            state.refreshToken = refreshToken;
             state.user = user ?? state.user;
+            state.isAuthenticated = true;
+        },
+        setTokens(
+            state,
+            action: PayloadAction<{ accessToken: string; refreshToken: string }>,
+        ) {
+            const { accessToken, refreshToken } = action.payload;
+            if (!accessToken || !refreshToken) return;
+            saveTokens({ accessToken, refreshToken });
+            state.accessToken = accessToken;
+            state.refreshToken = refreshToken;
             state.isAuthenticated = true;
         },
     },
@@ -40,15 +55,14 @@ const authSlice = createSlice({
         builder.addMatcher(
             authApi.endpoints.verifyAccount.matchFulfilled,
             (state, { payload }) => {
-                console.log("payload", payload)
                 const data = payload.data;
-                console.log(data)
                 if (!data?.accessToken || !data?.refreshToken) return;
                 saveTokens({
                     accessToken: data.accessToken,
                     refreshToken: data.refreshToken,
                 });
                 state.accessToken = data.accessToken;
+                state.refreshToken = data.refreshToken;
                 state.user = data.user;
                 state.isAuthenticated = true;
             },
@@ -64,5 +78,5 @@ const authSlice = createSlice({
     },
 });
 
-export const { logout, setCredentials } = authSlice.actions;
+export const { logout, setCredentials, setTokens } = authSlice.actions;
 export default authSlice.reducer;

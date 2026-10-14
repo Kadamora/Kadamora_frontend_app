@@ -28,7 +28,8 @@ export interface DashboardLayoutProps {
 }
 
 const navItems: DashboardNavItem[] = [
-    { label: 'Home', to: '/dashboard/property-listing', iconClass: 'icon-home' },
+    { label: 'All Services', to: '/dashboard', iconClass: 'icon-services' },
+    { label: 'Properties', to: '/dashboard/property-listing', iconClass: 'icon-home' },
     { label: 'Timeline', to: '/dashboard/timeline', iconClass: 'icon-timeline' },
     { label: 'Chat', to: '/dashboard/chat', iconClass: 'icon-chat' },
     { label: 'Subscription', to: '/dashboard/subscription', iconClass: 'icon-subscription' },
@@ -36,6 +37,16 @@ const navItems: DashboardNavItem[] = [
 ];
 
 const userMenuItems: UserMenuItem[] = [
+    {
+        label: 'All Services',
+        icon: <img src="/assets/icons/services.svg" alt="All Services" className="h-6 w-6" />,
+        path: '/dashboard',
+    },
+    {
+        label: 'Hospitality & Tours',
+        icon: <img src="/assets/icons/hospitality.svg" alt="Hospitality" className="h-6 w-6" />,
+        path: '/hospitality-tours/dashboard',
+    },
     {
         label: 'Profile',
         icon: <img src="/assets/icons/circle-user-round.svg" alt="Profile" className="h-6 w-6" />,
