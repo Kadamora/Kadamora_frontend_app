@@ -1,9 +1,10 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { persistReducer, persistStore } from 'redux-persist';
-import { baseApi } from "./api/baseApi";
+import { baseApi } from "@shared/api/baseApi";
 import storage from 'redux-persist/lib/storage'
-import authReducer from './slices/auth.slice'
+import authReducer from './auth/auth.slice'
 import { setupListeners } from '@reduxjs/toolkit/query'
+import { setAuthRefreshDispatch } from '@shared/services/auth/authRefresh';
 
 const rootReducer = combineReducers({
     auth: authReducer,
@@ -28,6 +29,7 @@ export const store = configureStore({
 export const persistor = persistStore(store)
 
 setupListeners(store.dispatch)
+setAuthRefreshDispatch(store.dispatch)
 
 export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch
