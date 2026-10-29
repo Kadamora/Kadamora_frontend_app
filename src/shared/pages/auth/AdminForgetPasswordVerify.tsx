@@ -7,7 +7,7 @@ import { showSuccessToast, showErrorToast } from '@shared/components/Toast/Toast
 
 export default function AdminForgotPasswordVerify() {
     const navigate = useNavigate();
-    const [code, setCode] = useState<string[]>(['', '', '', '']);
+    const [code, setCode] = useState<string[]>(['', '', '', '', '', '']);
     const [seconds, setSeconds] = useState(60);
     const inputs = useRef<Array<HTMLInputElement | null>>([]);
     const [triggerPasswordReset] = useRequestPasswordResetMutation();
@@ -44,7 +44,7 @@ export default function AdminForgotPasswordVerify() {
         }
         try {
             const res = await triggerPasswordReset({ email }).unwrap();
-            setCode(['', '', '', '']);
+            setCode(['', '', '', '', '', '']);
             setSeconds(60);
             inputs.current[0]?.focus();
             showSuccessToast('Code Resent', res.message || 'A new verification code has been sent to your email.');
@@ -74,7 +74,7 @@ export default function AdminForgotPasswordVerify() {
             <div className='w-full max-w-lg bg-white rounded-2xl shadow-xl px-10 py-16'>
             <h1 className="text-3xl font-semibold text-secondary">Forget Password</h1>
             <p className="text-gray-600 mt-2">
-                Enter the four digit pin we sent to your email to proceed with setting a new password.
+                Enter the six digit pin we sent to your email to proceed with setting a new password.
             </p>
 
             <form onSubmit={handleSubmit} className="mt-8 space-y-5">
