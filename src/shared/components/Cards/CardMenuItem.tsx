@@ -23,11 +23,11 @@ const CardMenuItem = React.forwardRef<HTMLDivElement, CardMenuItemProps>(
                 ref={ref}
                 role="menuitem"
                 tabIndex={0}
-                className={`flex items-center justify-start gap-3 w-full px-4 py-3 transition-colors text-left cursor-pointer ${className}`}
+                className={`flex items-center justify-start gap-3 w-full p-3 transition-colors text-left cursor-pointer ${className}`}
                 onClick={() => onActivate?.()}
                 onKeyDown={handleKey}
             >
-                {icon ? icon : (iconSrc ? <img src={iconSrc} alt={iconAlt} className="h-4 w-4" /> : null)}
+                {icon ? icon : iconSrc ? <img src={iconSrc} alt={iconAlt} className="h-4 w-4" /> : null}
                 <span className="text-sm text-gray-600 ">{label}</span>
             </div>
         );

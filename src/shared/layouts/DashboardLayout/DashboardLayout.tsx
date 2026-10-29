@@ -25,9 +25,15 @@ export interface DashboardLayoutProps {
     userName?: string;
     userEmail?: string;
     userInitials?: string;
+    navItems?: DashboardNavItem[];
+    userMenuItems?: UserMenuItem[];
+    logoLink?: string;
+    logoUrl?: string;
+    customLogoNode?: React.ReactNode;
+    mainClassName?: string;
 }
 
-const navItems: DashboardNavItem[] = [
+const defaultNavItems: DashboardNavItem[] = [
     { label: 'All Services', to: '/dashboard', iconClass: 'icon-services' },
     { label: 'Properties', to: '/dashboard/property-listing', iconClass: 'icon-home' },
     { label: 'Timeline', to: '/dashboard/timeline', iconClass: 'icon-timeline' },
@@ -36,7 +42,7 @@ const navItems: DashboardNavItem[] = [
     { label: 'Settings', to: '/dashboard/settings', iconClass: 'icon-settings' },
 ];
 
-const userMenuItems: UserMenuItem[] = [
+const defaultUserMenuItems: UserMenuItem[] = [
     {
         label: 'All Services',
         icon: <img src="/assets/icons/services.svg" alt="All Services" className="h-6 w-6" />,
@@ -95,7 +101,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     userName: fallbackName = '',
     userEmail: fallbackEmail = '',
     userInitials: fallbackInitials = '',
+    navItems: propNavItems,
+    userMenuItems: propUserMenuItems,
+    logoLink,
+    logoUrl,
+    customLogoNode,
+    mainClassName = 'mx-auto max-w-[1240px] px-3 pt-4 w-full',
 }) => {
+    const activeNavItems = propNavItems ?? defaultNavItems;
+    const activeUserMenuItems = propUserMenuItems ?? defaultUserMenuItems;
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const account = useAppSelector((s) => s.auth.user);
@@ -215,7 +229,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             <DashboardSidebar
                 isOpen={sidebarOpen}
                 onClose={() => setSidebarOpen(false)}
-                navItems={navItems}
+                navItems={activeNavItems}
+                logoLink={logoLink}
+                logoUrl={logoUrl}
+                customLogoNode={customLogoNode}
             />
 
             {/* Main Content Area */}
@@ -231,11 +248,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     userEmail={derivedEmail}
                     userInitials={derivedInitials}
                     userImgUrl={account?.imgUrl}
-                    userMenuItems={userMenuItems}
+                    userMenuItems={activeUserMenuItems}
                     onUserMenuItemSelect={handleUserMenuItemSelect}
+                    logoLink={logoLink}
+                    logoUrl={logoUrl}
+                    customLogoNode={customLogoNode}
                 />
 
-                <main className="mx-auto max-w-[1240px] px-3 pt-4 w-full">
+                <main className={mainClassName}>
                     {children ? children : <Outlet />}
                 </main>
             </div>

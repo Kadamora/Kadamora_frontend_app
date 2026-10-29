@@ -91,7 +91,7 @@ export default function Table<T>({
                             })}
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#F1F5F9]">
+                    <tbody className="">
                         {itemList.length === 0 ? (
                             <tr>
                                 <td colSpan={rawColumns.length || 1} className="py-12 text-center text-slate-400 font-medium">

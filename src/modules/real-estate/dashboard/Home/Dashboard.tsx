@@ -78,10 +78,11 @@ export default function Dashboard() {
                             </h1>
 
                             <p className="text-sm sm:text-base text-blue-100/90 leading-relaxed font-normal">
-                                Access your connected services from one central dashboard. Choose between{' '}
-                                <strong className="text-white font-semibold">Real Estate</strong> or{' '}
-                                <strong className="text-white font-semibold">Hospitality & Tours</strong> to manage your
-                                listings, bookings, and operations.
+                                Access all your connected services from one central hub. Switch seamlessly between{' '}
+                                <strong className="text-white font-semibold">Real Estate</strong>,{' '}
+                                <strong className="text-white font-semibold">Facility Management</strong>, and{' '}
+                                <strong className="text-white font-semibold">Hospitality &amp; Tours</strong> to manage your
+                                properties, facilities, bookings, and operations.
                             </p>
                         </div>
 
@@ -163,7 +164,7 @@ export default function Dashboard() {
 
             {/* Services Grid */}
             <section aria-label="Services Grid">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
                     {filteredServices.map((item) => (
                         <ServiceCard key={item.id} item={item} />
                     ))}

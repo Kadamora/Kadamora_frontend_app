@@ -1,4 +1,5 @@
 import React from 'react';
+import Button from '../Button';
 
 interface DeleteConfirmationModalProps {
     isOpen: boolean;
@@ -21,46 +22,35 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-6">
             <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" onClick={onClose} />
 
-            <div className="relative w-full sm:max-w-[560px] max-w-[100vw] bg-white backdrop-blur-sm rounded-3xl shadow-[0_8px_40px_-4px_rgba(16,24,40,0.15)] overflow-hidden animate-[fadeScale_.35s_ease]">
-                <div className="w-full flex justify-end p-3 shadow-sm">
-                    <button
-                        onClick={onClose}
-                        className="p-1 rounded-full hover:bg-gray-100/60 transition-colors"
-                        aria-label="Close confirmation"
-                    >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <line x1="6" y1="6" x2="18" y2="18" strokeWidth="2" strokeLinecap="round" />
-                            <line x1="6" y1="18" x2="18" y2="6" strokeWidth="2" strokeLinecap="round" />
-                        </svg>
-                    </button>
-                </div>
+            <div className="relative w-full sm:max-w-[450px] max-w-[100vw] bg-white backdrop-blur-sm rounded-[18px] shadow-[0_8px_40px_-4px_rgba(16,24,40,0.15)] overflow-hidden animate-[fadeScale_.35s_ease]">
                 <div className="px-7 pt-10 pb-10">
-                    <div className="mb-4 flex flex-col justify-center">
+                    <div className="mb-3 flex flex-col justify-center">
                         <img
                             src="/assets/icons/delete.svg"
                             alt="delete"
-                            className="w-[101px] h-[101px] object-contain drop-shadow-sm animate-[popIn_.55s_cubic-bezier(.4,0,.2,1)_both,softFloat_5.5s_ease-in-out_1s_infinite]"
+                            className="w-[90px] h-[90px] object-contain drop-shadow-sm animate-[popIn_.55s_cubic-bezier(.4,0,.2,1)_both,softFloat_5.5s_ease-in-out_1s_infinite]"
                             loading="lazy"
                         />
                     </div>
-                    <h3 className="text-[20px] font-bold text-secondary tracking-tight mb-2">{title}</h3>
-                    <p className="leading-relaxed text-[#52525B] mb-10 font-medium">
+                    <h3 className="text-[20px] font-semibold text-[#002E62] tracking-tight mb-1">{title}</h3>
+                    <p className="leading-relaxed text-[#52525B] mb-6 text-sm">
                         {message ??
                             'Are you sure you want to delete this property? This action is permanent and cannot be undone.'}
                     </p>
                     <div className="flex items-center gap-3">
-                        <button
+                        <Button
                             onClick={onConfirm}
-                            className="bg-[#002E62] hover:bg-[#013463] focus:ring-2 focus:ring-offset-2 focus:ring-[#013463]/40 transition-colors text-white text-[14px] font-medium rounded-lg px-8 py-3 inline-flex items-center justify-center shadow-sm"
                         >
                             Yes
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             onClick={onClose}
-                            className="border border-[#004493] hover:border-[#94A3B8] text-[#0A2D50] rounded-lg px-8 py-3 text-[14px] font-medium transition-colors"
+                            variant='reject'
+                            className='border border-[#004493]'
                         >
                             No
-                        </button>
+                        </Button>
+                       
                     </div>
                 </div>
                 <style>{`

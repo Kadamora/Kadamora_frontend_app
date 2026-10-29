@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 export interface BreadcrumbItem {
     label: string;
     path?: string;
+    onClick?: () => void;
 }
 
 interface BreadcrumbContextType {

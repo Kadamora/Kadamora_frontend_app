@@ -1,7 +1,6 @@
-import React from 'react';
-import { Link } from 'react-router';
 import { FaRegBell } from 'react-icons/fa';
 import UserMenuDropdown, { type UserMenuItem } from '@shared/components/Dashboard/UserMenuDropdown';
+import Breadcrumbs from '@shared/components/Dashboard/Breadcrumbs';
 import { useBreadcrumbContext } from '@shared/context/BreadcrumbContext';
 
 export interface HTNavbarProps {
@@ -52,28 +51,7 @@ export default function HTNavbar({
                     <h1 className="text-lg sm:text-lg font-bold text-[#002E62] leading-tight">
                         {title}
                     </h1>
-                    {breadcrumbs && breadcrumbs.length > 0 && (
-                        <div className="flex items-center gap-1.5 text-xs text-[#71717A] font-medium leading-tight mt-0.5">
-                            {breadcrumbs.map((crumb, idx) => {
-                                const isLast = idx === breadcrumbs.length - 1;
-                                return (
-                                    <React.Fragment key={crumb.label}>
-                                        {idx > 0 && <span className="text-slate-400">&gt;</span>}
-                                        {crumb.path && !isLast ? (
-                                            <Link
-                                                to={crumb.path}
-                                                className="hover:text-[#002E62] transition-colors"
-                                            >
-                                                {crumb.label}
-                                            </Link>
-                                        ) : (
-                                            <span className="text-[#359F6A] font-medium">{crumb.label}</span>
-                                        )}
-                                    </React.Fragment>
-                                );
-                            })}
-                        </div>
-                    )}
+                    {breadcrumbs && breadcrumbs.length > 0 && <Breadcrumbs crumbs={breadcrumbs} className="mt-0.5" />}
                 </div>
             </div>
 

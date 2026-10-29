@@ -1,4 +1,4 @@
-﻿import LandingPageContainer from '@shared/layouts/LandingLayout/LandingPageContainer';
+import LandingPageContainer from '@shared/layouts/LandingLayout/LandingPageContainer';
 import { Calendar, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router';
 
@@ -48,9 +48,15 @@ const allNews = [
     }
 ];
 
-export default function Blogs() {
+import type { HeaderNavLink } from '@shared/layouts/LandingLayout/Header';
+
+interface BlogsProps {
+    navLinks?: HeaderNavLink[];
+}
+
+export default function Blogs({ navLinks }: BlogsProps = {}) {
     return (
-        <LandingPageContainer>
+        <LandingPageContainer headerTheme="light" navLinks={navLinks}>
             {/* Top Pattern Background Section */}
             <div className="relative border-b border-[#E9E9E9] bg-[#F8FDFC] pt-12 pb-32 overflow-hidden">
                 {/* Thin vertical grid lines mimicking the image */}

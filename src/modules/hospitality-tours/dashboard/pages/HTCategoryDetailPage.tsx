@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useParams } from 'react-router';
 import { CATEGORY_DETAILS, DEFAULT_MOCK_ITEMS, type ListingCategoryDetail } from '@modules/hospitality-tours/data/categoryData';
 import { FiPlus } from 'react-icons/fi';
-import WelcomeBanner from '@modules/hospitality-tours/components/WelcomeBanner';
+import WelcomeBanner from '@shared/components/Dashboard/WelcomeBanner';
 import HTItemCard from '@modules/hospitality-tours/components/HTItemCard';
 import HTListingFlowStepper from '@modules/hospitality-tours/components/listing-flow/HTListingFlowStepper';
 import { useBreadcrumbs } from '@shared/context/BreadcrumbContext';

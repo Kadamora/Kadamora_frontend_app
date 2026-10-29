@@ -1,14 +1,15 @@
 import { useState, useMemo } from 'react';
 import StatusBadge from '@shared/components/Tag/StatusBadge';
 import ListingCategoryCard from '@modules/hospitality-tours/components/ListingCategoryCard';
-import WelcomeBanner from '@modules/hospitality-tours/components/WelcomeBanner';
-import TableToolbar from '@modules/hospitality-tours/components/TableToolbar';
+import WelcomeBanner from '@shared/components/Dashboard/WelcomeBanner';
+import TableToolbar from '@shared/components/Table/TableToolbar';
+import { BOOKING_FILTER_OPTIONS } from '@modules/hospitality-tours/data/filterOptions';
 import Table, { type Column } from '@shared/components/Table/Table';
 import TimelineCard from '@modules/hospitality-tours/components/TimelineCard';
 import ReviewCard from '@modules/hospitality-tours/components/ReviewCard';
 import SignOutModal from '@shared/components/Modal/SignOutModal';
 import { bookings as mockBookings, reviews as mockReviews, timelinePosts as mockTimeline } from '@modules/hospitality-tours/data/mock';
-import StatCard from '@modules/hospitality-tours/components/StatCard';
+import StatCard from '@shared/components/Cards/StatCard';
 import type { Booking } from '@modules/hospitality-tours/types';
 import HTItemCard from '@modules/hospitality-tours/components/HTItemCard';
 import HTButton from '@modules/hospitality-tours/components/HTButton';
@@ -348,6 +349,7 @@ export default function HTStorybookPage() {
                             title="RECENT BOOKINGS"
                             searchValue={tableSearch}
                             onSearchChange={setTableSearch}
+                            filterOptions={BOOKING_FILTER_OPTIONS}
                             selectedFilter={tableFilter}
                             onFilterChange={setTableFilter}
                         />

@@ -67,7 +67,7 @@ export default function ContextMenu({
             {isOpen && (
                 <div
                     role="menu"
-                    className={`absolute z-50 mt-1.5 min-w-[150px] origin-top rounded-[8px] border border-[#E4E7EC] bg-white shadow-lg ring-1 ring-black/5 p-1.5 animate-[fadeIn_.15s_ease-out] ${
+                    className={`absolute z-50 mt-1.5 min-w-[150px] origin-top rounded-[8px] border border-[#F4F4F5] bg-white shadow-sm ring-1 ring-black/5 p-1 animate-[fadeIn_.15s_ease-out] ${
                         align === 'right' ? 'right-0' : 'left-0'
                     }`}
                 >

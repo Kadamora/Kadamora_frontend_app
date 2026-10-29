@@ -4,7 +4,7 @@ import Input from '@shared/components/Forms/Input';
 import type { TimelinePost } from '../../types';
 import HTTimelineFeedCard from './HTTimelineFeedCard';
 import HTNewPostModal from './HTNewPostModal';
-import WelcomeBanner from '../WelcomeBanner';
+import WelcomeBanner from '@shared/components/Dashboard/WelcomeBanner';
 import HTButton from '../HTButton';
 import HTFilterTabs from '../HTFilterTabs';
 

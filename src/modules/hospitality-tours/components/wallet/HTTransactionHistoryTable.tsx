@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { FiArrowDownLeft, FiArrowUpRight, FiEye } from 'react-icons/fi';
 import Table, { type Column } from '@shared/components/Table/Table';
 import StatusBadge from '@shared/components/Tag/StatusBadge';
-import TableToolbar, { type FilterOption } from '@modules/hospitality-tours/components/TableToolbar';
+import TableToolbar, { type FilterOption } from '@shared/components/Table/TableToolbar';
 import type { Transaction } from '../../types';
 
 export interface HTTransactionHistoryTableProps {

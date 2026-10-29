@@ -16,7 +16,7 @@ export default function Hero() {
                     </div>
                     <h1 className="text-4xl md:text-6xl font-bold text-primary mb-4">Kadamora</h1>
                     <p className="text-white text-sm md:text-base max-w-4xl mt-4 leading-relaxed">
-                        Kadamora Connecting People, Places & Professional ServicesWhether you're searching for your next
+                        Kadamora Connecting People, Places & Professional Services <br /> Whether you're searching for your next
                         home, exploring hospitality and tour opportunities, or managing complex construction and
                         logistics needs, Kadamora is your all-in-one platform. List properties, find destinations, or
                         offer professional services—Kadamora brings users and providers together to create a more

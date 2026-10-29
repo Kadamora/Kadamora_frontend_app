@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
-import WelcomeBanner from '@modules/hospitality-tours/components/WelcomeBanner';
-import StatCard from '@modules/hospitality-tours/components/StatCard';
-import TableToolbar from '@modules/hospitality-tours/components/TableToolbar';
+import WelcomeBanner from '@shared/components/Dashboard/WelcomeBanner';
+import StatCard from '@shared/components/Cards/StatCard';
+import TableToolbar from '@shared/components/Table/TableToolbar';
+import { BOOKING_FILTER_OPTIONS } from '@modules/hospitality-tours/data/filterOptions';
 import Table, { type Column } from '@shared/components/Table/Table';
 import StatusBadge from '@shared/components/Tag/StatusBadge';
 import { bookings as mockBookings, currentUser } from '@modules/hospitality-tours/data/mock';
@@ -127,6 +128,7 @@ export default function HTDashboardHome() {
                     searchValue={search}
                     onSearchChange={setSearch}
                     searchPlaceholder="Search "
+                    filterOptions={BOOKING_FILTER_OPTIONS}
                     selectedFilter={filterStatus}
                     onFilterChange={setFilterStatus}
                 />

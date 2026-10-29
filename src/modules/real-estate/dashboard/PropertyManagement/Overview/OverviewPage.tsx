@@ -1,11 +1,11 @@
-﻿import React from 'react';
+import React from 'react';
 import StatCard from './components/StatCard';
 import totalRevenueIcon from './components/icons/total_revenue.svg';
 import totalPropertiesIcon from './components/icons/total_properties.svg';
 import activeTenantsIcon from './components/icons/active_tenants.svg';
 import maintenanceRequestIcon from './components/icons/maintenance_request.svg';
 import ActiveRequests from './components/ActiveRequests';
-import RecentActivities from './components/RecentActivities';
+import ActivityFeedCard from '@shared/components/Cards/ActivityFeedCard';
 import { useGetDashboardSummaryQuery } from '@modules/real-estate/api/propertyMgt.api';
 
 const OverviewPage: React.FC = () => {
@@ -139,7 +139,7 @@ const OverviewPage: React.FC = () => {
                         </div>
                     </div>
                     <div className='w-full'>
-                        <RecentActivities items={activities} />
+                        <ActivityFeedCard items={activities} />
                     </div>
                 </div>
             </div>

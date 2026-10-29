@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router";
 import type { CategoryAccent } from "@modules/hospitality-tours/components/ListingCategoryCard";
 import ListingCategoryCard from "@modules/hospitality-tours/components/ListingCategoryCard";
-import WelcomeBanner from "@modules/hospitality-tours/components/WelcomeBanner";
+import WelcomeBanner from "@shared/components/Dashboard/WelcomeBanner";
 
 interface ListingCategoryItem {
     id: string;

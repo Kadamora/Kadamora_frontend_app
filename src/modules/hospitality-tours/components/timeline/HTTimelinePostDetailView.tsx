@@ -2,6 +2,8 @@ import React, { useState, useRef } from 'react';
 import { FiThumbsUp, FiMapPin, FiMoreHorizontal, FiSend, FiSlash, FiFlag, FiThumbsDown } from 'react-icons/fi';
 import type { TimelinePost, TimelineComment } from '../../types';
 import ContextMenu from '@shared/components/ContextMenu/ContextMenu';
+import Breadcrumbs from '@shared/components/Dashboard/Breadcrumbs';
+import type { BreadcrumbItem } from '@shared/context/BreadcrumbContext';
 import { SquareArrowOutUpRight } from 'lucide-react';
 import timelineUser1 from '/assets/icons/timelineUser1.svg';
 import timelineUser2 from '/assets/icons/timelineUser2.svg';
@@ -11,6 +13,7 @@ interface HTTimelinePostDetailViewProps {
     post: TimelinePost;
     relatedPosts?: TimelinePost[];
     onSelectPost?: (postId: string) => void;
+    breadcrumbs?: BreadcrumbItem[];
 }
 
 
@@ -18,6 +21,7 @@ export default function HTTimelinePostDetailView({
     post,
     relatedPosts = [],
     onSelectPost,
+    breadcrumbs,
 }: HTTimelinePostDetailViewProps) {
     const idCounter = useRef(0);
     const nextId = () => `id-${++idCounter.current}`;
@@ -137,6 +141,9 @@ export default function HTTimelinePostDetailView({
             {/* Top Page Title */}
             <div>
                 <h1 className="text-2xl sm:text-3xl font-semibold text-[#002E62]">{post.title}</h1>
+                {breadcrumbs && breadcrumbs.length > 0 && (
+                    <Breadcrumbs crumbs={breadcrumbs} className="mt-1" />
+                )}
             </div>
 
             {/* Top Dual Media Showcase matching Screenshot 1 */}

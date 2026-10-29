@@ -187,6 +187,16 @@ export const timelinePosts: TimelinePost[] = [
     views: 200,
     postedAgo: "50 days ago",
     durationLabel: "20:08"
+  },
+  {
+    id: "magic-land-amusement-park",
+    title: "Magic Land Amusement Park, Abuja",
+    channel: "Relaxation NTV",
+    category: "Events",
+    coverUrl: "https://images.unsplash.com/photo-1513889961551-628c1e5e2ee9?w=800&q=80",
+    views: 2300000,
+    postedAgo: "120days ago",
+    durationLabel: "20:08"
   }
 ];
 

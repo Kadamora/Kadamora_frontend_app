@@ -1,6 +1,6 @@
 export default function Footer() {
     return (
-        <footer className="bg-[#001731] py-12 md:h-[500px] text-[#ffffff] relative overflow-hidden md:flex md:items-center">
+        <footer className="bg-[#001731] py-8 md:h-[450px] text-[#ffffff] relative overflow-hidden md:flex md:items-center">
             {/* Pattern background in bottom right corner */}
             <div
                 className="absolute bottom-0 right-[5%] w-100 h-100 bg-no-repeat bg-bottom bg-contain"

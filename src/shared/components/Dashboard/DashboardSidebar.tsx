@@ -5,7 +5,10 @@ export interface DashboardNavItem {
     label: string;
     to: string;
     iconClass?: string;
-    icon?: React.ReactNode;
+    iconUrl?: string;
+    icon?: React.ReactNode | ((active: boolean) => React.ReactNode);
+    /** Only mark active on an exact path match (use for module root routes). */
+    end?: boolean;
 }
 
 export interface DashboardSidebarProps {
@@ -38,7 +41,11 @@ export default function DashboardSidebar({
         }
     }, [isOpen]);
 
-    const isNavItemActive = (path: string) => {
+    const isNavItemActive = (item: DashboardNavItem) => {
+        const path = item.to;
+        if (item.end) {
+            return location.pathname === path;
+        }
         if (path === '/dashboard' || path === '/dashboard/home') {
             return location.pathname === '/dashboard' || location.pathname === '/dashboard/home';
         }
@@ -50,7 +57,7 @@ export default function DashboardSidebar({
             {/* Sidebar Panel */}
             <aside
                 id="dashboard-sidebar"
-                className={`sidebar-panel fixed inset-y-0 left-0 z-40 w-[300px] flex flex-col overflow-y-auto border-r border-[#E4E7EC] bg-white px-6 pt-6 pb-8 shadow-sm transition-transform duration-300 ease-[cubic-bezier(.4,.0,.2,1)] will-change-transform ${
+                className={`sidebar-panel fixed inset-y-0 left-0 z-40 w-[300px] flex flex-col overflow-y-auto hide-scrollbar border-r border-[#E4E7EC] bg-white px-6 pt-6 pb-8 shadow-sm transition-transform duration-300 ease-[cubic-bezier(.4,.0,.2,1)] will-change-transform ${
                     isOpen ? 'translate-x-0' : '-translate-x-full'
                 } ${isOpen && sidebarAnimating ? 'sidebar-opening' : ''}`}
             >
@@ -67,7 +74,7 @@ export default function DashboardSidebar({
 
                     <nav className="space-y-2" aria-label="Primary Navigation">
                         {navItems.map((item) => {
-                            const active = isNavItemActive(item.to);
+                            const active = isNavItemActive(item);
                             return (
                                 <Link
                                     key={item.to}
@@ -85,13 +92,26 @@ export default function DashboardSidebar({
                                         }`}
                                     />
                                     <span className="flex items-center justify-center">
-                                        {item.icon ? (
+                                        {typeof item.icon === 'function' ? (
+                                            item.icon(active)
+                                        ) : item.icon ? (
                                             item.icon
+                                        ) : item.iconUrl ? (
+                                            <span
+                                                aria-hidden="true"
+                                                style={{
+                                                    WebkitMaskImage: `url(${item.iconUrl})`,
+                                                    maskImage: `url(${item.iconUrl})`,
+                                                }}
+                                                className={`mask-icon h-[26px] w-[26px] transition-colors duration-300 ${
+                                                    active ? 'bg-[#359F6A]' : 'bg-[#093154] group-hover:bg-[#359F6A]'
+                                                }`}
+                                            />
                                         ) : item.iconClass ? (
                                             <span
                                                 aria-hidden="true"
-                                                className={`mask-icon h-[30px] w-[30px] ${item.iconClass} transition-colors duration-300 ${
-                                                    active ? 'bg-emerald-600' : 'bg-[#98A2B3] group-hover:bg-emerald-500'
+                                                className={`mask-icon h-[26px] w-[26px] ${item.iconClass} transition-colors duration-300 ${
+                                                    active ? 'bg-[#359F6A]' : 'bg-[#093154] group-hover:bg-[#359F6A]'
                                                 }`}
                                             />
                                         ) : null}

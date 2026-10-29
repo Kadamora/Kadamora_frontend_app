@@ -59,6 +59,48 @@
     mask-image: url(/assets/icons/reviews.svg);
 }
 
+/* Facility Management Sidebar Icons */
+.icon-dashboard {
+    -webkit-mask-image: url(/assets/icons/dashboard.svg);
+    mask-image: url(/assets/icons/dashboard.svg);
+}
+.icon-fm-timeline {
+    -webkit-mask-image: url(/assets/icons/FMTimeline.svg);
+    mask-image: url(/assets/icons/FMTimeline.svg);
+}
+.icon-fm-property {
+    -webkit-mask-image: url(/assets/icons/FMPropertyM.svg);
+    mask-image: url(/assets/icons/FMPropertyM.svg);
+}
+.icon-fm-energy {
+    -webkit-mask-image: url(/assets/icons/FMEnergy.svg);
+    mask-image: url(/assets/icons/FMEnergy.svg);
+}
+.icon-fm-commercial {
+    -webkit-mask-image: url(/assets/icons/FMCommercial.svg);
+    mask-image: url(/assets/icons/FMCommercial.svg);
+}
+.icon-fm-chat {
+    -webkit-mask-image: url(/assets/icons/FMChat.svg);
+    mask-image: url(/assets/icons/FMChat.svg);
+}
+.icon-fm-services {
+    -webkit-mask-image: url(/assets/icons/FMServices.svg);
+    mask-image: url(/assets/icons/FMServices.svg);
+}
+.icon-fm-market {
+    -webkit-mask-image: url(/assets/icons/FMMarket.svg);
+    mask-image: url(/assets/icons/FMMarket.svg);
+}
+.icon-fm-sub {
+    -webkit-mask-image: url(/assets/icons/FMSub.svg);
+    mask-image: url(/assets/icons/FMSub.svg);
+}
+.icon-fm-settings {
+    -webkit-mask-image: url(/assets/icons/FMSettings.svg);
+    mask-image: url(/assets/icons/FMSettings.svg);
+}
+
 /* Sidebar & menu animations */
 @keyframes sidebarSlideIn {
     from {
@@ -77,6 +119,14 @@
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+.sidebar-panel {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+.sidebar-panel::-webkit-scrollbar {
+    display: none !important;
 }
 
 .sidebar-panel.sidebar-opening {

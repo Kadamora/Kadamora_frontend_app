@@ -17,6 +17,10 @@ import { HospitalityToursAuthRoutes } from '@modules/hospitality-tours/routes/au
 import { HospitalityToursLandingRoutes } from '@modules/hospitality-tours/routes/landing';
 import { HospitalityToursDashboardRoutes } from '@modules/hospitality-tours/routes/dashboard';
 
+//  Facility Management module routes
+import { FacilityManagementLandingRoutes } from '@modules/facility-management/routes/landing';
+import { FacilityManagementDashboardRoutes } from '@modules/facility-management/routes/dashboard';
+
 //  Shared auth pages 
 const Login                = lazy(() => import('@shared/pages/auth/Login'));
 const Signup               = lazy(() => import('@shared/pages/auth/Signup'));
@@ -111,6 +115,12 @@ export default function AppRoutes() {
 
                     {/*  Hospitality & Tours: Dashboard */}
                     {HospitalityToursDashboardRoutes()}
+
+                    {/*  Facility Management: Landing */}
+                    {FacilityManagementLandingRoutes()}
+
+                    {/*  Facility Management: Dashboard */}
+                    {FacilityManagementDashboardRoutes()}
 
                     {/* Catch-all */}
                     <Route path="*" element={<NotFound />} />

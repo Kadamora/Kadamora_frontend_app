@@ -73,4 +73,15 @@ export const showErrorToast = (title: string, message?: string) => {
     );
 };
 
+/**
+ * Show a warning toast matching the Kadamora design system
+ */
+export const showWarningToast = (title: string, message?: string) => {
+    return toast.custom(
+        (t) => <CustomToast title={title} message={message} type="error" t={t} />,
+        { duration: 4000 }
+    );
+};
+
 export default CustomToast;
+
