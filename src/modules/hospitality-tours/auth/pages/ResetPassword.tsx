@@ -7,6 +7,7 @@ export default function HTResetPasswordPage() {
             subtitle="Please enter your new password below to update your Hospitality & Tours account credentials."
             buttonText="Save"
             loginUrl="/hospitality-tours/auth/login"
+            verifyUrl="/hospitality-tours/auth/forgot-password/verify"
         />
     );
 }

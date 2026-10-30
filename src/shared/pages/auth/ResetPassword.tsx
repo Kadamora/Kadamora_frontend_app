@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import { IoEye } from 'react-icons/io5';
 import { IoIosEyeOff } from 'react-icons/io';
 import { useResetPasswordMutation } from '@shared/api/auth.api';
@@ -12,6 +12,7 @@ export interface ResetPasswordProps {
     subtitle?: string;
     buttonText?: string;
     loginUrl?: string;
+    verifyUrl?: string;
     customResetMutation?: any;
 }
 
@@ -20,6 +21,7 @@ export default function ResetPassword({
     subtitle = "Please enter your new password below. Ensure it is at least 8 characters long and matches the confirmation field.",
     buttonText = "Save",
     loginUrl = "/auth/login",
+    verifyUrl = "/auth/forgot-password/verify",
     customResetMutation,
 }: ResetPasswordProps) {
     const navigate = useNavigate();
@@ -68,18 +70,20 @@ export default function ResetPassword({
         setErrorMessage(null);
 
         try {
-            await triggerResetPassword({
+            const res = await triggerResetPassword({
                 email,
                 newPassword: password,
                 confirmPassword: confirm,
-                otp: code || '',
+                otp: (code || '').trim(),
             }).unwrap();
 
+            const successMsg = res?.message || 'Your password has been reset successfully';
+
             dispatch(logout());
-            sessionStorage.setItem('authSuccessMessage', 'Password changed. Please log in again.');
+            sessionStorage.setItem('authSuccessMessage', successMsg);
             showSuccessToast(
                 "Password Reset Successful",
-                "Password changed. Please log in again."
+                successMsg
             );
 
             form.reset();
@@ -87,7 +91,7 @@ export default function ResetPassword({
             setTimeout(() => {
                 navigate(loginUrl, {
                     replace: true,
-                    state: { message: 'Password changed. Please log in again.' },
+                    state: { message: successMsg },
                 });
             }, 1200);
         } catch (err: any) {
@@ -201,6 +205,13 @@ export default function ResetPassword({
                         buttonText
                     )}
                 </button>
+
+                <div className="text-center text-xs sm:text-sm text-gray-500 pt-1">
+                    Wrong or expired OTP?{' '}
+                    <Link to={verifyUrl} className="text-secondary font-semibold underline hover:text-black">
+                        Re-enter or resend code
+                    </Link>
+                </div>
             </form>
         </div>
     );

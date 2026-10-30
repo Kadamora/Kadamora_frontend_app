@@ -19,11 +19,11 @@ export default function AdminForgotPasswordVerify() {
     }, [seconds]);
 
     const onChange = (idx: number, value: string) => {
-        const digit = value.replace(/\D/g, '').slice(0, 1);
+        const char = value.replace(/[^a-zA-Z0-9]/g, '').slice(-1).toUpperCase();
         const next = [...code];
-        next[idx] = digit;
+        next[idx] = char;
         setCode(next);
-        if (digit && idx < inputs.current.length - 1) {
+        if (char && idx < inputs.current.length - 1) {
             inputs.current[idx + 1]?.focus();
         }
     };
@@ -32,6 +32,28 @@ export default function AdminForgotPasswordVerify() {
         if (e.key === 'Backspace' && !code[idx] && idx > 0) {
             inputs.current[idx - 1]?.focus();
         }
+    };
+
+    const onPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+        e.preventDefault();
+        const pasted = e.clipboardData
+            .getData('text')
+            .replace(/[^a-zA-Z0-9]/g, '')
+            .trim()
+            .slice(0, code.length)
+            .toUpperCase();
+        if (!pasted) return;
+
+        const next = [...code];
+        for (let i = 0; i < code.length; i++) {
+            if (i < pasted.length) {
+                next[i] = pasted[i];
+            }
+        }
+        setCode(next);
+
+        const focusIndex = Math.min(pasted.length - 1, code.length - 1);
+        inputs.current[focusIndex]?.focus();
     };
 
     const canContinue = code.every((c) => c.length === 1);
@@ -85,14 +107,15 @@ export default function AdminForgotPasswordVerify() {
                             ref={(el) => {
                                 inputs.current[idx] = el;
                             }}
+                            type="text"
+                            autoCapitalize="characters"
                             value={c}
                             onChange={(e) => onChange(idx, e.target.value)}
                             onKeyDown={(e) => onKeyDown(idx, e)}
-                            inputMode="numeric"
-                            pattern="[0-9]*"
+                            onPaste={onPaste}
                             maxLength={1}
-                            aria-label={`OTP digit ${idx + 1}`}
-                            className="w-12 h-12 text-center rounded-lg bg-[#F5F7FB] border border-[#E6EAF2] focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-base"
+                            aria-label={`OTP character ${idx + 1}`}
+                            className="w-12 h-12 text-center font-bold rounded-lg bg-[#F5F7FB] border border-[#E6EAF2] focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-base uppercase"
                         />
                     ))}
                 </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import { IoEye } from 'react-icons/io5';
 import { IoIosEyeOff } from 'react-icons/io';
 import { useResetPasswordMutation } from '@shared/api/auth.api';
@@ -31,7 +31,7 @@ export default function AdminResetPassword() {
         const confirm = String(formData.get('confirm') ?? '');
         const email = sessionStorage.getItem('resetEmail') || '';
 
-         if (!email) {
+        if (!email) {
             setErrorMessage('Email is missing. Please start the password reset process again.');
             return;
         }
@@ -59,30 +59,33 @@ export default function AdminResetPassword() {
         setErrorMessage(null);
 
         try {
-            await triggerResetPassword({ 
-                 email,
-                newPassword: password, 
+            const res = await triggerResetPassword({
+                email,
+                newPassword: password,
                 confirmPassword: confirm,
-                otp: code as string 
-             }).unwrap();
+                otp: (code as string).trim(),
+            }).unwrap();
+
+            const successMsg = res?.message || 'Your password has been reset successfully';
+
             dispatch(logout());
-            sessionStorage.setItem('authSuccessMessage', 'Password changed. Please log in again.');
-            setSuccessMessage('Password changed. Please log in again.');
+            sessionStorage.setItem('authSuccessMessage', successMsg);
+            setSuccessMessage(successMsg);
             form.reset();
             sessionStorage.removeItem('resetEmail');
             setTimeout(() => {
                 navigate('/admin/auth/login', {
                     replace: true,
-                    state: { message: 'Password changed. Please log in again.' },
+                    state: { message: successMsg },
                 });
             }, 1500);
         } catch (err: any) {
             const message =
-            err?.data?.message ||
-            err?.error ||
-            'Unable to log you in with those details. Please try again.';
+                err?.data?.message ||
+                err?.error ||
+                'Unable to reset your password. Please try again.';
 
-        setErrorMessage(message);
+            setErrorMessage(message);
         } finally {
             setIsSubmitting(false);
         }
@@ -103,98 +106,104 @@ export default function AdminResetPassword() {
                     className="absolute top-[24px] left-[24px] w-[200px] h-auto z-20"
                 />
             </a>
-        <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl px-10 py-16">
-            <h1 className="text-3xl font-semibold text-secondary">Reset Password</h1>
-            <p className="text-gray-600 mt-2">
-                Lorem ipsum dolor sit amet consectetur. Diam platea consequat libero mattis rhoncus interdum neque.
-            </p>
+            <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl px-10 py-16">
+                <h1 className="text-3xl font-semibold text-secondary">Reset Password</h1>
+                <p className="text-gray-600 mt-2">
+                    Please enter your new password below. Ensure it is at least 8 characters long and matches the confirmation field.
+                </p>
 
-            <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-                {errorMessage ? (
-                    <div
-                        className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600"
-                        role="alert"
-                    >
-                        {errorMessage}
-                    </div>
-                ) : null}
-                {successMessage ? (
-                    <div
-                        className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-600"
-                        role="status"
-                    >
-                        {successMessage}
-                    </div>
-                ) : null}
-                {/* Password */}
-                <div>
-                    <label htmlFor="password" className="block mb-1 text-secondary font-medium">
-                        Password
-                    </label>
-                    <div className="relative">
-                        <input
-                            id="password"
-                            name="password"
-                            type={showPassword ? 'text' : 'password'}
-                            placeholder="Enter password"
-                            className="w-full px-4 py-3 pr-10 border border-[#BEBEBE] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-colors bg-gray-50 placeholder-[#52525B] text-sm"
-                            required
-                            disabled={isSubmitting}
-                        />
-                        <button
-                            type="button"
-                            onClick={() => setShowPassword((s) => !s)}
-                            className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700"
-                            aria-label={showPassword ? 'Hide password' : 'Show password'}
-                            title={showPassword ? 'Hide password' : 'Show password'}
+                <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+                    {errorMessage ? (
+                        <div
+                            className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600"
+                            role="alert"
                         >
-                            <span className="text-lg" aria-hidden>
-                                {showPassword ? <IoIosEyeOff /> : <IoEye />}
-                            </span>
-                        </button>
-                    </div>
-                </div>
-
-                {/* Confirm Password */}
-                <div>
-                    <label htmlFor="confirm" className="block mb-1 text-secondary font-medium">
-                        Confirm Password
-                    </label>
-                    <div className="relative">
-                        <input
-                            id="confirm"
-                            name="confirm"
-                            type={showConfirm ? 'text' : 'password'}
-                            placeholder="Enter password"
-                            className="w-full px-4 py-3 pr-10 border border-[#BEBEBE] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-colors bg-gray-50 placeholder-[#52525B] text-sm"
-                            required
-                            disabled={isSubmitting}
-                        />
-                        <button
-                            type="button"
-                            onClick={() => setShowConfirm((s) => !s)}
-                            className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700"
-                            aria-label={showConfirm ? 'Hide password' : 'Show password'}
-                            title={showConfirm ? 'Hide password' : 'Show password'}
+                            {errorMessage}
+                        </div>
+                    ) : null}
+                    {successMessage ? (
+                        <div
+                            className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-600"
+                            role="status"
                         >
-                            <span className="text-lg" aria-hidden>
-                                {showConfirm ? <IoIosEyeOff /> : <IoEye />}
-                            </span>
-                        </button>
+                            {successMessage}
+                        </div>
+                    ) : null}
+                    {/* Password */}
+                    <div>
+                        <label htmlFor="password" className="block mb-1 text-secondary font-medium">
+                            Password
+                        </label>
+                        <div className="relative">
+                            <input
+                                id="password"
+                                name="password"
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder="Enter password"
+                                className="w-full px-4 py-3 pr-10 border border-[#BEBEBE] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-colors bg-gray-50 placeholder-[#52525B] text-sm"
+                                required
+                                disabled={isSubmitting}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword((s) => !s)}
+                                className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700"
+                                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                title={showPassword ? 'Hide password' : 'Show password'}
+                            >
+                                <span className="text-lg" aria-hidden>
+                                    {showPassword ? <IoIosEyeOff /> : <IoEye />}
+                                </span>
+                            </button>
+                        </div>
                     </div>
-                </div>
 
-                <button
-                    type="submit"
-                    className="w-full bg-secondary text-white py-3 rounded-lg hover:opacity-95 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                    disabled={isSubmitting || isCodeMissing}
-                    aria-busy={isSubmitting}
-                >
-                    {isSubmitting ? 'Saving...' : 'Save'}
-                </button>
-            </form>
-         </div>
+                    {/* Confirm Password */}
+                    <div>
+                        <label htmlFor="confirm" className="block mb-1 text-secondary font-medium">
+                            Confirm Password
+                        </label>
+                        <div className="relative">
+                            <input
+                                id="confirm"
+                                name="confirm"
+                                type={showConfirm ? 'text' : 'password'}
+                                placeholder="Enter password"
+                                className="w-full px-4 py-3 pr-10 border border-[#BEBEBE] rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-colors bg-gray-50 placeholder-[#52525B] text-sm"
+                                required
+                                disabled={isSubmitting}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowConfirm((s) => !s)}
+                                className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700"
+                                aria-label={showConfirm ? 'Hide password' : 'Show password'}
+                                title={showConfirm ? 'Hide password' : 'Show password'}
+                            >
+                                <span className="text-lg" aria-hidden>
+                                    {showConfirm ? <IoIosEyeOff /> : <IoEye />}
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="w-full bg-secondary text-white py-3 rounded-lg hover:opacity-95 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                        disabled={isSubmitting || isCodeMissing}
+                        aria-busy={isSubmitting}
+                    >
+                        {isSubmitting ? 'Saving...' : 'Save'}
+                    </button>
+
+                    <div className="text-center text-xs sm:text-sm text-gray-500 pt-1">
+                        Wrong or expired OTP?{' '}
+                        <Link to="/admin/auth/forgot-password/verify" className="text-secondary font-semibold underline hover:text-black">
+                            Re-enter or resend code
+                        </Link>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }
-

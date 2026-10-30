@@ -1,29 +1,30 @@
 export const fakeDb = {
   services: [
-    // {
-    //   id: 1,
-    //   title: "Facility Management",
-    //   description: "Involves the effective coordination of people, processes, and physical spaces to ensure that buildings and infrastructure operate efficiently.",
-    //   image: "/assets/images/service_data_1.png"
-    // },
+   
     {
-      id: 2,
+      id: 1,
       title: "Property Management",
       description: "Our platform empowers property managers to efficiently oversee and optimize residential, commercial, and mixed-use properties for maximum returns.",
       image: "/assets/images/service_data_1.png"
     },
     {
-      id: 3,
+      id: 2,
       title: "Property Listing",
       description: "This allows agents, developers, and property owners to showcase residential, commercial, or short-let properties to a wide audience with ease.",
       image: "/assets/images/service_data_2.png"
     },
-    // {
-    //   id: 4,
-    //   title: "Facility Management",
-    //   description: "Involves the effective coordination of people, processes, and physical spaces to ensure that buildings and infrastructure operate efficiently.",
-    //   image: "/assets/images/service_data_1.png"
-    // },
+     {
+      id: 3,
+      title: "Hospitality and Tours",
+      description: "Discover and book unforgettable hotels, resorts, cultural festivals, and curated tour experiences across Nigeria with seamless stay and event management.",
+      image: "/assets/images/ht_hero_slide_4.png"
+    },
+    {
+      id: 4,
+      title: "Facility Management",
+      description: "Involves the effective coordination of people, processes, and physical spaces to ensure that buildings and infrastructure operate efficiently.",
+      image: "/assets/images/service_data_3.png"
+    },
   ],
   listings: [
     {
