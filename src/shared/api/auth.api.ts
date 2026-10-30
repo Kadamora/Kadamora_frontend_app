@@ -38,7 +38,7 @@ export interface VerifyAccountData {
     user?: any;
 }
 export interface VerifyAccountResponse {
-        data: VerifyAccountData;
+    data: VerifyAccountData;
     statusCode: number;
 }
 export interface ResendVerificationPayload {
@@ -53,7 +53,7 @@ export interface LoginPayload {
     password: string;
 }
 export type LoginResponse = {
-        data: VerifyAccountData;
+    data: VerifyAccountData;
     statusCode: number;
 };
 
@@ -71,7 +71,11 @@ export interface ResetPasswordPayload {
     otp: string;
 }
 export interface ResetPasswordResponse {
+    success?: boolean;
+    statusCode?: number;
     message?: string;
+    data?: null;
+    errors?: any;
 }
 export interface AccountData {
     id: string;
@@ -87,7 +91,7 @@ export interface AccountData {
     updatedAt: string;
 }
 export interface AccountResponse {
-        data: AccountData;    
+    data: AccountData;
     statusCode: number;
 }
 export interface AuthChangePasswordPayload {
